@@ -124,13 +124,23 @@
                                 <label class="block cursor-pointer rounded-2xl border border-dashed border-[#b9caff] bg-white p-4 transition hover:border-[#2f6bff] hover:bg-[#f5f8ff]">
                                     <span class="block text-sm font-extrabold text-[#07152f]">Ajouter des images</span>
                                     <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">Jusqu’à 12 images, 8 Mo chacune.</span>
-                                    <input type="file" name="media_images[]" multiple accept="image/jpeg,image/png,image/webp" class="mt-3 block w-full text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#2f6bff] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
+                                    <input type="file" name="media_images[]" multiple accept="image/jpeg,image/png,image/webp" data-media-preview-input="image" data-media-preview-target="venue-image-preview" class="mt-3 block w-full text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#2f6bff] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
                                 </label>
                                 <label class="block cursor-pointer rounded-2xl border border-dashed border-[#b9caff] bg-white p-4 transition hover:border-[#2f6bff] hover:bg-[#f5f8ff]">
                                     <span class="block text-sm font-extrabold text-[#07152f]">Ajouter des vidéos</span>
                                     <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">Jusqu’à 4 vidéos, 100 Mo chacune.</span>
-                                    <input type="file" name="media_videos[]" multiple accept="video/mp4,video/quicktime,video/webm" class="mt-3 block w-full text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#07152f] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
+                                    <input type="file" name="media_videos[]" multiple accept="video/mp4,video/quicktime,video/webm" data-media-preview-input="video" data-media-preview-target="venue-video-preview" class="mt-3 block w-full text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#07152f] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
                                 </label>
+                            </div>
+                            <div class="mt-4 grid gap-3 md:grid-cols-2">
+                                <div id="venue-image-preview" class="hidden rounded-2xl bg-white p-3 ring-1 ring-[#dce6f7]">
+                                    <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Aperçu des nouvelles images</p>
+                                    <div data-media-preview-list class="mt-3 grid gap-3 sm:grid-cols-2"></div>
+                                </div>
+                                <div id="venue-video-preview" class="hidden rounded-2xl bg-white p-3 ring-1 ring-[#dce6f7]">
+                                    <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Aperçu des nouvelles vidéos</p>
+                                    <div data-media-preview-list class="mt-3 grid gap-3"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="grid gap-3 md:grid-cols-3">
@@ -451,6 +461,51 @@
 
                 const row = button.closest('[data-repeat-row], [data-comfort-row], [data-policy-row], [data-faq-row]');
                 row?.remove();
+            });
+
+            document.addEventListener('change', (event) => {
+                const input = event.target.closest('[data-media-preview-input]');
+
+                if (!input) {
+                    return;
+                }
+
+                const preview = document.getElementById(input.dataset.mediaPreviewTarget);
+                const list = preview?.querySelector('[data-media-preview-list]');
+
+                if (!preview || !list) {
+                    return;
+                }
+
+                list.innerHTML = '';
+                const files = Array.from(input.files || []);
+                preview.classList.toggle('hidden', files.length === 0);
+
+                files.forEach((file) => {
+                    const url = URL.createObjectURL(file);
+                    const item = document.createElement('div');
+                    item.className = 'overflow-hidden rounded-xl border border-[#edf2fb] bg-[#f8fbff]';
+                    const caption = document.createElement('p');
+                    caption.className = 'truncate px-3 py-2 text-xs font-bold text-[#52617b]';
+                    caption.textContent = file.name;
+
+                    if (input.dataset.mediaPreviewInput === 'video') {
+                        const video = document.createElement('video');
+                        video.src = url;
+                        video.controls = true;
+                        video.preload = 'metadata';
+                        video.className = 'aspect-video w-full bg-[#07152f]';
+                        item.append(video, caption);
+                    } else {
+                        const image = document.createElement('img');
+                        image.src = url;
+                        image.alt = file.name;
+                        image.className = 'aspect-video w-full object-cover';
+                        item.append(image, caption);
+                    }
+
+                    list.appendChild(item);
+                });
             });
 
             document.addEventListener('submit', async (event) => {

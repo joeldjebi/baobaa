@@ -11,16 +11,17 @@
                 <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#dce6f7]">
                     <div class="aspect-square">
                         @if ($ownerProfile->logo_url)
-                            <img src="{{ $ownerProfile->logo_url }}" alt="{{ $ownerProfile->logo_alt_text ?? $ownerProfile->business_name }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
+                            <img data-logo-preview-image src="{{ $ownerProfile->logo_url }}" alt="{{ $ownerProfile->logo_alt_text ?? $ownerProfile->business_name }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
                         @else
-                            <div class="grid h-full w-full place-items-center bg-[#eef4ff] text-4xl font-black text-[#2f6bff]">{{ \Illuminate\Support\Str::of($ownerProfile->business_name)->substr(0, 1)->upper() }}</div>
+                            <div data-logo-preview-placeholder class="grid h-full w-full place-items-center bg-[#eef4ff] text-4xl font-black text-[#2f6bff]">{{ \Illuminate\Support\Str::of($ownerProfile->business_name)->substr(0, 1)->upper() }}</div>
+                            <img data-logo-preview-image src="" alt="{{ $ownerProfile->business_name }}" class="hidden h-full w-full object-cover">
                         @endif
                     </div>
                 </div>
                 <label class="block">
                     <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Logo du partenaire</span>
                     <span class="mt-2 block text-sm font-semibold leading-6 text-[#6f7890]">Ce logo sera affiché sur votre page partenaire et pourra être utilisé dans les blocs de confiance publics.</span>
-                    <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" class="mt-4 block w-full rounded-2xl border border-dashed border-[#b9caff] bg-white px-4 py-3 text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#2f6bff] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
+                    <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" data-logo-preview-input class="mt-4 block w-full rounded-2xl border border-dashed border-[#b9caff] bg-white px-4 py-3 text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#2f6bff] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
                     @error('logo')<span class="mt-2 block text-sm font-semibold text-[#b42318]">{{ $message }}</span>@enderror
                 </label>
             </div>
@@ -97,4 +98,24 @@
             </div>
         </aside>
     </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.querySelector('[data-logo-preview-input]');
+            const image = document.querySelector('[data-logo-preview-image]');
+            const placeholder = document.querySelector('[data-logo-preview-placeholder]');
+
+            input?.addEventListener('change', () => {
+                const file = input.files?.[0];
+
+                if (!file || !image) {
+                    return;
+                }
+
+                image.src = URL.createObjectURL(file);
+                image.classList.remove('hidden');
+                placeholder?.classList.add('hidden');
+            });
+        });
+    </script>
 </x-dashboards.owner-shell>
