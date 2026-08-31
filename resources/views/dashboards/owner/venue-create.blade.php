@@ -38,7 +38,7 @@
 
     <div class="grid gap-6 xl:grid-cols-[1fr_340px]">
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-            <form method="POST" action="{{ route('owner.venues.draft.store') }}" class="space-y-5">
+            <form method="POST" action="{{ route('owner.venues.draft.store') }}" class="space-y-5" data-owner-venue-draft-form data-no-global-loader>
                 @csrf
                 <input type="hidden" name="step" value="{{ $currentStep }}">
                 @if ($currentVenue)
@@ -258,7 +258,7 @@
 
                 <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[#edf2fb] pt-5">
                     <p class="text-xs font-bold text-[#6f7890]">Étape {{ $currentIndex + 1 }} sur {{ count($steps) }} · votre fiche reste en brouillon</p>
-                    <button data-draft-submit class="inline-flex items-center gap-2 rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">
+                    <button type="submit" data-draft-submit class="inline-flex items-center gap-2 rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20 transition hover:bg-[#2258df] disabled:cursor-wait disabled:opacity-90">
                         <span data-draft-submit-label>{{ $currentStep === 'conditions' ? 'Enregistrer' : 'Continuer' }}</span>
                     </button>
                 </div>
@@ -412,20 +412,18 @@
             });
 
             document.addEventListener('submit', async (event) => {
-                const form = event.target.closest('form[action="{{ route('owner.venues.draft.store') }}"]');
+                const form = event.target.closest('[data-owner-venue-draft-form]');
 
                 if (!form) {
                     return;
                 }
 
                 event.preventDefault();
+                window.dispatchEvent(new Event('baobaa:loading-stop'));
 
                 const submitButton = form.querySelector('[data-draft-submit]');
-                const submitLabel = form.querySelector('[data-draft-submit-label]');
-                const originalLabel = submitLabel?.textContent || 'Continuer';
                 submitButton?.setAttribute('disabled', 'disabled');
-                submitButton?.classList.add('opacity-80');
-                submitLabel && (submitLabel.textContent = 'Enregistrement...');
+                form.setAttribute('aria-busy', 'true');
 
                 try {
                     const response = await fetch(form.action, {
@@ -438,7 +436,10 @@
                         },
                     });
 
-                    const payload = await response.json();
+                    const contentType = response.headers.get('content-type') || '';
+                    const payload = contentType.includes('application/json')
+                        ? await response.json()
+                        : { message: await response.text() };
 
                     if (!response.ok) {
                         const firstError = payload.errors
@@ -451,9 +452,16 @@
                     const nextPage = await fetch(payload.next_url, {
                         credentials: 'same-origin',
                         headers: {
+                            'Accept': 'text/html',
                             'X-Requested-With': 'XMLHttpRequest',
                         },
                     });
+
+                    if (!nextPage.ok) {
+                        window.location.assign(payload.next_url);
+                        return;
+                    }
+
                     const html = await nextPage.text();
                     const nextDocument = new DOMParser().parseFromString(html, 'text/html');
                     const nextContent = nextDocument.getElementById('owner-venue-draft-content');
@@ -464,13 +472,16 @@
                         window.history.pushState({}, '', payload.next_url);
                         showFeedback(payload.message || 'Brouillon enregistré.');
                         currentContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return;
                     }
+
+                    window.location.assign(payload.next_url);
                 } catch (error) {
                     showFeedback('Impossible d’enregistrer le brouillon pour le moment.', 'error');
                 } finally {
                     submitButton?.removeAttribute('disabled');
-                    submitButton?.classList.remove('opacity-80');
-                    submitLabel && (submitLabel.textContent = originalLabel);
+                    form.removeAttribute('aria-busy');
+                    window.dispatchEvent(new Event('baobaa:loading-stop'));
                 }
             });
         });

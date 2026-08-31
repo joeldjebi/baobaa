@@ -147,6 +147,22 @@ test('owner edit page shows saved venue data', function () {
         ->assertSee('60000');
 });
 
+test('owner venue draft form uses silent ajax submission', function () {
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    VenueCategory::factory()->create(['is_active' => true]);
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('owner.venues.edit', ['venue' => $venue, 'step' => 'details']))
+        ->assertOk()
+        ->assertSee('data-owner-venue-draft-form', false)
+        ->assertSee('data-no-global-loader', false)
+        ->assertSeeText('Continuer');
+});
+
 test('owner can manage module library', function () {
     $owner = User::factory()->create(['role' => UserRole::Owner]);
     $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
