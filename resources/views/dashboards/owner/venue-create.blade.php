@@ -38,7 +38,7 @@
 
     <div class="grid gap-6 xl:grid-cols-[1fr_340px]">
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-            <form method="POST" action="{{ route('owner.venues.draft.store') }}" class="space-y-5" data-owner-venue-draft-form data-no-global-loader>
+            <form method="POST" action="{{ route('owner.venues.draft.store') }}" enctype="multipart/form-data" class="space-y-5" data-owner-venue-draft-form data-no-global-loader>
                 @csrf
                 <input type="hidden" name="step" value="{{ $currentStep }}">
                 @if ($currentVenue)
@@ -91,6 +91,48 @@
                         <label class="block"><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Phrase d’accroche</span><input name="short_description" value="{{ old('short_description', $currentVenue?->short_description) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                         <label class="block"><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Description complète</span><textarea name="description" rows="6" class="mt-2 w-full resize-none rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('description', $currentVenue?->description) }}</textarea></label>
                         <label class="block"><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Points forts affichés sous les photos</span><textarea name="highlights" rows="4" placeholder="Un point fort par ligne" class="mt-2 w-full resize-none rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('highlights', $lineValue($currentVenue?->highlights)) }}</textarea></label>
+                        <div class="rounded-[24px] border border-[#dce6f7] bg-[#f8fbff] p-4">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <h2 class="text-lg font-extrabold text-[#07152f]">Médias de l’espace</h2>
+                                    <p class="mt-1 text-sm font-semibold leading-6 text-[#6f7890]">Ajoutez les photos et vidéos qui seront affichées publiquement avec des liens signés. Formats acceptés : JPG, PNG, WebP, MP4, MOV, WebM.</p>
+                                </div>
+                                <span class="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">Stockage privé Wasabi</span>
+                            </div>
+
+                            @if ($currentVenue?->media?->isNotEmpty())
+                                <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    @foreach ($currentVenue->media->sortBy('sort_order') as $media)
+                                        <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce6f7]">
+                                            <div class="aspect-video bg-[#07152f]/5">
+                                                @if ($media->type === 'video')
+                                                    <video src="{{ $media->signed_url }}" controls preload="metadata" class="h-full w-full object-cover"></video>
+                                                @else
+                                                    <img src="{{ $media->signed_url }}" alt="{{ $media->alt_text ?? $currentVenue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center justify-between gap-3 p-3">
+                                                <span class="text-xs font-extrabold uppercase text-[#6f7890]">{{ $media->type === 'video' ? 'Vidéo' : 'Image' }}</span>
+                                                <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $media->is_primary ? 'Principale' : 'Média' }}</span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <div class="mt-4 grid gap-3 md:grid-cols-2">
+                                <label class="block cursor-pointer rounded-2xl border border-dashed border-[#b9caff] bg-white p-4 transition hover:border-[#2f6bff] hover:bg-[#f5f8ff]">
+                                    <span class="block text-sm font-extrabold text-[#07152f]">Ajouter des images</span>
+                                    <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">Jusqu’à 12 images, 8 Mo chacune.</span>
+                                    <input type="file" name="media_images[]" multiple accept="image/jpeg,image/png,image/webp" class="mt-3 block w-full text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#2f6bff] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
+                                </label>
+                                <label class="block cursor-pointer rounded-2xl border border-dashed border-[#b9caff] bg-white p-4 transition hover:border-[#2f6bff] hover:bg-[#f5f8ff]">
+                                    <span class="block text-sm font-extrabold text-[#07152f]">Ajouter des vidéos</span>
+                                    <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">Jusqu’à 4 vidéos, 100 Mo chacune.</span>
+                                    <input type="file" name="media_videos[]" multiple accept="video/mp4,video/quicktime,video/webm" class="mt-3 block w-full text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#07152f] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
+                                </label>
+                            </div>
+                        </div>
                         <div class="grid gap-3 md:grid-cols-3">
                             @foreach ([0, 1, 2] as $index)
                                 @php $configuration = $currentVenue?->configurations?->values()->get($index); @endphp

@@ -17,9 +17,11 @@ use App\Models\Venue;
 use App\Models\VenueAvailability;
 use App\Models\VenueCategory;
 use App\Models\VenueReview;
+use App\Services\PartnerLogoService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -130,7 +132,7 @@ class DashboardController extends Controller
 
         if ($venueId) {
             $venue = $ownerProfile->venues()
-                ->with(['addOns', 'configurations', 'policies', 'faqs'])
+                ->with(['addOns', 'configurations', 'media', 'policies', 'faqs'])
                 ->whereKey($venueId)
                 ->firstOrFail();
         }
@@ -359,9 +361,18 @@ class DashboardController extends Controller
             'payout_provider' => ['required', 'string', 'max:80'],
             'payout_account_reference' => ['required', 'string', 'max:255'],
             'billing_preference' => ['required', 'in:commission,subscription,hybrid'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
 
-        $ownerProfile->update($validated);
+        $ownerProfile->update(Arr::except($validated, ['logo']));
+
+        if ($request->hasFile('logo')) {
+            app(PartnerLogoService::class)->store(
+                $ownerProfile,
+                $request->file('logo'),
+                $ownerProfile->business_name,
+            );
+        }
 
         return back()->with('settings_status', 'Paramètres enregistrés.');
     }

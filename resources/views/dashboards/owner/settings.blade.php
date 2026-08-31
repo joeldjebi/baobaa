@@ -3,10 +3,27 @@
         <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('settings_status') }}</div>
     @endif
 
-    <form method="POST" action="{{ route('owner.settings.update') }}" class="grid gap-6 xl:grid-cols-[1fr_380px]">
+    <form method="POST" action="{{ route('owner.settings.update') }}" enctype="multipart/form-data" class="grid gap-6 xl:grid-cols-[1fr_380px]">
         @csrf
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
             <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Informations publiques</h2>
+            <div class="mt-5 grid gap-4 rounded-[24px] border border-[#dce6f7] bg-[#f8fbff] p-4 md:grid-cols-[160px_1fr]">
+                <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#dce6f7]">
+                    <div class="aspect-square">
+                        @if ($ownerProfile->logo_url)
+                            <img src="{{ $ownerProfile->logo_url }}" alt="{{ $ownerProfile->logo_alt_text ?? $ownerProfile->business_name }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
+                        @else
+                            <div class="grid h-full w-full place-items-center bg-[#eef4ff] text-4xl font-black text-[#2f6bff]">{{ \Illuminate\Support\Str::of($ownerProfile->business_name)->substr(0, 1)->upper() }}</div>
+                        @endif
+                    </div>
+                </div>
+                <label class="block">
+                    <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Logo du partenaire</span>
+                    <span class="mt-2 block text-sm font-semibold leading-6 text-[#6f7890]">Ce logo sera affiché sur votre page partenaire et pourra être utilisé dans les blocs de confiance publics.</span>
+                    <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" class="mt-4 block w-full rounded-2xl border border-dashed border-[#b9caff] bg-white px-4 py-3 text-sm font-bold text-[#52617b] file:mr-3 file:rounded-full file:border-0 file:bg-[#2f6bff] file:px-4 file:py-2 file:text-sm file:font-extrabold file:text-white">
+                    @error('logo')<span class="mt-2 block text-sm font-semibold text-[#b42318]">{{ $message }}</span>@enderror
+                </label>
+            </div>
             <div class="mt-5 grid gap-4 md:grid-cols-2">
                 <label>
                     <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Nom visible par les clients</span>

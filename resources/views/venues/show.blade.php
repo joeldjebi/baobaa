@@ -10,7 +10,12 @@
     $rating = $venue?->average_rating > 0 ? $venue->average_rating : $fallback['rating'];
     $reviews = $venue?->reviews_count > 0 ? $venue->reviews_count : $fallback['reviews'];
     $description = $venue?->description ?: $fallback['description'];
-    $images = $venue?->media?->sortBy('sort_order')->map->signed_url->values()->all() ?: $fallback['images'];
+    $venueMedia = $venue?->media?->sortBy('sort_order') ?? collect();
+    $images = $venueMedia->where('type', 'image')->map->signed_url->values()->all() ?: $fallback['images'];
+    $videos = $venueMedia->where('type', 'video')->map(fn ($media) => [
+        'url' => $media->signed_url,
+        'alt' => $media->alt_text ?: $title,
+    ])->values()->all();
     $galleryImages = array_values($images);
     $highlights = $venue?->highlights ?: ['Lieu central', 'Réponse en moins de 2 heures', 'Demande de réservation', 'Sur place'];
     $includedItems = $venue?->included_items ?: ['Parking', 'Wi-Fi', 'Lumière naturelle', 'Chaises', 'Toilettes accessibles', 'Musique autorisée', 'Tables rectangulaires', 'Sonorisation disponible'];
@@ -139,6 +144,19 @@
                     <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $highlight }}</span>
                 @endforeach
             </div>
+
+            @if (count($videos) > 0)
+                <div class="mt-5 grid gap-3 md:grid-cols-2">
+                    @foreach ($videos as $video)
+                        <div class="overflow-hidden rounded-[18px] border border-[#dce6f7] bg-[#07152f] shadow-sm">
+                            <video controls preload="metadata" class="aspect-video w-full bg-[#07152f]" aria-label="{{ $video['alt'] }}">
+                                <source src="{{ $video['url'] }}">
+                                Votre navigateur ne peut pas lire cette vidéo.
+                            </video>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
 
         </section>
 

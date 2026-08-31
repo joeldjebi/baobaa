@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\Venue;
 use App\Models\VenueCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -99,6 +101,52 @@ test('owner saves venue draft with ajax without full page redirect', function ()
     expect($venue)
         ->not->toBeNull()
         ->and($venue->name)->toBe('Espace AJAX premium');
+});
+
+test('owner uploads venue images and videos to wasabi while editing details step', function () {
+    Storage::fake('wasabi');
+
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'name' => 'Salle média premium',
+        'short_description' => '',
+        'description' => '',
+    ]);
+
+    $this->actingAs($owner)
+        ->withHeaders([
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->post(route('owner.venues.draft.store'), [
+            'step' => 'details',
+            'venue_id' => $venue->id,
+            'short_description' => 'Une salle premium avec médias complets.',
+            'description' => 'Description détaillée de la salle média premium.',
+            'media_images' => [
+                UploadedFile::fake()->image('salon.jpg', 1200, 800),
+            ],
+            'media_videos' => [
+                UploadedFile::fake()->create('visite.mp4', 1024, 'video/mp4'),
+            ],
+        ])
+        ->assertOk()
+        ->assertJsonPath('next_step', 'inclusions');
+
+    $image = $venue->media()->where('type', 'image')->first();
+    $video = $venue->media()->where('type', 'video')->first();
+
+    expect($image)->not->toBeNull()
+        ->and($image->disk)->toBe('wasabi')
+        ->and($image->is_primary)->toBeTrue()
+        ->and($video)->not->toBeNull()
+        ->and($video->disk)->toBe('wasabi')
+        ->and($video->is_primary)->toBeFalse();
+
+    Storage::disk('wasabi')->assertExists($image->path);
+    Storage::disk('wasabi')->assertExists($video->path);
 });
 
 test('owner can activate and disable a saved venue', function () {
@@ -207,6 +255,8 @@ test('owner can manage module library', function () {
 });
 
 test('owner configures payout account and billing preference', function () {
+    Storage::fake('wasabi');
+
     $owner = User::factory()->create(['role' => UserRole::Owner]);
     $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
 
@@ -219,6 +269,7 @@ test('owner configures payout account and billing preference', function () {
             'payout_provider' => 'wave',
             'payout_account_reference' => '+221770000000',
             'billing_preference' => 'hybrid',
+            'logo' => UploadedFile::fake()->image('logo.png', 600, 600),
         ])
         ->assertRedirect();
 
@@ -226,7 +277,11 @@ test('owner configures payout account and billing preference', function () {
 
     expect($ownerProfile->business_name)->toBe('PEE Reversement Pro')
         ->and($ownerProfile->payout_provider)->toBe('wave')
-        ->and($ownerProfile->billing_preference)->toBe('hybrid');
+        ->and($ownerProfile->billing_preference)->toBe('hybrid')
+        ->and($ownerProfile->logo_disk)->toBe('wasabi')
+        ->and($ownerProfile->logo_path)->not->toBeNull();
+
+    Storage::disk('wasabi')->assertExists($ownerProfile->logo_path);
 });
 
 test('owner requests payout only after completed paid booking is older than forty eight hours', function () {

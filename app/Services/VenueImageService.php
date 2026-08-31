@@ -14,20 +14,39 @@ class VenueImageService
 {
     public function store(Venue $venue, UploadedFile $image, bool $isPrimary = false, ?string $altText = null): VenueMedia
     {
+        return $this->storeImage($venue, $image, $isPrimary, $altText);
+    }
+
+    public function storeImage(Venue $venue, UploadedFile $image, bool $isPrimary = false, ?string $altText = null): VenueMedia
+    {
+        return $this->storeMedia($venue, $image, 'image', $isPrimary, $altText);
+    }
+
+    public function storeVideo(Venue $venue, UploadedFile $video, ?string $altText = null): VenueMedia
+    {
+        return $this->storeMedia($venue, $video, 'video', false, $altText);
+    }
+
+    private function storeMedia(Venue $venue, UploadedFile $file, string $type, bool $isPrimary = false, ?string $altText = null): VenueMedia
+    {
         $disk = 'wasabi';
-        $directory = 'venues/'.$venue->id.'/images';
-        $extension = $image->getClientOriginalExtension() ?: 'jpg';
-        $path = $image->storeAs($directory, Str::uuid().'.'.$extension, [
+        $directory = 'venues/'.$venue->id.'/'.$type.'s';
+        $extension = $this->extension($file, $type);
+        $path = $file->storeAs($directory, Str::uuid().'.'.$extension, [
             'disk' => $disk,
             'visibility' => 'private',
         ]);
 
-        if ($isPrimary) {
-            $venue->media()->update(['is_primary' => false]);
+        if ($type !== 'image') {
+            $isPrimary = false;
+        }
+
+        if ($isPrimary && $type === 'image') {
+            $venue->media()->where('type', 'image')->update(['is_primary' => false]);
         }
 
         return $venue->media()->create([
-            'type' => 'image',
+            'type' => $type,
             'disk' => $disk,
             'path' => $path,
             'alt_text' => $altText,
@@ -62,5 +81,16 @@ class VenueImageService
         }
 
         return Storage::disk($media->disk ?: 'public')->url($media->path);
+    }
+
+    private function extension(UploadedFile $file, string $type): string
+    {
+        $extension = $file->extension();
+
+        if ($extension) {
+            return $extension;
+        }
+
+        return $type === 'video' ? 'mp4' : 'jpg';
     }
 }

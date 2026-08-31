@@ -6,6 +6,7 @@ use App\Enums\VenueStatus;
 use App\Models\OwnerProfile;
 use App\Models\Venue;
 use App\Models\VenueCategory;
+use App\Services\VenueImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ use Illuminate\Validation\Rule;
 
 class OwnerVenueDraftController extends Controller
 {
+    public function __construct(private readonly VenueImageService $venueImageService) {}
+
     public function store(Request $request): JsonResponse|RedirectResponse
     {
         $ownerProfile = $this->ownerProfile($request);
@@ -121,6 +124,10 @@ class OwnerVenueDraftController extends Controller
             'configurations' => ['nullable', 'array'],
             'configurations.*.name' => ['nullable', 'string', 'max:80'],
             'configurations.*.capacity' => ['nullable', 'integer', 'min:1'],
+            'media_images' => ['nullable', 'array', 'max:12'],
+            'media_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
+            'media_videos' => ['nullable', 'array', 'max:4'],
+            'media_videos.*' => ['file', 'mimes:mp4,mov,webm', 'max:102400'],
         ]);
 
         $venue->update([
@@ -141,6 +148,24 @@ class OwnerVenueDraftController extends Controller
                 'is_active' => true,
                 'sort_order' => $index + 1,
             ]);
+        }
+
+        $hasPrimaryImage = $venue->media()
+            ->where('type', 'image')
+            ->where('is_primary', true)
+            ->exists();
+
+        foreach ($request->file('media_images', []) as $index => $image) {
+            $this->venueImageService->storeImage(
+                $venue,
+                $image,
+                ! $hasPrimaryImage && $index === 0,
+                $venue->name,
+            );
+        }
+
+        foreach ($request->file('media_videos', []) as $video) {
+            $this->venueImageService->storeVideo($venue, $video, $venue->name);
         }
     }
 
