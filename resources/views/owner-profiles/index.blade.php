@@ -89,7 +89,7 @@
                                 <div class="-mt-12 flex items-end justify-between gap-4">
                                     <span class="grid size-20 shrink-0 place-items-center overflow-hidden rounded-[22px] border-4 border-white bg-[#eaf1ff] text-3xl font-extrabold text-[#2f6bff] shadow-lg shadow-[#173e7a]/8">
                                         @if ($profile['logo_url'])
-                                            <img src="{{ $profile['logo_url'] }}" alt="{{ $profile['logo_alt_text'] ?? $profile['name'] }}" class="h-full w-full object-cover">
+                                            <img src="{{ $profile['logo_url'] }}" alt="{{ $profile['logo_alt_text'] ?? $profile['name'] }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
                                         @else
                                             {{ strtoupper(substr($profile['name'], 0, 1)) }}
                                         @endif

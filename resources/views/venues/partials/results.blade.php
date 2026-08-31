@@ -15,7 +15,7 @@
             @endphp
             <a href="{{ route('venues.show', $venue->slug) }}" class="group grid overflow-hidden rounded-[1.5rem] bg-white shadow-sm ring-1 ring-[#dce6f7] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12 md:grid-cols-[220px_1fr] xl:grid-cols-[250px_1fr_190px]">
                 <div class="relative min-h-52 overflow-hidden md:min-h-full">
-                    <img src="{{ $image }}" alt="{{ $venue->name }}" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     <span class="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">Vérifié</span>
                     <span class="absolute bottom-4 left-4 rounded-full bg-[#151821]/78 px-3 py-1 text-xs font-extrabold text-white shadow-sm">{{ $venue->category?->name ?? 'Espace événementiel' }}</span>
                 </div>

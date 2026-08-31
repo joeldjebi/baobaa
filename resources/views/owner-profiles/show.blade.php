@@ -36,7 +36,7 @@
                             <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
                                 <span class="grid size-28 shrink-0 place-items-center overflow-hidden rounded-[30px] border-4 border-white bg-[#eaf1ff] text-5xl font-extrabold text-[#2f6bff] shadow-xl shadow-[#173e7a]/12">
                                     @if ($ownerProfile->logo_url)
-                                        <img src="{{ $ownerProfile->logo_url }}" alt="{{ $ownerProfile->logo_alt_text ?? $publicName }}" class="h-full w-full object-cover">
+                                        <img src="{{ $ownerProfile->logo_url }}" alt="{{ $ownerProfile->logo_alt_text ?? $publicName }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
                                     @else
                                         {{ strtoupper(substr($publicName, 0, 1)) }}
                                     @endif
@@ -90,7 +90,7 @@
                             @endphp
                             <a href="{{ route('venues.show', $venue->slug) }}" class="group overflow-hidden rounded-[22px] border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#173e7a]/12">
                                 <div class="relative">
-                                    <img src="{{ $image }}" alt="{{ $venue->name }}" class="h-52 w-full object-cover transition duration-500 group-hover:scale-[1.03]">
+                                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-52 w-full object-cover transition duration-500 group-hover:scale-[1.03]">
                                     <span class="absolute left-3 top-3 rounded-full bg-white/94 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">{{ $venue->category?->name ?? 'Espace événementiel' }}</span>
                                 </div>
                                 <div class="p-4">

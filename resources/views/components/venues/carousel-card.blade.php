@@ -5,7 +5,7 @@
 
 <a href="{{ route('venues.show', ['slug' => $listing['slug']]) }}" class="group block w-full min-w-0 overflow-hidden rounded-[1.45rem] bg-white shadow-sm ring-1 ring-[#dce6f7] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12">
     <div class="relative aspect-[4/3] overflow-hidden">
-        <img src="{{ $listing['image'] }}" alt="{{ $listing['title'] }}" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+        <img src="{{ $listing['image'] }}" alt="{{ $listing['title'] }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
         <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-extrabold text-[#2f6bff] shadow-sm">Vérifié</span>
         @if ($badge)
             <span class="absolute bottom-3 left-3 max-w-[calc(100%-24px)] truncate rounded-full bg-[#07152f]/88 px-3 py-1 text-[11px] font-extrabold text-white backdrop-blur">{{ $badge }}</span>

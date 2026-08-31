@@ -114,17 +114,17 @@
 
             <div id="photos" class="mt-5 grid scroll-mt-28 gap-2 overflow-hidden rounded-[18px] lg:grid-cols-[1.08fr_.92fr]">
                 <button type="button" data-gallery-index="0" class="relative min-h-[420px] cursor-zoom-in overflow-hidden text-left">
-                    <img src="{{ $images[0] }}" alt="{{ $title }}" class="h-full min-h-[420px] w-full object-cover transition duration-500 hover:scale-[1.02]">
+                    <img src="{{ $images[0] }}" alt="{{ $title }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full min-h-[420px] w-full object-cover transition duration-500 hover:scale-[1.02]">
                     <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-[#151821]">Lieu</span>
                 </button>
                 <div class="grid gap-2 sm:grid-cols-2">
                     @foreach (array_slice($images, 1, 3) as $imageIndex => $image)
                         <button type="button" data-gallery-index="{{ $imageIndex + 1 }}" class="h-[206px] cursor-zoom-in overflow-hidden text-left">
-                            <img src="{{ $image }}" alt="{{ $title }}" class="h-full w-full object-cover transition duration-500 hover:scale-[1.04]">
+                            <img src="{{ $image }}" alt="{{ $title }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover transition duration-500 hover:scale-[1.04]">
                         </button>
                     @endforeach
                     <div class="relative h-[206px] overflow-hidden">
-                        <img src="{{ $images[0] }}" alt="{{ $title }}" class="h-full w-full object-cover">
+                        <img src="{{ $images[0] }}" alt="{{ $title }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
                         <button type="button" data-gallery-index="0" class="absolute bottom-4 right-4 rounded-full bg-white px-4 py-2 text-sm font-extrabold text-[#151821] shadow-lg transition hover:-translate-y-0.5">Voir les photos</button>
                     </div>
                 </div>
@@ -392,7 +392,7 @@
                         @foreach ($similarVenues as $similarVenue)
                             <a href="{{ route('venues.show', $similarVenue['slug']) }}" class="group overflow-hidden rounded-2xl border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#173e7a]/10">
                                 <div class="relative overflow-hidden">
-                                    <img src="{{ $similarVenue['image'] }}" alt="{{ $similarVenue['title'] }}" class="h-40 w-full object-cover transition duration-500 group-hover:scale-[1.04]">
+                                    <img src="{{ $similarVenue['image'] }}" alt="{{ $similarVenue['title'] }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-40 w-full object-cover transition duration-500 group-hover:scale-[1.04]">
                                     <span class="absolute right-3 top-3 rounded-full bg-white/94 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">Voir les détails</span>
                                 </div>
                                 <div class="p-4">
@@ -539,12 +539,12 @@
 
             <div class="mx-auto flex h-full max-w-6xl flex-col justify-center gap-4">
                 <div class="flex min-h-0 flex-1 items-center justify-center">
-                    <img id="gallery-active-image" src="{{ $galleryImages[0] }}" alt="{{ $title }}" class="max-h-[76vh] w-auto max-w-full rounded-2xl object-contain shadow-2xl">
+                    <img id="gallery-active-image" src="{{ $galleryImages[0] }}" alt="{{ $title }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="max-h-[76vh] w-auto max-w-full rounded-2xl object-contain shadow-2xl">
                 </div>
                 <div class="mx-auto flex max-w-full gap-3 overflow-x-auto rounded-2xl bg-white/8 p-3 baobaa-scrollbar-none">
                     @foreach ($galleryImages as $imageIndex => $image)
                         <button type="button" data-gallery-thumb="{{ $imageIndex }}" class="h-20 w-28 shrink-0 overflow-hidden rounded-xl ring-2 ring-transparent transition">
-                            <img src="{{ $image }}" alt="{{ $title }}" class="h-full w-full object-cover">
+                            <img src="{{ $image }}" alt="{{ $title }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover">
                         </button>
                     @endforeach
                 </div>

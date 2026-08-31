@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
-#[Signature('app:diagnose-wasabi-images')]
+#[Signature('app:diagnose-wasabi-images {--venue= : Venue slug or ID to test a specific venue image.}')]
 #[Description('Diagnose Wasabi configuration and signed image URLs.')]
 class DiagnoseWasabiImages extends Command
 {
@@ -33,11 +33,20 @@ class DiagnoseWasabiImages extends Command
             ['secret key loaded', filled($diskConfig['secret'] ?? null) ? 'yes' : 'no'],
         ]);
 
-        $venueMedia = VenueMedia::query()
-            ->where('disk', 'wasabi')
+        $venueMediaQuery = VenueMedia::query()
             ->whereNotNull('path')
-            ->orderByDesc('id')
-            ->first();
+            ->orderByDesc('id');
+
+        if ($this->option('venue')) {
+            $venueMediaQuery->whereHas('venue', function ($query): void {
+                $query->where('slug', $this->option('venue'))
+                    ->orWhere('id', $this->option('venue'));
+            });
+        } else {
+            $venueMediaQuery->where('disk', 'wasabi');
+        }
+
+        $venueMedia = $venueMediaQuery->first();
 
         $partnerLogo = OwnerProfile::query()
             ->where('logo_disk', 'wasabi')
@@ -50,6 +59,7 @@ class DiagnoseWasabiImages extends Command
         $this->line('Partner logos on Wasabi: '.OwnerProfile::query()->where('logo_disk', 'wasabi')->whereNotNull('logo_path')->count());
 
         $path = $venueMedia?->path ?? $partnerLogo?->logo_path;
+        $disk = $venueMedia?->disk ?? $partnerLogo?->logo_disk ?? 'wasabi';
 
         if (! $path) {
             $this->components->warn('No Wasabi media path found in database.');
@@ -59,13 +69,21 @@ class DiagnoseWasabiImages extends Command
 
         $this->newLine();
         $this->components->info('Testing media path');
+        $this->line('Disk: '.$disk);
         $this->line($path);
 
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            $this->line('Direct external URL: yes');
+            $this->line('Temporary URL generated: not needed');
+
+            return self::SUCCESS;
+        }
+
         try {
-            $exists = Storage::disk('wasabi')->exists($path);
+            $exists = Storage::disk($disk)->exists($path);
             $this->line('Object exists: '.($exists ? 'yes' : 'no'));
 
-            $temporaryUrl = Storage::disk('wasabi')->temporaryUrl($path, now()->addMinutes(10));
+            $temporaryUrl = Storage::disk($disk)->temporaryUrl($path, now()->addMinutes(10));
             $this->line('Temporary URL generated: yes');
             $this->line($temporaryUrl);
         } catch (Throwable $exception) {
