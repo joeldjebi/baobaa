@@ -12,6 +12,7 @@ use App\Http\Controllers\OwnerPayoutController;
 use App\Http\Controllers\OwnerRegisteredUserController;
 use App\Http\Controllers\OwnerSponsorshipController;
 use App\Http\Controllers\OwnerVenueDraftController;
+use App\Http\Controllers\OwnerVenueMediaController;
 use App\Http\Controllers\OwnerVenueStatusController;
 use App\Http\Controllers\PortalAccessController;
 use App\Http\Controllers\PublicOwnerProfileController;
@@ -180,6 +181,7 @@ Route::middleware(['auth', 'role:owner'])->group(function (): void {
     Route::get('/proprietaire/espaces/nouveau', [DashboardController::class, 'ownerVenueCreate'])->name('owner.venues.create');
     Route::get('/proprietaire/espaces/{venue}/modifier', [DashboardController::class, 'ownerVenueCreate'])->name('owner.venues.edit');
     Route::post('/proprietaire/espaces/brouillon', [OwnerVenueDraftController::class, 'store'])->name('owner.venues.draft.store');
+    Route::delete('/proprietaire/espaces/{venue}/medias/{venueMedia}', [OwnerVenueMediaController::class, 'destroy'])->name('owner.venues.media.destroy');
     Route::post('/proprietaire/espaces/{venue}/statut', [OwnerVenueStatusController::class, 'update'])->name('owner.venues.status');
     Route::get('/proprietaire/reservations', [DashboardController::class, 'ownerBookings'])->name('owner.bookings');
     Route::get('/proprietaire/reservations/{booking}', [DashboardController::class, 'ownerBookingShow'])->name('owner.bookings.show');

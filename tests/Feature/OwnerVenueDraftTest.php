@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\Venue;
 use App\Models\VenueCategory;
+use App\Models\VenueMedia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -193,6 +194,80 @@ test('owner uploads venue images and videos to wasabi while editing details step
 
     Storage::disk('wasabi')->assertExists($image->path);
     Storage::disk('wasabi')->assertExists($video->path);
+});
+
+test('owner removes a venue media file from wasabi while editing their venue', function () {
+    Storage::fake('wasabi');
+
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    $venue = Venue::factory()->create(['owner_profile_id' => $ownerProfile->id]);
+
+    Storage::disk('wasabi')->put('venues/'.$venue->id.'/images/primary.jpg', 'primary');
+    Storage::disk('wasabi')->put('venues/'.$venue->id.'/images/second.jpg', 'second');
+
+    $primaryMedia = VenueMedia::factory()->create([
+        'venue_id' => $venue->id,
+        'disk' => 'wasabi',
+        'path' => 'venues/'.$venue->id.'/images/primary.jpg',
+        'type' => 'image',
+        'is_primary' => true,
+        'sort_order' => 1,
+    ]);
+    $secondMedia = VenueMedia::factory()->create([
+        'venue_id' => $venue->id,
+        'disk' => 'wasabi',
+        'path' => 'venues/'.$venue->id.'/images/second.jpg',
+        'type' => 'image',
+        'is_primary' => false,
+        'sort_order' => 2,
+    ]);
+
+    $this->actingAs($owner)
+        ->withHeaders([
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->delete(route('owner.venues.media.destroy', ['venue' => $venue, 'venueMedia' => $primaryMedia]))
+        ->assertOk()
+        ->assertJsonPath('message', 'Média retiré avec succès.')
+        ->assertJsonPath('media_id', $primaryMedia->id);
+
+    Storage::disk('wasabi')->assertMissing('venues/'.$venue->id.'/images/primary.jpg');
+    Storage::disk('wasabi')->assertExists('venues/'.$venue->id.'/images/second.jpg');
+
+    $this->assertDatabaseMissing('venue_media', [
+        'id' => $primaryMedia->id,
+    ]);
+
+    expect($secondMedia->refresh()->is_primary)->toBeTrue();
+});
+
+test('owner cannot remove media from another owner venue', function () {
+    Storage::fake('wasabi');
+
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $otherOwner = User::factory()->create(['role' => UserRole::Owner]);
+    OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    $otherOwnerProfile = OwnerProfile::factory()->create(['user_id' => $otherOwner->id]);
+    $otherVenue = Venue::factory()->create(['owner_profile_id' => $otherOwnerProfile->id]);
+    $media = VenueMedia::factory()->create([
+        'venue_id' => $otherVenue->id,
+        'disk' => 'wasabi',
+        'path' => 'venues/'.$otherVenue->id.'/images/private.jpg',
+    ]);
+
+    $this->actingAs($owner)
+        ->withHeaders([
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->delete(route('owner.venues.media.destroy', ['venue' => $otherVenue, 'venueMedia' => $media]))
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('venue_media', [
+        'id' => $media->id,
+    ]);
 });
 
 test('owner can activate and disable a saved venue', function () {

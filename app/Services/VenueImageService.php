@@ -83,6 +83,29 @@ class VenueImageService
         return Storage::disk($media->disk ?: 'public')->url($media->path);
     }
 
+    public function delete(VenueMedia $media): void
+    {
+        $venue = $media->venue;
+        $wasPrimaryImage = $media->type === 'image' && $media->is_primary;
+
+        if (! Str::startsWith($media->path, ['http://', 'https://'])) {
+            Storage::disk($media->disk ?: 'public')->delete($media->path);
+        }
+
+        $media->delete();
+
+        if (! $wasPrimaryImage || ! $venue) {
+            return;
+        }
+
+        $venue->media()
+            ->where('type', 'image')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->first()
+            ?->update(['is_primary' => true]);
+    }
+
     private function extension(UploadedFile $file, string $type): string
     {
         $extension = $file->extension();

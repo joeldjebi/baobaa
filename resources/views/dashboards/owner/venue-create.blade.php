@@ -103,7 +103,7 @@
                             @if ($currentVenue?->media?->isNotEmpty())
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                     @foreach ($currentVenue->media->sortBy('sort_order') as $media)
-                                        <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce6f7]">
+                                        <div data-media-card="{{ $media->id }}" class="overflow-hidden rounded-2xl bg-white ring-1 ring-[#dce6f7]">
                                             <div class="aspect-video bg-[#07152f]/5">
                                                 @if ($media->type === 'video')
                                                     <video src="{{ $media->signed_url }}" controls preload="metadata" class="h-full w-full object-cover"></video>
@@ -112,8 +112,11 @@
                                                 @endif
                                             </div>
                                             <div class="flex items-center justify-between gap-3 p-3">
-                                                <span class="text-xs font-extrabold uppercase text-[#6f7890]">{{ $media->type === 'video' ? 'Vidéo' : 'Image' }}</span>
-                                                <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $media->is_primary ? 'Principale' : 'Média' }}</span>
+                                                <div class="min-w-0">
+                                                    <span class="block text-xs font-extrabold uppercase text-[#6f7890]">{{ $media->type === 'video' ? 'Vidéo' : 'Image' }}</span>
+                                                    <span class="mt-1 inline-flex rounded-full bg-[#eef4ff] px-2 py-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $media->is_primary ? 'Principale' : 'Média' }}</span>
+                                                </div>
+                                                <button type="button" data-media-delete-url="{{ route('owner.venues.media.destroy', ['venue' => $currentVenue, 'venueMedia' => $media]) }}" data-media-delete-id="{{ $media->id }}" class="rounded-full bg-[#fff6f6] px-3 py-1.5 text-xs font-extrabold text-[#b42318] ring-1 ring-[#ffd0d0] transition hover:bg-[#ffecec]">Retirer</button>
                                             </div>
                                         </div>
                                     @endforeach
@@ -469,6 +472,47 @@
             });
 
             document.addEventListener('click', (event) => {
+                const mediaDeleteButton = event.target.closest('[data-media-delete-url]');
+
+                if (mediaDeleteButton) {
+                    if (!confirm('Retirer ce média de la fiche ?')) {
+                        return;
+                    }
+
+                    mediaDeleteButton.setAttribute('disabled', 'disabled');
+
+                    fetch(mediaDeleteButton.dataset.mediaDeleteUrl, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    })
+                        .then(async (response) => {
+                            const contentType = response.headers.get('content-type') || '';
+                            const payload = contentType.includes('application/json')
+                                ? await response.json()
+                                : { message: await response.text() };
+
+                            if (!response.ok) {
+                                throw new Error(payload.message || 'Impossible de retirer ce média.');
+                            }
+
+                            document.querySelector(`[data-media-card="${mediaDeleteButton.dataset.mediaDeleteId}"]`)?.remove();
+                            showFeedback(payload.message || 'Média retiré avec succès.');
+                        })
+                        .catch((error) => {
+                            showFeedback(error.message || 'Impossible de retirer ce média.', 'error');
+                        })
+                        .finally(() => {
+                            mediaDeleteButton.removeAttribute('disabled');
+                        });
+
+                    return;
+                }
+
                 const button = event.target.closest('[data-remove-row]');
 
                 if (!button) {
