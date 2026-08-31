@@ -15,7 +15,7 @@
 
 <x-dashboards.owner-shell title="Ajouter un espace" subtitle="Avancez étape par étape : chaque clic sur Continuer garde votre fiche en brouillon." active="venues" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
     <div id="owner-venue-draft-content">
-        <div data-draft-feedback>
+        <div data-draft-feedback aria-live="polite">
             @if (session('draft_status'))
                 <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('draft_status') }}</div>
             @endif
@@ -351,6 +351,22 @@
                 }
             };
 
+            const updateSubmitState = (form, isSaving) => {
+                const submitButton = form.querySelector('[data-draft-submit]');
+                const submitLabel = form.querySelector('[data-draft-submit-label]');
+
+                submitButton?.toggleAttribute('disabled', isSaving);
+                form.toggleAttribute('aria-busy', isSaving);
+
+                if (submitLabel) {
+                    submitLabel.textContent = isSaving ? 'Enregistrement...' : submitLabel.dataset.defaultLabel;
+                }
+            };
+
+            document.querySelectorAll('[data-draft-submit-label]').forEach((label) => {
+                label.dataset.defaultLabel = label.textContent.trim();
+            });
+
             document.addEventListener('click', (event) => {
                 const button = event.target.closest('[data-add-row]');
 
@@ -518,9 +534,7 @@
                 event.preventDefault();
                 window.dispatchEvent(new Event('baobaa:loading-stop'));
 
-                const submitButton = form.querySelector('[data-draft-submit]');
-                submitButton?.setAttribute('disabled', 'disabled');
-                form.setAttribute('aria-busy', 'true');
+                updateSubmitState(form, true);
 
                 try {
                     const response = await fetch(form.action, {
@@ -567,6 +581,9 @@
                     if (nextContent && currentContent) {
                         currentContent.innerHTML = nextContent.innerHTML;
                         window.history.pushState({}, '', payload.next_url);
+                        document.querySelectorAll('[data-draft-submit-label]').forEach((label) => {
+                            label.dataset.defaultLabel = label.textContent.trim();
+                        });
                         showFeedback(payload.message || 'Brouillon enregistré.');
                         currentContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         return;
@@ -576,8 +593,7 @@
                 } catch (error) {
                     showFeedback('Impossible d’enregistrer le brouillon pour le moment.', 'error');
                 } finally {
-                    submitButton?.removeAttribute('disabled');
-                    form.removeAttribute('aria-busy');
+                    updateSubmitState(form, false);
                     window.dispatchEvent(new Event('baobaa:loading-stop'));
                 }
             });

@@ -35,7 +35,7 @@ window.addEventListener('baobaa:loading-stop', hideLoader);
 window.addEventListener('pageshow', hideLoader);
 
 document.addEventListener('submit', (event) => {
-    if (event.defaultPrevented || event.target.matches('[data-no-global-loader]')) {
+    if (event.defaultPrevented || event.target.closest('[data-no-global-loader]')) {
         return;
     }
 

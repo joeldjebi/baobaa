@@ -41,7 +41,7 @@ class OwnerVenueDraftController extends Controller
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Brouillon enregistré.',
+                'message' => $this->successMessage($step),
                 'next_step' => $this->nextStep($step),
                 'next_url' => $nextUrl,
                 'venue_id' => $venue->id,
@@ -50,7 +50,7 @@ class OwnerVenueDraftController extends Controller
 
         return redirect()
             ->to($nextUrl)
-            ->with('draft_status', 'Brouillon enregistré.');
+            ->with('draft_status', $this->successMessage($step));
     }
 
     private function ownerProfile(Request $request): OwnerProfile
@@ -326,5 +326,12 @@ class OwnerVenueDraftController extends Controller
             'localisation' => 'conditions',
             'conditions' => 'conditions',
         ], $step, 'base');
+    }
+
+    private function successMessage(string $step): string
+    {
+        return $step === 'conditions'
+            ? 'Espace enregistré avec succès.'
+            : 'Étape enregistrée avec succès. Vous pouvez continuer.';
     }
 }

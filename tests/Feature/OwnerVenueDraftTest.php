@@ -93,7 +93,7 @@ test('owner saves venue draft with ajax without full page redirect', function ()
             'reservation_amount' => 80000,
         ])
         ->assertOk()
-        ->assertJsonPath('message', 'Brouillon enregistré.')
+        ->assertJsonPath('message', 'Étape enregistrée avec succès. Vous pouvez continuer.')
         ->assertJsonPath('next_step', 'details');
 
     $venue = $ownerProfile->venues()->first();
@@ -101,6 +101,52 @@ test('owner saves venue draft with ajax without full page redirect', function ()
     expect($venue)
         ->not->toBeNull()
         ->and($venue->name)->toBe('Espace AJAX premium');
+});
+
+test('owner updates an existing venue draft with ajax and receives success feedback', function () {
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    $category = VenueCategory::factory()->create(['is_active' => true]);
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'venue_category_id' => $category->id,
+        'name' => 'Ancienne salle',
+        'city' => 'Abidjan',
+        'min_capacity' => 20,
+        'max_capacity' => 80,
+        'starting_price' => 100000,
+        'reservation_amount' => 30000,
+    ]);
+
+    $this->actingAs($owner)
+        ->withHeaders([
+            'Accept' => 'application/json',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->post(route('owner.venues.draft.store'), [
+            'step' => 'base',
+            'venue_id' => $venue->id,
+            'name' => 'Salle éditée en AJAX',
+            'venue_category_id' => $category->id,
+            'city' => 'Yamoussoukro',
+            'district' => 'Centre-ville',
+            'booking_mode' => 'instant',
+            'min_capacity' => 50,
+            'max_capacity' => 220,
+            'surface_area' => 460,
+            'starting_price' => 260000,
+            'reservation_amount' => 90000,
+        ])
+        ->assertOk()
+        ->assertJsonPath('message', 'Étape enregistrée avec succès. Vous pouvez continuer.')
+        ->assertJsonPath('next_step', 'details')
+        ->assertJsonPath('next_url', route('owner.venues.edit', ['venue' => $venue, 'step' => 'details']));
+
+    expect($venue->refresh())
+        ->name->toBe('Salle éditée en AJAX')
+        ->city->toBe('Yamoussoukro')
+        ->booking_mode->toBe('instant')
+        ->max_capacity->toBe(220);
 });
 
 test('owner uploads venue images and videos to wasabi while editing details step', function () {
