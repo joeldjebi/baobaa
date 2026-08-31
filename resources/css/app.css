@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@source '../views/**/*.blade.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer utilities {
+    @keyframes baobaa-float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    @keyframes baobaa-fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes baobaa-marquee {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    @keyframes baobaa-hero-drift {
+        0%, 100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        50% {
+            transform: translate3d(-24px, 12px, 0) scale(1.035);
+        }
+    }
+
+    @keyframes baobaa-shimmer {
+        from {
+            transform: translateX(-120%);
+        }
+
+        to {
+            transform: translateX(120%);
+        }
+    }
+
+    @keyframes baobaa-line-flow {
+        0%, 100% {
+            opacity: .35;
+            transform: translateX(-18px);
+        }
+
+        50% {
+            opacity: .78;
+            transform: translateX(18px);
+        }
+    }
+
+    @keyframes baobaa-soft-breathe {
+        0%, 100% {
+            transform: translateY(0) scale(1);
+            box-shadow: 0 18px 44px rgba(47, 107, 255, .18);
+        }
+
+        50% {
+            transform: translateY(-3px) scale(1.006);
+            box-shadow: 0 24px 60px rgba(47, 107, 255, .24);
+        }
+    }
+
+    .animate-baobaa-float {
+        animation: baobaa-float 5s ease-in-out infinite;
+    }
+
+    .animate-baobaa-fade-up {
+        animation: baobaa-fade-up .75s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .animate-baobaa-marquee {
+        animation: baobaa-marquee 34s linear infinite;
+    }
+
+    .animate-baobaa-hero-drift {
+        animation: baobaa-hero-drift 16s ease-in-out infinite;
+        will-change: transform;
+        transform: translateZ(0);
+    }
+
+    .animate-baobaa-shimmer {
+        animation: baobaa-shimmer 3.8s ease-in-out infinite;
+    }
+
+    .animate-baobaa-line-flow {
+        animation: baobaa-line-flow 7s ease-in-out infinite;
+    }
+
+    .animate-baobaa-soft-breathe {
+        animation: baobaa-soft-breathe 5.5s ease-in-out infinite;
+        will-change: transform, box-shadow;
+    }
+
+    .baobaa-sticky-stable {
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        will-change: transform;
+    }
+
+    .baobaa-scrollbar-none {
+        scrollbar-width: none;
+    }
+
+    .baobaa-scrollbar-none::-webkit-scrollbar {
+        display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-baobaa-float,
+        .animate-baobaa-marquee,
+        .animate-baobaa-hero-drift,
+        .animate-baobaa-shimmer,
+        .animate-baobaa-line-flow,
+        .animate-baobaa-soft-breathe {
+            animation: none;
+        }
+    }
+}
