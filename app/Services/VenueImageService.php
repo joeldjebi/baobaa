@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Models\Venue;
 use App\Models\VenueMedia;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class VenueImageService
 {
@@ -42,10 +44,21 @@ class VenueImageService
         }
 
         if (($media->disk ?: 'public') === 'wasabi') {
-            return Storage::disk('wasabi')->temporaryUrl(
-                $media->path,
-                now()->addMinutes($minutes)
-            );
+            try {
+                return Storage::disk('wasabi')->temporaryUrl(
+                    $media->path,
+                    now()->addMinutes($minutes)
+                );
+            } catch (Throwable $exception) {
+                Log::warning('Unable to generate Wasabi venue image URL.', [
+                    'venue_media_id' => $media->id,
+                    'venue_id' => $media->venue_id,
+                    'path' => $media->path,
+                    'message' => $exception->getMessage(),
+                ]);
+
+                return asset('images/baobaa.jpg');
+            }
         }
 
         return Storage::disk($media->disk ?: 'public')->url($media->path);

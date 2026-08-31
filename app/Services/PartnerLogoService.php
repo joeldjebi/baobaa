@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\OwnerProfile;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class PartnerLogoService
 {
@@ -43,10 +45,20 @@ class PartnerLogoService
         }
 
         if (($profile->logo_disk ?: 'public') === 'wasabi') {
-            return Storage::disk('wasabi')->temporaryUrl(
-                $profile->logo_path,
-                now()->addMinutes($minutes)
-            );
+            try {
+                return Storage::disk('wasabi')->temporaryUrl(
+                    $profile->logo_path,
+                    now()->addMinutes($minutes)
+                );
+            } catch (Throwable $exception) {
+                Log::warning('Unable to generate Wasabi partner logo URL.', [
+                    'owner_profile_id' => $profile->id,
+                    'path' => $profile->logo_path,
+                    'message' => $exception->getMessage(),
+                ]);
+
+                return asset('images/baobaa.jpg');
+            }
         }
 
         return Storage::disk($profile->logo_disk ?: 'public')->url($profile->logo_path);
