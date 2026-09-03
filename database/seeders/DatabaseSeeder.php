@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             SubscriptionPlanSeeder::class,
             SponsorshipPlanSeeder::class,
             CommissionRuleSeeder::class,
+            OwnerDepositRuleSeeder::class,
             PlatformSettingSeeder::class,
         ]);
     }

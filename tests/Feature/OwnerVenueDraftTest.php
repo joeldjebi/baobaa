@@ -36,6 +36,7 @@ test('owner saves venue creation as a draft step by step', function () {
             'surface_area' => 420,
             'starting_price' => 250000,
             'reservation_amount' => 75000,
+            'payment_methods' => ['baobaa_checkout', 'wave'],
         ])
         ->assertRedirect();
 
@@ -53,7 +54,8 @@ test('owner saves venue creation as a draft step by step', function () {
     expect($venue)
         ->not->toBeNull()
         ->and($venue->name)->toBe('Salle étape premium')
-        ->and($venue->status->value)->toBe('draft');
+        ->and($venue->status->value)->toBe('draft')
+        ->and($venue->payment_methods)->toBe(['baobaa_checkout', 'wave']);
 
     $this->actingAs($owner)
         ->post(route('owner.venues.draft.store'), [
@@ -313,7 +315,8 @@ test('owner edit page shows saved venue data', function () {
         ->assertSee('Abidjan')
         ->assertSee('Plateau')
         ->assertSee('180000')
-        ->assertSee('60000');
+        ->assertSeeText('Acompte client')
+        ->assertSeeText('Paiement sécurisé BAOBAA');
 });
 
 test('owner venue draft form uses silent ajax submission', function () {

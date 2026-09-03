@@ -7,6 +7,7 @@ use App\Enums\UserStatus;
 use App\Enums\VenueStatus;
 use App\Enums\VerificationStatus;
 use App\Models\Booking;
+use App\Models\OwnerDepositRule;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\PortalAccessRequest;
@@ -333,7 +334,7 @@ test('sap manages dashboard pages and pricing plans', function () {
         'status' => VenueStatus::PendingReview,
     ]);
 
-    foreach (['sap.dashboard', 'sap.owners', 'sap.clients', 'sap.venues', 'sap.bookings', 'sap.payments', 'sap.subscription-plans', 'sap.commissions', 'sap.sponsorship-plans', 'sap.portal-requests'] as $routeName) {
+    foreach (['sap.dashboard', 'sap.owners', 'sap.clients', 'sap.venues', 'sap.bookings', 'sap.payments', 'sap.subscription-plans', 'sap.commissions', 'sap.deposit-rules', 'sap.sponsorship-plans', 'sap.portal-requests'] as $routeName) {
         $this->actingAs($sap)->get(route($routeName))->assertOk();
     }
 
@@ -358,6 +359,19 @@ test('sap manages dashboard pages and pricing plans', function () {
             'percentage_rate' => 10,
         ])
         ->assertRedirect();
+
+    $this->actingAs($sap)
+        ->post(route('sap.deposit-rules.store'), [
+            'owner_profile_id' => $ownerProfile->id,
+            'name' => 'Acompte premium SAP',
+            'deposit_type' => 'percentage',
+            'percentage_rate' => 25,
+            'minimum_amount' => 50000,
+            'maximum_amount' => 400000,
+        ])
+        ->assertRedirect();
+
+    expect(OwnerDepositRule::query()->where('owner_profile_id', $ownerProfile->id)->where('percentage_rate', 25)->exists())->toBeTrue();
 
     $this->actingAs($sap)
         ->post(route('sap.venues.status', $venue), ['status' => 'published'])

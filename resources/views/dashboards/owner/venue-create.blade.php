@@ -11,9 +11,17 @@
     $currentStep = in_array($currentStep, $stepKeys, true) ? $currentStep : 'base';
     $currentIndex = array_search($currentStep, $stepKeys, true);
     $lineValue = fn ($value) => is_array($value) ? implode("\n", $value) : '';
+    $paymentMethods = [
+        'baobaa_checkout' => 'Paiement sécurisé BAOBAA',
+        'wave' => 'Wave',
+        'orange_money' => 'Orange Money',
+        'mtn_money' => 'MTN Money',
+        'moov_money' => 'Moov Money',
+        'bank_transfer' => 'Virement bancaire',
+    ];
 @endphp
 
-<x-dashboards.owner-shell title="Ajouter un espace" subtitle="Avancez étape par étape : chaque clic sur Continuer garde votre fiche en brouillon." active="venues" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
+<x-dashboards.owner-shell title="Ajouter un espace" subtitle="Avancez étape par étape : chaque clic sur Continuer garde votre fiche en brouillon." active="venues" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
     <div id="owner-venue-draft-content">
         <div data-draft-feedback aria-live="polite">
             @if (session('draft_status'))
@@ -83,7 +91,27 @@
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Capacité maximale</span><input name="max_capacity" type="number" value="{{ old('max_capacity', $currentVenue?->max_capacity) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Surface en m²</span><input name="surface_area" type="number" value="{{ old('surface_area', $currentVenue?->surface_area) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Prix de départ</span><input name="starting_price" type="number" value="{{ old('starting_price', $currentVenue?->starting_price) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
-                            <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Montant à réserver</span><input name="reservation_amount" type="number" value="{{ old('reservation_amount', $currentVenue?->reservation_amount) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
+                            <div class="rounded-2xl border border-[#dce6f7] bg-white p-4">
+                                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Acompte client</p>
+                                <p class="mt-2 text-sm font-bold leading-6 text-[#52617b]">Le montant payé avant confirmation est défini par le SAP pour votre compte partenaire.</p>
+                            </div>
+                            <div class="md:col-span-2 rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                                <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                                    <div>
+                                        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Moyens de paiement acceptés</span>
+                                        <p class="mt-1 text-xs font-semibold leading-5 text-[#6f7890]">Le SAP définit le montant d’acompte. Ici, vous indiquez les canaux que le client pourra utiliser pour le paiement.</p>
+                                    </div>
+                                    <span class="rounded-full bg-white px-3 py-1 text-[11px] font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">Par espace</span>
+                                </div>
+                                <div class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                    @foreach ($paymentMethods as $value => $label)
+                                        <label class="flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-3 py-3 text-sm font-extrabold text-[#151821] ring-1 ring-[#e4ebf8] transition hover:ring-[#2f6bff]">
+                                            <input type="checkbox" name="payment_methods[]" value="{{ $value }}" @checked(in_array($value, old('payment_methods', $currentVenue?->payment_methods ?: ['baobaa_checkout']), true)) class="size-4 rounded border-[#b9caff] text-[#2f6bff] focus:ring-[#2f6bff]">
+                                            <span>{{ $label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                         @break
 

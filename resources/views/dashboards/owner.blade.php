@@ -22,6 +22,7 @@
     :confirmed-bookings-count="$confirmedBookingsCount"
     :gross-revenue="$grossRevenue"
     :active-subscription="$activeSubscription"
+    :active-deposit-rule="$activeDepositRule"
     :billing-preference-label="$billingPreferenceLabel"
 >
     <div class="grid gap-6 xl:grid-cols-[1.25fr_.75fr]">

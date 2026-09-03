@@ -42,6 +42,7 @@ class VenueFactory extends Factory
             'currency' => 'XOF',
             'starting_price' => fake()->numberBetween(50000, 1000000),
             'reservation_amount' => fake()->numberBetween(25000, 250000),
+            'payment_methods' => ['baobaa_checkout', 'wave'],
         ];
     }
 }

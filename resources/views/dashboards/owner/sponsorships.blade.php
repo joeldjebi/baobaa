@@ -4,7 +4,7 @@
     $placementLabels = ['home_featured' => 'Accueil premium', 'catalog_top' => 'Haut du catalogue', 'category_boost' => 'Catégorie ciblée'];
 @endphp
 
-<x-dashboards.owner-shell title="Sponsoriser mes espaces" subtitle="Créez des campagnes premium pour donner plus de visibilité à vos lieux." active="sponsorships" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
+<x-dashboards.owner-shell title="Sponsoriser mes espaces" subtitle="Créez des campagnes premium pour donner plus de visibilité à vos lieux." active="sponsorships" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
     @if (session('sponsorship_status'))
         <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-white px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('sponsorship_status') }}</div>
     @endif

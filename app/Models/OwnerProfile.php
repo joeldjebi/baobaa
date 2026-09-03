@@ -82,6 +82,11 @@ class OwnerProfile extends Model
         return $this->hasMany(Payout::class);
     }
 
+    public function depositRules(): HasMany
+    {
+        return $this->hasMany(OwnerDepositRule::class);
+    }
+
     public function moduleTemplates(): HasMany
     {
         return $this->hasMany(OwnerModuleTemplate::class);

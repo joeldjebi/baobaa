@@ -2,7 +2,7 @@
     $reviewStatusLabels = ['pending' => 'En validation', 'approved' => 'Publié', 'rejected' => 'Refusé'];
 @endphp
 
-<x-dashboards.owner-shell title="Avis clients" subtitle="Suivez la réputation de vos espaces et les commentaires issus de vraies réservations." active="reviews" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
+<x-dashboards.owner-shell title="Avis clients" subtitle="Suivez la réputation de vos espaces et les commentaires issus de vraies réservations." active="reviews" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
     <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
         <div class="grid gap-4 md:grid-cols-[220px_1fr]">
             <div class="rounded-[22px] bg-[#07152f] p-5 text-white">

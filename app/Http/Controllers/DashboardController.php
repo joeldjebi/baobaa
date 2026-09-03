@@ -414,6 +414,19 @@ class DashboardController extends Controller
                 ->whereIn('status', ['active', 'trialing'])
                 ->latest('ends_on')
                 ->first(),
+            'activeDepositRule' => $ownerProfile->depositRules()
+                ->where('is_active', true)
+                ->where(function (Builder $query): void {
+                    $query->whereNull('starts_at')
+                        ->orWhere('starts_at', '<=', now());
+                })
+                ->where(function (Builder $query): void {
+                    $query->whereNull('ends_at')
+                        ->orWhere('ends_at', '>=', now());
+                })
+                ->latest('starts_at')
+                ->latest('id')
+                ->first(),
             'billingPreferenceLabel' => match ($ownerProfile->billing_preference ?? 'commission') {
                 'subscription' => 'Abonnement',
                 'hybrid' => 'Abonnement + commission',

@@ -9,6 +9,7 @@ use App\Enums\UserStatus;
 use App\Enums\VenueStatus;
 use App\Models\Booking;
 use App\Models\CommissionRule;
+use App\Models\OwnerDepositRule;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\PortalAccessRequest;
@@ -220,6 +221,66 @@ class SapDashboardController extends Controller
         $commissionRule->update(['is_active' => ! $commissionRule->is_active]);
 
         return back()->with('sap_status', 'Règle de commission mise à jour.');
+    }
+
+    public function depositRules(Request $request): View
+    {
+        return view('dashboards.sap.deposit-rules', [
+            ...$this->metrics(),
+            'owners' => OwnerProfile::query()->orderBy('business_name')->get(['id', 'business_name', 'city']),
+            'rules' => OwnerDepositRule::query()
+                ->with('ownerProfile')
+                ->when($request->filled('owner_profile_id'), fn (Builder $query) => $query->where('owner_profile_id', $request->integer('owner_profile_id')))
+                ->when($request->filled('status'), fn (Builder $query) => $query->where('is_active', $request->string('status')->toString() === 'active'))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString(),
+        ]);
+    }
+
+    public function storeDepositRule(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'owner_profile_id' => ['required', 'integer', 'exists:owner_profiles,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'deposit_type' => ['required', 'in:percentage,fixed'],
+            'percentage_rate' => ['nullable', 'numeric', 'min:0', 'max:100', 'required_if:deposit_type,percentage'],
+            'fixed_amount' => ['nullable', 'integer', 'min:0', 'required_if:deposit_type,fixed'],
+            'minimum_amount' => ['nullable', 'integer', 'min:0'],
+            'maximum_amount' => ['nullable', 'integer', 'min:0', 'gte:minimum_amount'],
+            'starts_at' => ['nullable', 'date'],
+            'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
+        ]);
+
+        OwnerDepositRule::query()
+            ->where('owner_profile_id', $validated['owner_profile_id'])
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+
+        OwnerDepositRule::query()->create([
+            ...$validated,
+            'minimum_amount' => $validated['minimum_amount'] ?? 0,
+            'currency' => 'XOF',
+            'is_active' => true,
+            'starts_at' => $validated['starts_at'] ?? now(),
+        ]);
+
+        return back()->with('sap_status', 'Règle d’acompte ajoutée pour ce partenaire.');
+    }
+
+    public function toggleDepositRule(OwnerDepositRule $ownerDepositRule): RedirectResponse
+    {
+        if (! $ownerDepositRule->is_active) {
+            OwnerDepositRule::query()
+                ->where('owner_profile_id', $ownerDepositRule->owner_profile_id)
+                ->where('is_active', true)
+                ->whereKeyNot($ownerDepositRule->id)
+                ->update(['is_active' => false]);
+        }
+
+        $ownerDepositRule->update(['is_active' => ! $ownerDepositRule->is_active]);
+
+        return back()->with('sap_status', 'Règle d’acompte mise à jour.');
     }
 
     public function sponsorshipPlans(Request $request): View

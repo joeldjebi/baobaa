@@ -167,6 +167,9 @@ Route::middleware(['auth', 'role:sap'])->group(function (): void {
     Route::get('/sap/commissions', [SapDashboardController::class, 'commissions'])->name('sap.commissions');
     Route::post('/sap/commissions', [SapDashboardController::class, 'storeCommission'])->name('sap.commissions.store');
     Route::post('/sap/commissions/{commissionRule}/statut', [SapDashboardController::class, 'toggleCommission'])->name('sap.commissions.toggle');
+    Route::get('/sap/acomptes', [SapDashboardController::class, 'depositRules'])->name('sap.deposit-rules');
+    Route::post('/sap/acomptes', [SapDashboardController::class, 'storeDepositRule'])->name('sap.deposit-rules.store');
+    Route::post('/sap/acomptes/{ownerDepositRule}/statut', [SapDashboardController::class, 'toggleDepositRule'])->name('sap.deposit-rules.toggle');
     Route::get('/sap/forfaits-sponsoring', [SapDashboardController::class, 'sponsorshipPlans'])->name('sap.sponsorship-plans');
     Route::post('/sap/forfaits-sponsoring', [SapDashboardController::class, 'storeSponsorshipPlan'])->name('sap.sponsorship-plans.store');
     Route::post('/sap/forfaits-sponsoring/{sponsorshipPlan}/statut', [SapDashboardController::class, 'toggleSponsorshipPlan'])->name('sap.sponsorship-plans.toggle');

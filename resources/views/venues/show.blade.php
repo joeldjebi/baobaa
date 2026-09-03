@@ -6,7 +6,18 @@
     $capacity = $venue ? $venue->min_capacity.'-'.$venue->max_capacity.' invités' : $fallback['capacity'];
     $surface = $venue?->surface_area ? $venue->surface_area.' m2' : $fallback['surface'];
     $price = $venue?->starting_price ? number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency : $fallback['price'];
-    $reservation = $venue?->reservation_amount ? number_format($venue->reservation_amount, 0, ',', ' ').' '.$venue->currency : $fallback['reservation'];
+    $reservation = $venue && $depositAmount !== null ? number_format($depositAmount, 0, ',', ' ').' '.$venue->currency : $fallback['reservation'];
+    $paymentMethodLabels = [
+        'baobaa_checkout' => 'Paiement sécurisé BAOBAA',
+        'wave' => 'Wave',
+        'orange_money' => 'Orange Money',
+        'mtn_money' => 'MTN Money',
+        'moov_money' => 'Moov Money',
+        'bank_transfer' => 'Virement bancaire',
+    ];
+    $acceptedPaymentMethods = collect($venue?->payment_methods ?: ['baobaa_checkout'])
+        ->map(fn (string $method): string => $paymentMethodLabels[$method] ?? $method)
+        ->values();
     $rating = $venue?->average_rating > 0 ? $venue->average_rating : $fallback['rating'];
     $reviews = $venue?->reviews_count > 0 ? $venue->reviews_count : $fallback['reviews'];
     $description = $venue?->description ?: $fallback['description'];
@@ -433,7 +444,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="text-2xl font-extrabold tracking-[-0.035em] text-[#151821]">{{ $price }}</p>
-                                <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">Tarif horaire · acompte {{ $reservation }}</p>
+                                <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">Tarif horaire · acompte BAOBAA {{ $reservation }}</p>
                             </div>
                             <span class="rounded-full bg-[#eaf1ff] px-2.5 py-0.5 text-[11px] font-extrabold text-[#2f6bff]">{{ $rating }} ★</span>
                         </div>
@@ -494,9 +505,26 @@
                         </div>
 
                         <div class="space-y-1.5 rounded-[14px] bg-[#f7f9fd] p-3 text-xs font-bold text-[#4d5872]">
-                            <div class="flex justify-between"><span>Réservation</span><span>{{ $reservation }}</span></div>
+                            <div class="flex justify-between"><span>Acompte à payer</span><span>{{ $reservation }}</span></div>
                             <div class="flex justify-between"><span>Frais de service</span><span>Calculés au paiement</span></div>
                         </div>
+                        <div class="rounded-[14px] border border-[#dce6f7] bg-white p-3">
+                            <p class="text-[10px] font-extrabold uppercase text-[#8a94aa]">Moyens acceptés</p>
+                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                @foreach ($acceptedPaymentMethods as $method)
+                                    <span class="rounded-full bg-[#eef4ff] px-2.5 py-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $method }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <label class="block rounded-[14px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
+                            <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Paiement de l’acompte</span>
+                            <select name="payment_method" class="mt-0.5 w-full bg-transparent text-xs font-bold text-[#151821] outline-none">
+                                @foreach (($venue?->payment_methods ?: ['baobaa_checkout']) as $method)
+                                    <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ $paymentMethodLabels[$method] ?? $method }}</option>
+                                @endforeach
+                            </select>
+                        </label>
 
                         @guest
                             <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => url()->current()]) }}" class="flex w-full justify-center rounded-[14px] bg-[#2f6bff] px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Enregistrer ma réservation</a>

@@ -104,11 +104,14 @@ class OwnerVenueDraftController extends Controller
             'max_capacity' => ['required', 'integer', 'gte:min_capacity'],
             'surface_area' => ['nullable', 'integer', 'min:1'],
             'starting_price' => ['required', 'integer', 'min:0'],
-            'reservation_amount' => ['required', 'integer', 'min:0'],
+            'reservation_amount' => ['nullable', 'integer', 'min:0'],
             'booking_mode' => ['required', Rule::in(['request', 'instant'])],
+            'payment_methods' => ['nullable', 'array'],
+            'payment_methods.*' => ['string', Rule::in(['baobaa_checkout', 'wave', 'orange_money', 'mtn_money', 'moov_money', 'bank_transfer'])],
         ]);
 
-        $venue->update($validated + [
+        $venue->update(Arr::except($validated, ['payment_methods']) + [
+            'payment_methods' => array_values(array_unique($validated['payment_methods'] ?? ['baobaa_checkout'])),
             'slug' => $venue->slug === 'nouvel-espace' || str_starts_with($venue->slug, 'nouvel-espace-')
                 ? Str::slug($validated['name']).'-'.Str::lower(Str::random(5))
                 : $venue->slug,

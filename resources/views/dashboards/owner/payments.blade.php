@@ -4,7 +4,7 @@
     $payoutStatusLabels = ['pending' => 'en attente', 'scheduled' => 'programmé', 'paid' => 'payé', 'failed' => 'échoué'];
 @endphp
 
-<x-dashboards.owner-shell title="Paiements" subtitle="Contrôlez les encaissements, méthodes de paiement et références prestataires." active="payments" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
+<x-dashboards.owner-shell title="Paiements" subtitle="Contrôlez les encaissements, méthodes de paiement et références prestataires." active="payments" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
     @if (session('payout_status'))
         <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('payout_status') }}</div>
     @endif

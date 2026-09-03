@@ -38,7 +38,7 @@
                     </div>
                     <div class="mt-4 grid gap-2 text-sm font-semibold text-[#52617b]">
                         <p>{{ $booking->event_date?->format('d/m/Y') }} · {{ substr($booking->starts_at, 0, 5) }} - {{ substr($booking->ends_at, 0, 5) }}</p>
-                        <p>{{ number_format($booking->guests_count, 0, ',', ' ') }} invités · {{ number_format($booking->reservation_amount, 0, ',', ' ') }} {{ $booking->currency }}</p>
+                        <p>{{ number_format($booking->guests_count, 0, ',', ' ') }} invités · acompte {{ number_format($booking->reservation_amount, 0, ',', ' ') }} {{ $booking->currency }}</p>
                     </div>
                     <a href="{{ route('venues.show', $booking->venue?->slug) }}" class="mt-4 inline-flex rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Voir</a>
                 </article>
@@ -50,7 +50,7 @@
         <div class="mt-5 hidden overflow-x-auto rounded-2xl border border-[#edf2fb] lg:block">
             <table class="w-full min-w-[920px] text-left text-sm">
                 <thead class="bg-[#f7faff] text-xs font-extrabold uppercase text-[#7d8aa7]">
-                    <tr><th class="px-4 py-3">Référence</th><th class="px-4 py-3">Espace</th><th class="px-4 py-3">Partenaire</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Invités</th><th class="px-4 py-3">Montant</th><th class="px-4 py-3">Statut</th><th class="px-4 py-3 text-right">Action</th></tr>
+                    <tr><th class="px-4 py-3">Référence</th><th class="px-4 py-3">Espace</th><th class="px-4 py-3">Partenaire</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Invités</th><th class="px-4 py-3">Acompte</th><th class="px-4 py-3">Statut</th><th class="px-4 py-3 text-right">Action</th></tr>
                 </thead>
                 <tbody class="divide-y divide-[#edf2fb]">
                     @forelse ($bookings as $booking)

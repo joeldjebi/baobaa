@@ -11,7 +11,7 @@
     ];
 @endphp
 
-<x-dashboards.owner-shell title="Réservations" subtitle="Suivez les demandes clients, les créneaux et les statuts à traiter." active="bookings" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
+<x-dashboards.owner-shell title="Réservations" subtitle="Suivez les demandes clients, les créneaux et les statuts à traiter." active="bookings" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
     @if (session('booking_status'))
         <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('booking_status') }}</div>
     @endif

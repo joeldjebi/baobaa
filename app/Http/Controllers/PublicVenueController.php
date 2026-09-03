@@ -6,12 +6,15 @@ use App\Enums\BookingStatus;
 use App\Enums\VenueStatus;
 use App\Models\Venue;
 use App\Models\VenueCategory;
+use App\Services\BookingDepositService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PublicVenueController extends Controller
 {
+    public function __construct(private readonly BookingDepositService $bookingDepositService) {}
+
     public function index(Request $request): View
     {
         $venues = Venue::query()
@@ -107,7 +110,7 @@ class PublicVenueController extends Controller
         $venue = Venue::query()
             ->with([
                 'category',
-                'ownerProfile',
+                'ownerProfile.depositRules',
                 'amenities',
                 'media',
                 'rates',
@@ -138,6 +141,7 @@ class PublicVenueController extends Controller
         return view('venues.show', [
             'venue' => $venue,
             'fallback' => $this->fallbackVenue($slug),
+            'depositAmount' => $venue ? $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price) : null,
             'similarVenues' => $this->fallbackSimilarVenues($slug),
             'approvedReviews' => $venue?->reviews
                 ?->where('status', 'approved')

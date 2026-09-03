@@ -19,7 +19,7 @@
     ];
 @endphp
 
-<x-dashboards.owner-shell title="Détail réservation" subtitle="Consultez le dossier client, le créneau, le paiement et les prochaines actions." active="bookings" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :billing-preference-label="$billingPreferenceLabel">
+<x-dashboards.owner-shell title="Détail réservation" subtitle="Consultez le dossier client, le créneau, le paiement et les prochaines actions." active="bookings" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
     <div class="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section class="min-w-0 space-y-5">
             <div class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">

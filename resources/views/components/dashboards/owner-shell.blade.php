@@ -8,6 +8,7 @@
     'confirmedBookingsCount' => 0,
     'grossRevenue' => 0,
     'activeSubscription' => null,
+    'activeDepositRule' => null,
     'billingPreferenceLabel' => 'Commission',
 ])
 
@@ -90,6 +91,14 @@
                     <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d8aa7]">Formule actuelle</p>
                     <p class="mt-2 text-sm font-extrabold text-[#07152f]">{{ $activeSubscription?->subscriptionPlan?->name ?? 'Sans abonnement actif' }}</p>
                     <p class="mt-1 text-xs font-bold text-[#6f7890]">Paiement à BAOBAA : {{ $billingPreferenceLabel }}</p>
+                    <p class="mt-3 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d8aa7]">Acompte client</p>
+                    <p class="mt-1 text-xs font-bold text-[#6f7890]">
+                        @if ($activeDepositRule)
+                            Défini par le SAP : {{ $activeDepositRule->deposit_type === 'fixed' ? number_format((int) $activeDepositRule->fixed_amount, 0, ',', ' ').' '.$activeDepositRule->currency : $activeDepositRule->percentage_rate.'%' }}
+                        @else
+                            À configurer par le SAP
+                        @endif
+                    </p>
                 </div>
 
                 <nav class="mt-6 space-y-1.5">
