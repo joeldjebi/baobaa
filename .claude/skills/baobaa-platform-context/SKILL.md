@@ -17,7 +17,9 @@ Product promise:
 - keep public UX modern, premium, blue-first, highly organized and not overloaded.
 
 Design inspiration requested by the user:
-- `eventsinminutes.com`;
+- Reference platform: `https://www.eventsinminutes.com/`;
+- reference venue search page: `https://www.eventsinminutes.com/venues?top_category_type=single_category_vendor&main_category=698c11484177d07fb3cbc5ea&q=conference+room&where=San+Francisco%2C+CA&radius_miles=25&apply_filter=true`;
+- reference venue detail page: `https://www.eventsinminutes.com/venues/oakland-ca/modern-and-chic-conference-room-for-up-to-12-guests-400-sq-ft`;
 - premium rounded UI;
 - refined blue palette;
 - Tailwind CSS;
@@ -114,6 +116,44 @@ Design debt and missing UX:
 - SAP ticketing needs a full management UX;
 - public homepage sections should eventually be driven by analytics/popularity, not random/demo logic only;
 - design tokens/components should be extracted to reduce repeated Tailwind classes.
+
+## Reference Site Analysis
+
+The user repeatedly asked to stay close to the Eventsinminutes experience. Do not copy copyrighted assets or proprietary implementation, but use the same product logic and visual rhythm.
+
+Homepage reference traits:
+- lightweight top navigation with logo on the left and compact action/account/cart controls on the right;
+- hero centered in the first viewport;
+- pill-shaped trust badge above the headline;
+- large but controlled headline with one blue highlighted word;
+- short supporting sentence;
+- large rounded search bar with grouped fields: what, where, when, action button;
+- category carousel directly under hero search, with circular icons and readable labels;
+- trusted/team logos or credibility strip below;
+- content sections use horizontal discovery, not long vertical grids only.
+
+Venue search reference traits:
+- search intent is preserved in the URL/query string;
+- filters are immediately available and scannable;
+- cards highlight image, title, place, distance/context, price and trust signals;
+- the UX lets users compare many options quickly.
+
+Venue detail reference traits:
+- breadcrumb, title, location and category near top;
+- image gallery has one large image plus smaller images and a "view all photos" action;
+- compact chips for capacity, duration, surface, location and request/payment type;
+- sticky section tabs: photos, overview, included, space/amenities, add-ons, location/times, things to know;
+- owner contact/action area is visible but not noisy;
+- reservation/pricing card is sticky on desktop;
+- long details are organized with accordions and clean tables;
+- similar venues carousel appears near the bottom;
+- footer closes the page with brand, links and contact.
+
+Important adaptation for BAOBAA:
+- BAOBAA is francophone and pan-African, so all public copy must be in French with accents;
+- BAOBAA has PEE, PSE and SAP ticketing flows, so the reservation experience must go beyond the reference and support event composition;
+- BAOBAA must avoid showing internal platform mechanics publicly;
+- payment/commission/subscription language belongs in dashboards, not in public browsing.
 
 ## Glossary
 
@@ -536,12 +576,74 @@ php artisan baobaa:diagnose-wasabi-images
 ```
 
 Deployment notes:
-- Run migrations after pulling code.
-- Run `composer install --no-dev --optimize-autoloader`.
-- Run `php artisan optimize:clear`.
-- Run `php artisan migrate --force`.
-- Run `npm run build` locally or on server depending deployment strategy.
-- Ensure storage/cache directories are writable by the app user.
+- production path used by the user previously: `/home/baobaa/app`;
+- production Linux user used previously: `baobaa`;
+- branch used previously: `main`;
+- run migrations after pulling code;
+- run Composer install/update when dependencies changed;
+- build frontend assets after Blade/CSS/JS changes;
+- ensure storage/cache directories are writable by the app user.
+
+Recommended production deployment flow:
+
+```bash
+cd /home/baobaa/app
+
+sudo -u baobaa -H git status --short --branch
+sudo -u baobaa -H git fetch origin
+sudo -u baobaa -H git pull --ff-only origin main
+
+sudo -u baobaa -H composer install --no-dev --optimize-autoloader
+sudo -u baobaa -H php artisan optimize:clear
+sudo -u baobaa -H php artisan migrate --force
+sudo -u baobaa -H npm ci
+sudo -u baobaa -H npm run build
+sudo -u baobaa -H php artisan config:cache
+sudo -u baobaa -H php artisan route:cache
+sudo -u baobaa -H php artisan view:cache
+```
+
+If the server does not build assets directly, build locally and deploy the generated `public/build` according to the server strategy.
+
+After deployment, verify:
+
+```bash
+sudo -u baobaa -H php artisan route:list --except-vendor
+sudo -u baobaa -H php artisan baobaa:diagnose-wasabi-images
+tail -50 storage/logs/laravel.log
+```
+
+If the project uses PHP-FPM/queue workers, restart/reload them according to the server setup after cache rebuilds.
+
+Server file ownership and writable folders:
+
+```bash
+sudo chown -R baobaa:www-data storage bootstrap/cache
+sudo chmod -R ug+rwX storage bootstrap/cache
+```
+
+Production `.env` checklist:
+- `APP_ENV=production`;
+- `APP_DEBUG=false`;
+- `APP_URL` must match the real domain;
+- database credentials must be production values;
+- Wasabi variables must be present with production values;
+- mail/payment provider variables must be production-ready before real launch;
+- never commit `.env`.
+
+Wasabi production checklist:
+- install/keep the S3 adapter dependency required by Laravel Flysystem;
+- confirm bucket, endpoint, region and URL match Wasabi;
+- confirm uploaded objects are readable through signed URLs generated by the app;
+- run `php artisan baobaa:diagnose-wasabi-images` after deployment;
+- if images open directly but not in the app, inspect signed URL generation, CORS, mixed-content HTTPS, cached config and storage disk config.
+
+Common deployment issues already seen:
+- dirty server worktree from `.gitignore` files under `storage` and `bootstrap/cache`;
+- untracked `error_log`;
+- missing S3/Flysystem adapter causing `PortableVisibilityConverter` errors;
+- stale config/view cache after changing `.env`, filesystem disk config, routes or Blade views;
+- frontend not updated because `npm run build` was not executed.
 
 Do not commit:
 - `.env`
