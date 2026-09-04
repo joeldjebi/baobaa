@@ -24,6 +24,97 @@ Design inspiration requested by the user:
 - carousels/tabs where useful;
 - public pages must hide internal/security-sensitive data.
 
+## Design And UX Direction
+
+BAOBAA must feel like a premium marketplace, not a generated admin template. Future agents must preserve a refined, modern, trustworthy UX across public pages and all dashboards.
+
+Visual identity:
+- primary brand direction: premium blue-first interface, with BAOBAA red used carefully for logo/brand accents, not as the dominant UI color;
+- footer background requested and applied: `#07162f`;
+- typography should stay modern, readable and French-first; use a Google Font already integrated or a similar clean sans-serif;
+- avoid flat/basic layouts, oversized empty hero blocks, generic cards everywhere, one-color pages, and technical wording;
+- use white, soft blue, deep navy, subtle borders, controlled shadows, and restrained gradients;
+- UI should feel dense enough for a marketplace, but calm and scannable.
+
+Public UX principles:
+- public users are final clients, so never expose internal statuses, IDs, commissions, debug labels, storage paths, or provider-only data;
+- write all visible hardcoded text in French with accents;
+- use marketing copy that builds trust and clarity, not technical descriptions;
+- prioritize fast comparison: photo, title, city/commune, capacity, starting price, rating/reviews, availability hint, partner/logo when relevant;
+- large datasets must be organized with filters, pagination, horizontal carousels, sections and AJAX updates instead of dumping everything on one screen.
+
+Homepage requirements:
+- hero inspired closely by Eventsinminutes: centered premium headline, trust badge, search bar, category carousel on one line, smooth animated polish;
+- category icons/logos and labels come from SAP-managed categories, and only categories with spaces should appear publicly;
+- category carousel must support manual left/right navigation and horizontal scroll;
+- search suggestions should appear after 3 typed characters and search category labels plus venue names;
+- below hero, keep curated marketplace sections:
+  - `Tendances actuelles` / `Annonces les plus populaires`;
+  - popular by category;
+  - popular by city;
+  - popular by commune;
+- carousel cards should show 4 full columns plus part of a 5th card on desktop to signal scrollability;
+- the popular section can use two carousel rows, but each row needs its own left/right controls;
+- sections need clear vertical spacing; do not let carousel controls float in confusing positions;
+- footer must be premium, structured and dark navy with logo/brand, navigation, contact, legal links and trust copy.
+
+Search and catalog UX:
+- `/espaces` must be a premium catalog page, not an empty/simple list;
+- keep the search/filter form visible and useful;
+- filters should include what, where, date range, budget min/max, capacity/guest minimum, and category;
+- filters must use AJAX where practical so the whole page does not refresh;
+- filtering must query the full dataset, not only items visible on the current page;
+- results can be list-based with pagination for readability at scale;
+- form controls must not overlap on responsive breakpoints; use consistent heights and one visual container per field.
+
+Venue detail UX:
+- page should follow the reference detail page structure: gallery, metadata chips, sticky section tabs, content sections, similar venues and footer;
+- sticky tabs must work without page reload and scroll to sections correctly;
+- gallery images should open in a large viewer/modal with navigation through all images;
+- reservation must become a compact CTA card plus a modal/stepper named around `Composer mon événement` or `Demander une réservation`;
+- reservation modal should group:
+  - date and time;
+  - guests/budget;
+  - negotiation/proposed price;
+  - PEE modules;
+  - PSE tabs and selectable services;
+  - SAP ticketing request;
+  - summary/proforma preview;
+- the reservation flow must make it clear that login is required before saving booking/payment data;
+- sticky reservation UI must not slide under sticky tabs or headers while scrolling.
+
+Dashboard UX:
+- SAP, PEE, PSE and Client dashboards should share the same premium system language;
+- each dashboard needs a left sidebar on desktop and a hamburger/off-canvas menu on mobile;
+- sidebar links should go to real pages, not tabs/anchors;
+- tables need filters, pagination, stats, clear statuses, and action dropdowns that do not deform the table;
+- forms should be step-based for long flows, save drafts via AJAX, and show success/error feedback;
+- charts/stats should be useful, not decorative: revenue, reservations, conversion, pending validations, sponsorship, payments;
+- actions must be clear and role-specific: client should not see owner/SAP links, PEE should not see SAP actions, etc.
+
+Interaction and motion:
+- animations should be subtle: hover elevation, soft fade/slide, carousel movement, loading skeletons;
+- avoid shaky/stuttering scroll behavior; check sticky elements, `position: sticky`, transforms and excessive shadows when a page trembles;
+- all dropdowns/modals must have high enough z-index and close when clicking outside;
+- loaders should be intelligent: skeletons for content loading, inline saving state for forms, no blocking full-page loader for draft autosave.
+
+Responsive and accessibility:
+- every page must work cleanly on mobile, tablet and desktop;
+- avoid text overflow in buttons, cards, filters and tables;
+- use semantic buttons/links, focus states, labels and keyboard-friendly modals/dropdowns;
+- never rely only on color to communicate status;
+- dashboard tables should become responsive cards or horizontally scrollable tables on small screens.
+
+Design debt and missing UX:
+- reservation form still needs the premium modal/stepper redesign;
+- public PSE/service catalog and service detail pages are missing;
+- event project detail should show each provider/entity as its own negotiation/invoice lane;
+- notification center is missing;
+- payment gateway UX is still test-only;
+- SAP ticketing needs a full management UX;
+- public homepage sections should eventually be driven by analytics/popularity, not random/demo logic only;
+- design tokens/components should be extracted to reduce repeated Tailwind classes.
+
 ## Glossary
 
 - `SAP`: Super Admin Propriétaire, the BAOBAA platform owner and highest admin.
