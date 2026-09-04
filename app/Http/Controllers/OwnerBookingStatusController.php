@@ -6,12 +6,15 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\OwnerProfile;
+use App\Services\EventProjectService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class OwnerBookingStatusController extends Controller
 {
+    public function __construct(private readonly EventProjectService $eventProjectService) {}
+
     public function update(Request $request, Booking $booking): RedirectResponse
     {
         $ownerProfile = $this->ownerProfile($request);
@@ -44,6 +47,8 @@ class OwnerBookingStatusController extends Controller
             'confirmed_at' => $nextStatus === BookingStatus::Confirmed ? now() : $booking->confirmed_at,
             'cancelled_at' => $nextStatus === BookingStatus::Cancelled ? now() : $booking->cancelled_at,
         ]);
+
+        $this->eventProjectService->ensureVenueBookingItem($booking->refresh());
 
         return back()->with('booking_status', match ($validated['action']) {
             'confirm' => 'Réservation confirmée.',

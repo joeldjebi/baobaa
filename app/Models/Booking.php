@@ -21,6 +21,7 @@ class Booking extends Model
         'venue_id',
         'venue_rate_id',
         'venue_availability_id',
+        'event_project_item_id',
         'reference',
         'status',
         'booking_mode',
@@ -67,6 +68,11 @@ class Booking extends Model
     public function rate(): BelongsTo
     {
         return $this->belongsTo(VenueRate::class, 'venue_rate_id');
+    }
+
+    public function eventProjectItem(): BelongsTo
+    {
+        return $this->belongsTo(EventProjectItem::class);
     }
 
     public function payments(): HasMany

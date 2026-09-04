@@ -18,6 +18,7 @@
     $acceptedPaymentMethods = collect($venue?->payment_methods ?: ['baobaa_checkout'])
         ->map(fn (string $method): string => $paymentMethodLabels[$method] ?? $method)
         ->values();
+    $bookingIntent = old('booking_intent', 'reserve');
     $rating = $venue?->average_rating > 0 ? $venue->average_rating : $fallback['rating'];
     $reviews = $venue?->reviews_count > 0 ? $venue->reviews_count : $fallback['reviews'];
     $description = $venue?->description ?: $fallback['description'];
@@ -83,6 +84,8 @@
             'price' => number_format($addOn->price, 0, ',', ' ').' '.$addOn->currency,
         ])->values()->all()
         : $fallbackAddOns;
+    $suggestedEventServices = ($suggestedEventServices ?? collect())->values();
+    $selectedEventServiceIds = collect(old('event_service_ids', []))->map(fn ($id) => (int) $id)->all();
 @endphp
 
 <x-layouts.baobaa :title="$title.' - BAOBAA'">
@@ -438,15 +441,20 @@
                 </section>
             </article>
 
-            <aside class="sticky top-28">
-                <div class="overflow-hidden rounded-[18px] bg-white shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7]">
-                    <div class="border-b border-[#edf2fb] p-4">
+            <aside class="lg:sticky lg:top-36 lg:self-start">
+                <div class="max-h-none overflow-hidden rounded-[22px] bg-white shadow-2xl shadow-[#173e7a]/12 ring-1 ring-[#dce6f7] lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto">
+                    <div class="border-b border-[#edf2fb] bg-gradient-to-br from-white via-[#f7faff] to-[#eef4ff] p-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="text-2xl font-extrabold tracking-[-0.035em] text-[#151821]">{{ $price }}</p>
-                                <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">Tarif horaire · acompte BAOBAA {{ $reservation }}</p>
+                                <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">Prix de base · acompte estimé {{ $reservation }}</p>
                             </div>
                             <span class="rounded-full bg-[#eaf1ff] px-2.5 py-0.5 text-[11px] font-extrabold text-[#2f6bff]">{{ $rating }} ★</span>
+                        </div>
+                        <div class="mt-3 grid grid-cols-3 gap-1.5 text-center text-[10px] font-extrabold text-[#52617b]">
+                            <span class="rounded-full bg-white px-2 py-1 ring-1 ring-[#dce6f7]">1. Demande</span>
+                            <span class="rounded-full bg-white px-2 py-1 ring-1 ring-[#dce6f7]">2. Proforma</span>
+                            <span class="rounded-full bg-white px-2 py-1 ring-1 ring-[#dce6f7]">3. Acompte</span>
                         </div>
                     </div>
 
@@ -458,38 +466,74 @@
 
                     <form method="POST" action="{{ $venue ? route('bookings.store', $venue) : '#' }}" class="space-y-3 p-4">
                         @csrf
+                        <div class="rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] p-1.5">
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="booking_intent" value="reserve" class="peer sr-only" @checked($bookingIntent === 'reserve')>
+                                    <span class="flex h-full items-center justify-center rounded-[13px] px-3 py-2 text-center text-[11px] font-extrabold text-[#6f7890] transition peer-checked:bg-[#2f6bff] peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-[#2f6bff]/20">Réserver au prix affiché</span>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="booking_intent" value="negotiate" class="peer sr-only" @checked($bookingIntent === 'negotiate')>
+                                    <span class="flex h-full items-center justify-center rounded-[13px] px-3 py-2 text-center text-[11px] font-extrabold text-[#6f7890] transition peer-checked:bg-[#07152f] peer-checked:text-white peer-checked:shadow-lg peer-checked:shadow-[#07152f]/15">Proposer un prix</span>
+                                </label>
+                            </div>
+                            @error('booking_intent') <span class="mt-2 block px-2 text-xs font-bold text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
                         <div class="grid grid-cols-2 overflow-hidden rounded-[14px] border border-[#dce6f7] bg-white">
                             <label class="border-b border-r border-[#edf2fb] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Date de début</span>
                                 <input type="date" name="start_date" value="{{ old('start_date') }}" class="mt-0.5 w-full bg-transparent text-xs font-bold text-[#151821] outline-none">
+                                @error('start_date') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                             <label class="border-b border-[#edf2fb] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure début</span>
                                 <input type="time" name="starts_at" value="{{ old('starts_at') }}" class="mt-0.5 w-full bg-transparent text-xs font-bold text-[#151821] outline-none">
+                                @error('starts_at') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                             <label class="border-r border-[#edf2fb] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Date de fin</span>
                                 <input type="date" name="end_date" value="{{ old('end_date') }}" class="mt-0.5 w-full bg-transparent text-xs font-bold text-[#151821] outline-none">
+                                @error('end_date') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                             <label class="px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure de fin</span>
                                 <input type="time" name="ends_at" value="{{ old('ends_at') }}" class="mt-0.5 w-full bg-transparent text-xs font-bold text-[#151821] outline-none">
+                                @error('ends_at') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                         </div>
 
                         <label class="block rounded-[14px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
                             <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Type d'événement</span>
                             <select name="event_type" class="mt-0.5 w-full bg-transparent text-xs font-bold text-[#151821] outline-none">
-                                <option value="conference">Conférence / Séminaire</option>
-                                <option value="mariage">Mariage / Célébration</option>
-                                <option>Concert / Spectacle</option>
-                                <option>Lancement de produit</option>
+                                <option value="conference" @selected(old('event_type') === 'conference')>Conférence / Séminaire</option>
+                                <option value="mariage" @selected(old('event_type') === 'mariage')>Mariage / Célébration</option>
+                                <option value="concert" @selected(old('event_type') === 'concert')>Concert / Spectacle</option>
+                                <option value="lancement" @selected(old('event_type') === 'lancement')>Lancement de produit</option>
                             </select>
+                            @error('event_type') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                         </label>
 
                         <label class="block rounded-[14px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
                             <span class="block whitespace-nowrap text-[9px] font-extrabold uppercase tracking-[0.02em] text-[#8a94aa]">Invités</span>
                             <input type="number" min="1" max="{{ $venue?->max_capacity ?? 450 }}" name="guests_count" value="{{ old('guests_count') }}" placeholder="Ex : 120" class="mt-1 block w-full min-w-0 bg-transparent text-xs font-bold text-[#151821] outline-none">
+                            @error('guests_count') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
+                        </label>
+
+                        <label class="block rounded-[14px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
+                            <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Votre prix proposé</span>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input type="number" min="1" name="proposed_amount" value="{{ old('proposed_amount') }}" placeholder="{{ $venue?->starting_price ? number_format($venue->starting_price, 0, '', '') : '250000' }}" class="block w-full min-w-0 bg-transparent text-xs font-bold text-[#151821] outline-none">
+                                <span class="text-[11px] font-extrabold text-[#8a94aa]">{{ $venue?->currency ?? 'XOF' }}</span>
+                            </div>
+                            <p class="mt-1 text-[10px] font-semibold leading-4 text-[#7d879d]">Optionnel si vous réservez au prix affiché. Utilisé pour démarrer la négociation.</p>
+                            @error('proposed_amount') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
+                        </label>
+
+                        <label class="block rounded-[14px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
+                            <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Message au partenaire</span>
+                            <textarea name="client_notes" rows="3" placeholder="Décrivez votre événement, vos attentes, ou les éléments à négocier." class="mt-1 block w-full resize-none bg-transparent text-xs font-bold leading-5 text-[#151821] outline-none">{{ old('client_notes') }}</textarea>
+                            @error('client_notes') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                         </label>
 
                         <div class="rounded-[14px] border border-[#dce6f7] bg-white p-3">
@@ -504,9 +548,47 @@
                             <p id="selected-addons-summary" class="mt-2.5 hidden text-[11px] font-bold leading-5 text-[#6f7890]"></p>
                         </div>
 
+                        <div class="rounded-[16px] border border-[#dce6f7] bg-white p-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-xs font-extrabold text-[#151821]">Prestations événementielles</p>
+                                    <p class="mt-1 text-[10px] font-semibold leading-4 text-[#7d879d]">Ajoutez son, lumière, podium, photo ou vidéo à votre projet.</p>
+                                </div>
+                                <span class="shrink-0 rounded-full bg-[#eef4ff] px-2 py-0.5 text-[10px] font-extrabold text-[#2f6bff]">PSE</span>
+                            </div>
+
+                            <div class="mt-3 max-h-48 space-y-2 overflow-y-auto pr-1">
+                                @forelse ($suggestedEventServices as $eventService)
+                                    <label class="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[#e6edf9] bg-[#fbfcff] p-3 transition hover:border-[#2f6bff] hover:bg-[#f4f8ff]">
+                                        <input type="checkbox" name="event_service_ids[]" value="{{ $eventService->id }}" class="mt-1 size-4 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(in_array((int) $eventService->id, $selectedEventServiceIds, true))>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block truncate text-xs font-extrabold text-[#151821]">{{ $eventService->name }}</span>
+                                            <span class="mt-0.5 block text-[10px] font-bold leading-4 text-[#7d879d]">{{ $eventService->type?->name ?? 'Service événementiel' }} · {{ $eventService->serviceProviderProfile?->business_name ?? 'Prestataire vérifié' }}</span>
+                                            <span class="mt-1 block text-[11px] font-extrabold text-[#2f6bff]">À partir de {{ number_format($eventService->starting_price, 0, ',', ' ') }} {{ $eventService->currency }}</span>
+                                        </span>
+                                    </label>
+                                @empty
+                                    <p class="rounded-[14px] border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-3 text-[11px] font-bold leading-5 text-[#7d879d]">Aucune prestation PSE publiée dans cette ville pour le moment.</p>
+                                @endforelse
+                            </div>
+
+                            @error('event_service_ids') <span class="mt-2 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
+                            @error('event_service_ids.*') <span class="mt-2 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <label class="flex cursor-pointer items-start gap-3 rounded-[16px] border border-[#cfe0ff] bg-[#f4f8ff] p-3 transition hover:border-[#2f6bff]">
+                            <input type="checkbox" name="ticketing_requested" value="1" class="mt-1 size-4 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(old('ticketing_requested'))>
+                            <span class="min-w-0">
+                                <span class="block text-xs font-extrabold text-[#151821]">Ajouter la billetterie BAOBAA</span>
+                                <span class="mt-1 block text-[10px] font-semibold leading-4 text-[#6f7890]">Le SAP vous proposera une configuration dédiée si votre événement vend des tickets.</span>
+                            </span>
+                        </label>
+
                         <div class="space-y-1.5 rounded-[14px] bg-[#f7f9fd] p-3 text-xs font-bold text-[#4d5872]">
-                            <div class="flex justify-between"><span>Acompte à payer</span><span>{{ $reservation }}</span></div>
-                            <div class="flex justify-between"><span>Frais de service</span><span>Calculés au paiement</span></div>
+                            <div class="flex justify-between gap-3"><span>Facture proforma</span><span class="text-right text-[#151821]">Générée après demande</span></div>
+                            <div class="flex justify-between gap-3"><span>Acompte estimé</span><span class="text-right text-[#151821]">{{ $reservation }}</span></div>
+                            <div class="flex justify-between gap-3"><span>Règle SAP</span><span class="text-right text-[#151821]">Selon ce partenaire</span></div>
+                            <div class="flex justify-between gap-3"><span>Frais de service</span><span class="text-right text-[#151821]">Calculés au paiement</span></div>
                         </div>
                         <div class="rounded-[14px] border border-[#dce6f7] bg-white p-3">
                             <p class="text-[10px] font-extrabold uppercase text-[#8a94aa]">Moyens acceptés</p>
@@ -524,14 +606,16 @@
                                     <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ $paymentMethodLabels[$method] ?? $method }}</option>
                                 @endforeach
                             </select>
+                            @error('payment_method') <span class="mt-1 block text-[10px] font-bold text-red-600">{{ $message }}</span> @enderror
                         </label>
 
                         @guest
-                            <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => url()->current()]) }}" class="flex w-full justify-center rounded-[14px] bg-[#2f6bff] px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Enregistrer ma réservation</a>
-                            <p class="text-center text-[11px] font-bold leading-5 text-[#6f7890]">Connexion client obligatoire avant l'enregistrement et le paiement.</p>
+                            <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => url()->current()]) }}" class="flex w-full justify-center rounded-[14px] bg-[#2f6bff] px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Me connecter pour démarrer</a>
+                            <p class="text-center text-[11px] font-bold leading-5 text-[#6f7890]">Connexion client obligatoire avant la proforma et le paiement de l’acompte.</p>
                         @else
                             @if (auth()->user()?->hasPortal(\App\Enums\UserRole::Client))
-                                <button type="submit" @disabled(! $venue) class="w-full rounded-[14px] bg-[#2f6bff] px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df] disabled:cursor-not-allowed disabled:bg-[#b7c6e5] disabled:shadow-none">Enregistrer ma réservation</button>
+                                <button type="submit" @disabled(! $venue) class="w-full rounded-[14px] bg-[#2f6bff] px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df] disabled:cursor-not-allowed disabled:bg-[#b7c6e5] disabled:shadow-none">Démarrer ma demande</button>
+                                <p class="text-center text-[11px] font-bold leading-5 text-[#6f7890]">Vous pourrez échanger, confirmer la proforma, puis payer l’acompte dans votre espace client.</p>
                             @else
                                 <a href="{{ route('venues.index') }}" class="flex w-full justify-center rounded-[14px] bg-[#07152f] px-4 py-3 text-xs font-extrabold text-white shadow-lg shadow-[#07152f]/15">Explorer comme visiteur</a>
                                 <p class="text-center text-[11px] font-bold leading-5 text-[#6f7890]">La réservation est réservée aux comptes clients.</p>

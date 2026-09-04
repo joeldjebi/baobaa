@@ -83,6 +83,7 @@ class PortalAuthenticatedSessionController extends Controller
         return match ($portal) {
             'sap' => UserRole::Sap,
             'proprietaire' => UserRole::Owner,
+            'prestataire' => UserRole::ServiceProvider,
             'client' => UserRole::Client,
             default => null,
         };
@@ -93,6 +94,7 @@ class PortalAuthenticatedSessionController extends Controller
         return match ($role) {
             UserRole::Sap => 'sap',
             UserRole::Owner => 'proprietaire',
+            UserRole::ServiceProvider => 'prestataire',
             UserRole::Client => 'client',
             default => null,
         };
@@ -104,6 +106,7 @@ class PortalAuthenticatedSessionController extends Controller
             UserRole::Sap => 'sap.dashboard',
             UserRole::Admin => 'sap.dashboard',
             UserRole::Owner => 'owner.dashboard',
+            UserRole::ServiceProvider => 'service-provider.dashboard',
             UserRole::Client => 'client.dashboard',
         };
     }
@@ -131,6 +134,11 @@ class PortalAuthenticatedSessionController extends Controller
                 'label' => 'Portail proprietaire',
                 'title' => 'Publie et gere tes espaces',
                 'subtitle' => 'Suis tes salles, disponibilites, demandes, paiements et reversements.',
+            ],
+            UserRole::ServiceProvider => [
+                'label' => 'Portail prestataire',
+                'title' => 'Pilote tes services événementiels',
+                'subtitle' => 'Publie tes offres, gere les demandes et développe ta visibilité sur BAOBAA.',
             ],
             UserRole::Client => [
                 'label' => 'Portail client',

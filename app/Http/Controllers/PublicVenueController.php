@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\BookingStatus;
 use App\Enums\VenueStatus;
+use App\Models\EventService;
 use App\Models\Venue;
 use App\Models\VenueCategory;
 use App\Services\BookingDepositService;
@@ -142,6 +143,13 @@ class PublicVenueController extends Controller
             'venue' => $venue,
             'fallback' => $this->fallbackVenue($slug),
             'depositAmount' => $venue ? $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price) : null,
+            'suggestedEventServices' => EventService::query()
+                ->with(['type', 'serviceProviderProfile'])
+                ->where('status', VenueStatus::Published)
+                ->when($venue?->city, fn ($query) => $query->where('city', $venue->city))
+                ->orderBy('starting_price')
+                ->limit(6)
+                ->get(),
             'similarVenues' => $this->fallbackSimilarVenues($slug),
             'approvedReviews' => $venue?->reviews
                 ?->where('status', 'approved')

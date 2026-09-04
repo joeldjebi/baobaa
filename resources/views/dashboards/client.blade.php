@@ -27,7 +27,7 @@
                     <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Prochains événements</h2>
                     <p class="mt-1 text-sm font-semibold text-[#6f7890]">Les réservations actives les plus récentes.</p>
                 </div>
-                <a href="{{ route('client.reservations') }}" class="rounded-full bg-[#eef4ff] px-4 py-2 text-xs font-extrabold text-[#2f6bff]">Voir l’historique</a>
+                <a href="{{ route('client.projects') }}" class="rounded-full bg-[#eef4ff] px-4 py-2 text-xs font-extrabold text-[#2f6bff]">Voir mes événements</a>
             </div>
 
             <div class="mt-5 grid gap-3">
@@ -40,7 +40,7 @@
                         </div>
                         <div class="flex flex-wrap items-center gap-2 md:justify-end">
                             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $bookingStatusLabels[$booking->status->value] ?? 'À suivre' }}</span>
-                            <a href="{{ route('venues.show', $booking->venue?->slug) }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Voir</a>
+                            <a href="{{ route('client.reservations.show', $booking) }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir</a>
                         </div>
                     </article>
                 @empty
@@ -57,7 +57,7 @@
             <div class="rounded-[26px] border border-white/80 bg-[#07152f] p-5 text-white shadow-xl shadow-[#07152f]/15">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">Action rapide</p>
                 <h2 class="mt-3 text-xl font-extrabold tracking-[-0.03em]">Réservez avec un acompte sécurisé.</h2>
-                <p class="mt-2 text-sm font-semibold leading-6 text-white/70">Comparez les espaces, vérifiez les informations clés et gardez toutes vos demandes au même endroit.</p>
+                <p class="mt-2 text-sm font-semibold leading-6 text-white/70">Comparez les espaces, préparez vos demandes et gardez chaque projet événementiel au même endroit.</p>
                 <a href="{{ route('venues.index') }}" class="mt-4 inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-[#07152f]">Explorer les espaces</a>
             </div>
 

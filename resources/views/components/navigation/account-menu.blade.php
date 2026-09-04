@@ -17,6 +17,7 @@
 
             @if ($user->hasPortal(UserRole::Client))
                 <a href="{{ route('client.dashboard') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Dashboard client</a>
+                <a href="{{ route('event-composer.create') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Composer un événement</a>
                 <a href="{{ route('client.reservations') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Historique des réservations</a>
                 <a href="{{ route('client.payments') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Historique des paiements</a>
                 <a href="{{ route('client.profile') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Profil et sécurité</a>

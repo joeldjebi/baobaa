@@ -23,6 +23,7 @@
         ['key' => 'subscriptions', 'label' => 'Abonnements', 'route' => 'sap.subscription-plans', 'icon' => 'M4 6h16M4 12h16M4 18h10'],
         ['key' => 'commissions', 'label' => 'Commissions', 'route' => 'sap.commissions', 'icon' => 'M4 19 19 4M7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z'],
         ['key' => 'deposit-rules', 'label' => 'Acomptes réservation', 'route' => 'sap.deposit-rules', 'icon' => 'M12 6v12M8 10h6a3 3 0 0 1 0 6H8m8-8H9a3 3 0 0 0 0 6h7'],
+        ['key' => 'service-types', 'label' => 'Types de services', 'route' => 'sap.service-types', 'icon' => 'M12 3l7 4v10l-7 4-7-4V7l7-4Zm0 0v8m7-4-7 4-7-4'],
         ['key' => 'sponsoring-plans', 'label' => 'Forfaits sponsoring', 'route' => 'sap.sponsorship-plans', 'icon' => 'M12 2l2.2 6.8h7.1l-5.7 4.1 2.2 6.8L12 15.5 6.2 19.7l2.2-6.8-5.7-4.1h7.1L12 2Z'],
     ];
 @endphp

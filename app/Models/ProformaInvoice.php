@@ -16,6 +16,7 @@ class ProformaInvoice extends Model
 
     protected $fillable = [
         'booking_id',
+        'event_project_item_id',
         'reference',
         'status',
         'currency',
@@ -39,6 +40,11 @@ class ProformaInvoice extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function eventProjectItem(): BelongsTo
+    {
+        return $this->belongsTo(EventProjectItem::class);
     }
 
     public function items(): HasMany

@@ -12,6 +12,7 @@ class BookingWorkflowService
 {
     public function __construct(
         private readonly BookingDepositService $bookingDepositService,
+        private readonly EventProjectService $eventProjectService,
         private readonly ProformaInvoiceService $proformaInvoiceService,
     ) {}
 
@@ -21,8 +22,9 @@ class BookingWorkflowService
             $booking->loadMissing('venue.ownerProfile.depositRules');
 
             if ($booking->venue) {
-                $totalAmount = (int) ($booking->total_amount ?: $booking->venue->starting_price);
-                $reservationAmount = (int) ($booking->reservation_amount ?: $this->bookingDepositService->amountFor($booking->venue, $totalAmount));
+                $totalAmount = $this->negotiatedAmountFor($booking)
+                    ?: (int) ($booking->total_amount ?: $booking->venue->starting_price);
+                $reservationAmount = $this->bookingDepositService->amountFor($booking->venue, $totalAmount);
 
                 $booking->forceFill([
                     'currency' => $booking->currency ?: $booking->venue->currency,
@@ -31,24 +33,52 @@ class BookingWorkflowService
                 ])->save();
             }
 
+            $this->eventProjectService->ensureVenueBookingItem($booking);
             $this->proformaInvoiceService->createForBooking($booking);
             $this->ensureDepositPayment($booking);
+            $this->eventProjectService->ensureVenueBookingItem($booking->refresh());
 
             return $booking->refresh();
         });
     }
 
+    /**
+     * @param  array<int, int>  $eventServiceIds
+     */
+    public function syncRequestedAdditions(Booking $booking, array $eventServiceIds, bool $ticketingRequested): void
+    {
+        $this->eventProjectService->syncRequestedAdditions($booking, $eventServiceIds, $ticketingRequested);
+    }
+
     private function ensureDepositPayment(Booking $booking): void
     {
-        $hasDepositPayment = $booking->payments()
-            ->whereIn('status', [PaymentStatus::Initiated, PaymentStatus::Pending, PaymentStatus::Succeeded])
+        $hasSucceededDepositPayment = $booking->payments()
+            ->where('status', PaymentStatus::Succeeded)
             ->exists();
 
-        if ($hasDepositPayment || $booking->reservation_amount <= 0) {
+        if ($hasSucceededDepositPayment || $booking->reservation_amount <= 0) {
             return;
         }
 
         $paymentMethod = $booking->venue?->payment_methods[0] ?? 'baobaa_checkout';
+        $pendingPayment = $booking->payments()
+            ->whereIn('status', [PaymentStatus::Initiated, PaymentStatus::Pending])
+            ->latest()
+            ->first();
+
+        if ($pendingPayment) {
+            $pendingPayment->update([
+                'amount' => $booking->reservation_amount,
+                'currency' => $booking->currency,
+                'provider' => $pendingPayment->provider ?: $paymentMethod,
+                'payment_method' => $pendingPayment->payment_method ?: $paymentMethod,
+                'provider_payload' => array_merge($pendingPayment->provider_payload ?: [], [
+                    'source' => 'booking_workflow_negotiated_amount',
+                ]),
+            ]);
+
+            return;
+        }
 
         Payment::query()->create([
             'booking_id' => $booking->id,
@@ -64,6 +94,24 @@ class BookingWorkflowService
                 'source' => 'booking_workflow_auto_repair',
             ],
         ]);
+    }
+
+    private function negotiatedAmountFor(Booking $booking): ?int
+    {
+        $hasSucceededDepositPayment = $booking->payments()
+            ->where('status', PaymentStatus::Succeeded)
+            ->exists();
+
+        if ($hasSucceededDepositPayment) {
+            return null;
+        }
+
+        $amount = $booking->messages()
+            ->whereNotNull('proposed_amount')
+            ->latest('id')
+            ->value('proposed_amount');
+
+        return $amount ? (int) $amount : null;
     }
 
     private function uniquePaymentReference(): string

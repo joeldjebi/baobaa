@@ -43,9 +43,19 @@ class User extends Authenticatable
         return $this->hasOne(OwnerProfile::class);
     }
 
+    public function serviceProviderProfile(): HasOne
+    {
+        return $this->hasOne(ServiceProviderProfile::class);
+    }
+
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'client_id');
+    }
+
+    public function eventProjects(): HasMany
+    {
+        return $this->hasMany(EventProject::class, 'client_id');
     }
 
     public function payments(): HasMany

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\OwnerProfile;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -11,7 +11,7 @@ use Throwable;
 
 class PartnerLogoService
 {
-    public function store(OwnerProfile $profile, UploadedFile $logo, ?string $altText = null): OwnerProfile
+    public function store(Model $profile, UploadedFile $logo, ?string $altText = null): Model
     {
         $disk = 'wasabi';
         $directory = 'partners/'.$profile->public_uuid.'/logo';
@@ -34,7 +34,7 @@ class PartnerLogoService
         return $profile;
     }
 
-    public function temporaryUrl(OwnerProfile $profile, int $minutes = 45): ?string
+    public function temporaryUrl(Model $profile, int $minutes = 45): ?string
     {
         if (! $profile->logo_path) {
             return null;
@@ -52,7 +52,7 @@ class PartnerLogoService
                 );
             } catch (Throwable $exception) {
                 Log::warning('Unable to generate Wasabi partner logo URL.', [
-                    'owner_profile_id' => $profile->id,
+                    'partner_profile_id' => $profile->id,
                     'path' => $profile->logo_path,
                     'message' => $exception->getMessage(),
                 ]);

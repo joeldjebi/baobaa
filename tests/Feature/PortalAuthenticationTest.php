@@ -231,7 +231,7 @@ test('public venue detail page is available', function () {
     $this->get(route('venues.show', ['slug' => 'auditorium-premium-avec-scene-et-regie']))
         ->assertOk()
         ->assertSee('Auditorium premium avec scene et regie')
-        ->assertSeeText('Enregistrer ma réservation');
+        ->assertSeeText('Me connecter pour démarrer');
 });
 
 test('client can review a venue only after a confirmed booking', function () {

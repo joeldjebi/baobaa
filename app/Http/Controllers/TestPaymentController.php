@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\ProformaInvoiceStatus;
 use App\Models\Booking;
 use App\Services\BookingWorkflowService;
+use App\Services\EventProjectService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,10 @@ use Illuminate\Support\Str;
 
 class TestPaymentController extends Controller
 {
-    public function __construct(private readonly BookingWorkflowService $bookingWorkflowService) {}
+    public function __construct(
+        private readonly BookingWorkflowService $bookingWorkflowService,
+        private readonly EventProjectService $eventProjectService,
+    ) {}
 
     public function store(Request $request, Booking $booking): RedirectResponse
     {
@@ -51,6 +55,8 @@ class TestPaymentController extends Controller
                 'status' => $booking->booking_mode === 'instant' ? BookingStatus::Confirmed : BookingStatus::PendingOwner,
             ]);
         });
+
+        $this->eventProjectService->ensureVenueBookingItem($booking->refresh());
 
         return back()->with('payment_status', 'Paiement test validé. L’acompte est enregistré dans l’historique.');
     }

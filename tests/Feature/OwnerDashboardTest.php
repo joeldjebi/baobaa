@@ -7,6 +7,7 @@ use App\Enums\UserStatus;
 use App\Enums\VenueStatus;
 use App\Enums\VerificationStatus;
 use App\Models\Booking;
+use App\Models\EventServiceType;
 use App\Models\OwnerDepositRule;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
@@ -334,7 +335,7 @@ test('sap manages dashboard pages and pricing plans', function () {
         'status' => VenueStatus::PendingReview,
     ]);
 
-    foreach (['sap.dashboard', 'sap.owners', 'sap.clients', 'sap.venues', 'sap.bookings', 'sap.payments', 'sap.subscription-plans', 'sap.commissions', 'sap.deposit-rules', 'sap.sponsorship-plans', 'sap.portal-requests'] as $routeName) {
+    foreach (['sap.dashboard', 'sap.owners', 'sap.clients', 'sap.venues', 'sap.bookings', 'sap.payments', 'sap.subscription-plans', 'sap.commissions', 'sap.deposit-rules', 'sap.service-types', 'sap.sponsorship-plans', 'sap.portal-requests'] as $routeName) {
         $this->actingAs($sap)->get(route($routeName))->assertOk();
     }
 
@@ -350,6 +351,17 @@ test('sap manages dashboard pages and pricing plans', function () {
         ->assertRedirect();
 
     expect(SponsorshipPlan::query()->where('price', 500)->where('duration_days', 1)->exists())->toBeTrue();
+
+    $this->actingAs($sap)
+        ->post(route('sap.service-types.store'), [
+            'name' => 'Sonorisation premium',
+            'icon' => 'microphone',
+            'description' => 'Prestations sonores pour événements professionnels.',
+            'required_fields' => "Puissance sonore\nTechnicien inclus",
+        ])
+        ->assertRedirect();
+
+    expect(EventServiceType::query()->where('name', 'Sonorisation premium')->exists())->toBeTrue();
 
     $this->actingAs($sap)
         ->post(route('sap.commissions.store'), [

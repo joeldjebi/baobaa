@@ -14,6 +14,8 @@
 
     $navigation = [
         ['key' => 'overview', 'label' => 'Vue d’ensemble', 'route' => 'client.dashboard', 'icon' => 'M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z'],
+        ['key' => 'projects', 'label' => 'Mes événements', 'route' => 'client.projects', 'icon' => 'M12 3l7 4v10l-7 4-7-4V7l7-4Zm0 0v8m7-4-7 4-7-4'],
+        ['key' => 'composer', 'label' => 'Composer', 'route' => 'event-composer.create', 'icon' => 'M12 5v14M5 12h14M4 4h16v16H4V4Z'],
         ['key' => 'reservations', 'label' => 'Réservations', 'route' => 'client.reservations', 'icon' => 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'],
         ['key' => 'payments', 'label' => 'Paiements', 'route' => 'client.payments', 'icon' => 'M3 7h18v10H3V7Zm3 4h5M16 14h2'],
         ['key' => 'profile', 'label' => 'Profil et sécurité', 'route' => 'client.profile', 'icon' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0'],
@@ -49,6 +51,7 @@
                 </nav>
 
                 <div class="mt-6 grid gap-2">
+                    <a href="{{ route('event-composer.create') }}" class="flex items-center justify-center rounded-2xl bg-[#2f6bff] px-4 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Composer un événement</a>
                     <a href="{{ route('venues.index') }}" class="flex items-center justify-center rounded-2xl bg-[#07152f] px-4 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#07152f]/15 transition hover:-translate-y-0.5 hover:bg-[#2f6bff]">Réserver un espace</a>
                     @if ($client && ! $client->hasPortal(UserRole::Owner))
                         <a href="{{ route('portals.owner.request.form') }}" class="flex items-center justify-center rounded-2xl border border-[#c9d8ef] bg-white px-4 py-3 text-sm font-extrabold text-[#2f6bff]">Devenir partenaire vérifié</a>

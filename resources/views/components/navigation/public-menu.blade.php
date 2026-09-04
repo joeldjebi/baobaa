@@ -17,6 +17,7 @@
 <nav {{ $attributes->merge(['class' => 'hidden items-center rounded-full border border-[#e2e9f8] bg-[#f8fbff]/90 px-2 py-1 text-sm font-extrabold text-[#4d5872] lg:flex']) }}>
     <a href="{{ url('/') }}" class="{{ $active === 'explore' ? $activeClass : $linkBase }}">Explorer</a>
     <a href="{{ route('venues.index') }}" class="{{ $active === 'venues' ? $activeClass : $linkBase }}">Espaces</a>
+    <a href="{{ route('event-composer.create') }}" class="{{ $active === 'composer' ? $activeClass : $linkBase }}">Composer mon événement</a>
     <a href="{{ route('owner-profiles.index') }}" class="{{ $active === 'partners' ? $activeClass : $linkBase }}">Partenaires</a>
 
     @if ($isClient)

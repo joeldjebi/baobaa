@@ -11,6 +11,7 @@ use App\Models\Booking;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\PortalAccessRequest;
+use App\Models\ServiceProviderProfile;
 use App\Models\SponsorshipCampaign;
 use App\Models\User;
 use App\Models\Venue;
@@ -67,6 +68,24 @@ class SapPortalRequestController extends Controller
                     ['user_id' => $portalAccessRequest->user_id],
                     [
                         'owner_type' => $portalAccessRequest->applicant_type ?? 'company',
+                        'business_name' => $portalAccessRequest->business_name ?? $portalAccessRequest->user->name,
+                        'legal_name' => $portalAccessRequest->legal_name,
+                        'tax_identifier' => $portalAccessRequest->tax_identifier,
+                        'verification_status' => VerificationStatus::Verified,
+                        'country_code' => $portalAccessRequest->country_code ?? 'CI',
+                        'city' => $portalAccessRequest->city ?? 'Abidjan',
+                        'whatsapp_phone' => $portalAccessRequest->whatsapp_phone,
+                        'billing_preference' => 'commission',
+                        'verified_by' => $request->user()->id,
+                        'verified_at' => now(),
+                    ],
+                );
+            }
+
+            if ($portalAccessRequest->requested_role === UserRole::ServiceProvider) {
+                ServiceProviderProfile::query()->updateOrCreate(
+                    ['user_id' => $portalAccessRequest->user_id],
+                    [
                         'business_name' => $portalAccessRequest->business_name ?? $portalAccessRequest->user->name,
                         'legal_name' => $portalAccessRequest->legal_name,
                         'tax_identifier' => $portalAccessRequest->tax_identifier,

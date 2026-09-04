@@ -9,7 +9,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Venue;
 use App\Services\BookingDepositService;
-use App\Services\ProformaInvoiceService;
+use App\Services\BookingWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ class BookingController extends Controller
 {
     public function __construct(
         private readonly BookingDepositService $bookingDepositService,
-        private readonly ProformaInvoiceService $proformaInvoiceService,
+        private readonly BookingWorkflowService $bookingWorkflowService,
     ) {}
 
     public function store(Request $request, Venue $venue): RedirectResponse
@@ -36,15 +36,27 @@ class BookingController extends Controller
             'event_type' => ['nullable', 'string', 'max:80'],
             'guests_count' => ['required', 'integer', 'min:1', 'max:'.$venue->max_capacity],
             'payment_method' => ['required', 'string', Rule::in($allowedPaymentMethods)],
+            'booking_intent' => ['nullable', Rule::in(['reserve', 'negotiate'])],
+            'proposed_amount' => ['nullable', 'integer', 'min:1'],
+            'client_notes' => ['nullable', 'string', 'max:2000'],
+            'event_service_ids' => ['nullable', 'array', 'max:6'],
+            'event_service_ids.*' => [
+                'integer',
+                Rule::exists('event_services', 'id')->where('status', VenueStatus::Published->value),
+            ],
+            'ticketing_requested' => ['nullable', 'boolean'],
         ]);
 
         $venue->loadMissing('ownerProfile.depositRules');
 
-        $totalAmount = (int) $venue->starting_price;
+        $wantsNegotiation = ($validated['booking_intent'] ?? 'reserve') === 'negotiate' && filled($validated['proposed_amount'] ?? null);
+        $totalAmount = $wantsNegotiation ? (int) $validated['proposed_amount'] : (int) $venue->starting_price;
         $reservationAmount = $this->bookingDepositService->amountFor($venue, $totalAmount);
         $paymentMethod = $validated['payment_method'];
+        $eventServiceIds = array_map('intval', $validated['event_service_ids'] ?? []);
+        $ticketingRequested = $request->boolean('ticketing_requested');
 
-        $booking = DB::transaction(function () use ($request, $venue, $validated, $totalAmount, $reservationAmount, $paymentMethod): Booking {
+        $booking = DB::transaction(function () use ($request, $venue, $validated, $totalAmount, $reservationAmount, $paymentMethod, $wantsNegotiation, $eventServiceIds, $ticketingRequested): Booking {
             $booking = Booking::query()->create([
                 'client_id' => $request->user()->id,
                 'owner_profile_id' => $venue->owner_profile_id,
@@ -60,8 +72,19 @@ class BookingController extends Controller
                 'currency' => $venue->currency,
                 'total_amount' => $totalAmount,
                 'reservation_amount' => $reservationAmount,
+                'client_notes' => $validated['client_notes'] ?? null,
                 'expires_at' => now()->addMinutes(30),
             ]);
+
+            if ($wantsNegotiation || filled($validated['client_notes'] ?? null)) {
+                $booking->messages()->create([
+                    'sender_id' => $request->user()->id,
+                    'recipient_id' => $venue->ownerProfile?->user_id,
+                    'message' => $validated['client_notes'] ?: 'Je souhaite négocier cette réservation.',
+                    'proposed_amount' => $wantsNegotiation ? $totalAmount : null,
+                    'currency' => $venue->currency,
+                ]);
+            }
 
             Payment::query()->create([
                 'booking_id' => $booking->id,
@@ -75,10 +98,12 @@ class BookingController extends Controller
                 'provider_payload' => [
                     'reason' => 'reservation_deposit',
                     'source' => 'sap_owner_deposit_rule',
+                    'price_source' => $wantsNegotiation ? 'client_proposal' : 'venue_public_price',
                 ],
             ]);
 
-            $this->proformaInvoiceService->createForBooking($booking->load('venue'));
+            $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
+            $this->bookingWorkflowService->syncRequestedAdditions($booking, $eventServiceIds, $ticketingRequested);
 
             return $booking;
         });

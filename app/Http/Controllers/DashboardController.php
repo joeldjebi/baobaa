@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\VenueStatus;
 use App\Models\Booking;
+use App\Models\EventProject;
 use App\Models\OwnerModuleTemplate;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
@@ -101,6 +102,32 @@ class DashboardController extends Controller
                 ->when($request->filled('date_to'), fn (Builder $query) => $query->whereDate('event_date', '<=', $request->date('date_to')))
                 ->latest('event_date')
                 ->paginate(10, ['*'], 'bookings_page')
+                ->withQueryString(),
+        ]);
+    }
+
+    public function clientProjects(Request $request): View
+    {
+        $client = $request->user();
+
+        return view('dashboards.client-projects', [
+            ...$this->clientMetricsFor($client),
+            'client' => $client,
+            'projects' => EventProject::query()
+                ->with(['items.booking.venue'])
+                ->withCount('items')
+                ->where('client_id', $client->id)
+                ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')))
+                ->when($request->filled('q'), function (Builder $query) use ($request): void {
+                    $search = '%'.$request->string('q')->toString().'%';
+                    $query->where(function (Builder $query) use ($search): void {
+                        $query->where('reference', 'like', $search)
+                            ->orWhere('name', 'like', $search);
+                    });
+                })
+                ->latest('event_date')
+                ->latest()
+                ->paginate(8, ['*'], 'projects_page')
                 ->withQueryString(),
         ]);
     }

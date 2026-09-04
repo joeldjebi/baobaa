@@ -8,6 +8,8 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingMessageController;
 use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventComposerController;
+use App\Http\Controllers\EventServiceController;
 use App\Http\Controllers\OwnerBookingStatusController;
 use App\Http\Controllers\OwnerPayoutController;
 use App\Http\Controllers\OwnerRegisteredUserController;
@@ -21,6 +23,8 @@ use App\Http\Controllers\PublicOwnerProfileController;
 use App\Http\Controllers\PublicVenueController;
 use App\Http\Controllers\SapDashboardController;
 use App\Http\Controllers\SapPortalRequestController;
+use App\Http\Controllers\ServiceProviderDashboardController;
+use App\Http\Controllers\ServiceProviderRegisteredUserController;
 use App\Http\Controllers\TestPaymentController;
 use App\Http\Controllers\VenueReviewController;
 use App\Models\Venue;
@@ -118,6 +122,7 @@ Route::get('/lister-un-espace', function () {
 })->name('venues.list-venue');
 Route::get('/espaces', [PublicVenueController::class, 'index'])->name('venues.index');
 Route::get('/espaces/{slug}', [PublicVenueController::class, 'show'])->name('venues.show');
+Route::get('/composer-mon-evenement', [EventComposerController::class, 'create'])->name('event-composer.create');
 Route::post('/espaces/{venue}/reservation', [BookingController::class, 'store'])
     ->middleware(['auth', 'role:client'])
     ->name('bookings.store');
@@ -132,13 +137,15 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/client/inscription', [ClientRegisteredUserController::class, 'store'])->name('client.register.store');
     Route::get('/proprietaire/inscription', [OwnerRegisteredUserController::class, 'create'])->name('owner.register');
     Route::post('/proprietaire/inscription', [OwnerRegisteredUserController::class, 'store'])->name('owner.register.store');
+    Route::get('/prestataire/inscription', [ServiceProviderRegisteredUserController::class, 'create'])->name('service-provider.register');
+    Route::post('/prestataire/inscription', [ServiceProviderRegisteredUserController::class, 'store'])->name('service-provider.register.store');
 
     Route::get('/{portal}/login', [PortalAuthenticatedSessionController::class, 'create'])
-        ->whereIn('portal', ['sap', 'proprietaire', 'client'])
+        ->whereIn('portal', ['sap', 'proprietaire', 'client', 'prestataire'])
         ->name('portal.login');
 
     Route::post('/{portal}/login', [PortalAuthenticatedSessionController::class, 'store'])
-        ->whereIn('portal', ['sap', 'proprietaire', 'client'])
+        ->whereIn('portal', ['sap', 'proprietaire', 'client', 'prestataire'])
         ->name('portal.login.store');
 });
 
@@ -151,6 +158,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/portails/proprietaire', [PortalAccessController::class, 'becomeOwner'])->name('portals.owner.enable');
     Route::get('/portails/proprietaire/demande', [PortalAccessController::class, 'ownerApplicationForm'])->name('portals.owner.request.form');
     Route::post('/portails/proprietaire/demande', [PortalAccessController::class, 'requestOwnerAccess'])->name('portals.owner.request');
+    Route::post('/portails/prestataire', [PortalAccessController::class, 'becomeServiceProvider'])->name('portals.service-provider.enable');
+    Route::get('/portails/prestataire/demande', [PortalAccessController::class, 'serviceProviderApplicationForm'])->name('portals.service-provider.request.form');
+    Route::post('/portails/prestataire/demande', [PortalAccessController::class, 'requestServiceProviderAccess'])->name('portals.service-provider.request');
 });
 
 Route::middleware(['auth', 'role:sap'])->group(function (): void {
@@ -173,12 +183,28 @@ Route::middleware(['auth', 'role:sap'])->group(function (): void {
     Route::get('/sap/acomptes', [SapDashboardController::class, 'depositRules'])->name('sap.deposit-rules');
     Route::post('/sap/acomptes', [SapDashboardController::class, 'storeDepositRule'])->name('sap.deposit-rules.store');
     Route::post('/sap/acomptes/{ownerDepositRule}/statut', [SapDashboardController::class, 'toggleDepositRule'])->name('sap.deposit-rules.toggle');
+    Route::get('/sap/types-services', [SapDashboardController::class, 'serviceTypes'])->name('sap.service-types');
+    Route::post('/sap/types-services', [SapDashboardController::class, 'storeServiceType'])->name('sap.service-types.store');
+    Route::post('/sap/types-services/{eventServiceType}/statut', [SapDashboardController::class, 'toggleServiceType'])->name('sap.service-types.toggle');
     Route::get('/sap/forfaits-sponsoring', [SapDashboardController::class, 'sponsorshipPlans'])->name('sap.sponsorship-plans');
     Route::post('/sap/forfaits-sponsoring', [SapDashboardController::class, 'storeSponsorshipPlan'])->name('sap.sponsorship-plans.store');
     Route::post('/sap/forfaits-sponsoring/{sponsorshipPlan}/statut', [SapDashboardController::class, 'toggleSponsorshipPlan'])->name('sap.sponsorship-plans.toggle');
     Route::get('/sap/demandes-portails', [SapPortalRequestController::class, 'index'])->name('sap.portal-requests');
     Route::post('/sap/demandes-portails/{portalAccessRequest}/decision', [SapPortalRequestController::class, 'decide'])->name('sap.portal-requests.decide');
     Route::post('/sap/sponsorings/{sponsorshipCampaign}/decision', [SapPortalRequestController::class, 'decideSponsorship'])->name('sap.sponsorships.decide');
+});
+
+Route::middleware(['auth', 'role:service_provider'])->group(function (): void {
+    Route::get('/prestataire/dashboard', [ServiceProviderDashboardController::class, 'overview'])->name('service-provider.dashboard');
+    Route::get('/prestataire/services', [ServiceProviderDashboardController::class, 'services'])->name('service-provider.services');
+    Route::get('/prestataire/services/nouveau', [ServiceProviderDashboardController::class, 'serviceForm'])->name('service-provider.services.create');
+    Route::get('/prestataire/services/{eventService}/modifier', [ServiceProviderDashboardController::class, 'serviceForm'])->name('service-provider.services.edit');
+    Route::post('/prestataire/services', [EventServiceController::class, 'store'])->name('service-provider.services.store');
+    Route::patch('/prestataire/services/{eventService}', [EventServiceController::class, 'update'])->name('service-provider.services.update');
+    Route::post('/prestataire/services/{eventService}/statut', [EventServiceController::class, 'toggle'])->name('service-provider.services.toggle');
+    Route::delete('/prestataire/services/{eventService}', [EventServiceController::class, 'destroy'])->name('service-provider.services.destroy');
+    Route::get('/prestataire/parametres', [ServiceProviderDashboardController::class, 'settings'])->name('service-provider.settings');
+    Route::patch('/prestataire/parametres', [EventServiceController::class, 'updateSettings'])->name('service-provider.settings.update');
 });
 
 Route::middleware(['auth', 'role:owner'])->group(function (): void {
@@ -212,6 +238,8 @@ Route::middleware(['auth', 'role:owner'])->group(function (): void {
 
 Route::middleware(['auth', 'role:client'])->group(function (): void {
     Route::get('/client/dashboard', [DashboardController::class, 'client'])->name('client.dashboard');
+    Route::get('/client/evenements', [DashboardController::class, 'clientProjects'])->name('client.projects');
+    Route::post('/client/evenements/composer', [EventComposerController::class, 'store'])->name('event-composer.store');
     Route::get('/client/reservations', [DashboardController::class, 'clientReservations'])->name('client.reservations');
     Route::get('/client/reservations/{booking}', [DashboardController::class, 'clientBookingShow'])->name('client.reservations.show');
     Route::post('/client/reservations/{booking}/messages', [BookingMessageController::class, 'store'])->name('client.reservations.messages.store');

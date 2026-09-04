@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Services\BookingWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class BookingMessageController extends Controller
 {
+    public function __construct(private readonly BookingWorkflowService $bookingWorkflowService) {}
+
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         $user = $request->user();
@@ -35,6 +38,8 @@ class BookingMessageController extends Controller
             'proposed_amount' => $validated['proposed_amount'] ?? null,
             'currency' => $booking->currency,
         ]);
+
+        $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
 
         return back()->with('conversation_status', 'Message ajouté à la discussion.');
     }

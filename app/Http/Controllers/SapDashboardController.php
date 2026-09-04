@@ -9,6 +9,7 @@ use App\Enums\UserStatus;
 use App\Enums\VenueStatus;
 use App\Models\Booking;
 use App\Models\CommissionRule;
+use App\Models\EventServiceType;
 use App\Models\OwnerDepositRule;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
@@ -281,6 +282,50 @@ class SapDashboardController extends Controller
         $ownerDepositRule->update(['is_active' => ! $ownerDepositRule->is_active]);
 
         return back()->with('sap_status', 'Règle d’acompte mise à jour.');
+    }
+
+    public function serviceTypes(Request $request): View
+    {
+        return view('dashboards.sap.service-types', [
+            ...$this->metrics(),
+            'types' => EventServiceType::query()
+                ->withCount('services')
+                ->when($request->filled('status'), fn (Builder $query) => $query->where('is_active', $request->string('status')->toString() === 'active'))
+                ->when($request->filled('q'), fn (Builder $query) => $query->where('name', 'like', '%'.$request->string('q')->toString().'%'))
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->paginate(10)
+                ->withQueryString(),
+        ]);
+    }
+
+    public function storeServiceType(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'icon' => ['nullable', 'string', 'max:80'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'required_fields' => ['nullable', 'string', 'max:1200'],
+        ]);
+
+        EventServiceType::query()->create([
+            'name' => $validated['name'],
+            'slug' => Str::slug($validated['name']).'-'.Str::lower(Str::random(5)),
+            'icon' => $validated['icon'] ?? 'sparkles',
+            'description' => $validated['description'] ?? null,
+            'required_fields' => $this->linesToArray($validated['required_fields'] ?? ''),
+            'is_active' => true,
+            'sort_order' => EventServiceType::query()->count() + 1,
+        ]);
+
+        return back()->with('sap_status', 'Type de service ajouté.');
+    }
+
+    public function toggleServiceType(EventServiceType $eventServiceType): RedirectResponse
+    {
+        $eventServiceType->update(['is_active' => ! $eventServiceType->is_active]);
+
+        return back()->with('sap_status', 'Type de service mis à jour.');
     }
 
     public function sponsorshipPlans(Request $request): View

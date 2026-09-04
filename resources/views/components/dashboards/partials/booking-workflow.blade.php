@@ -12,6 +12,10 @@
     use App\Enums\ProformaInvoiceStatus;
 
     $invoice = $booking->proformaInvoice;
+    $latestNegotiatedAmount = $booking->messages
+        ->filter(fn ($message) => $message->proposed_amount)
+        ->sortByDesc('id')
+        ->first()?->proposed_amount;
     $invoiceStatusLabels = [
         'sent' => 'En attente de validation',
         'accepted_by_client' => 'Confirmée par le client',
@@ -41,6 +45,14 @@
         </div>
 
         @if ($invoice)
+            @if ($latestNegotiatedAmount)
+                <div class="mt-5 rounded-2xl border border-[#b9d3ff] bg-[#f4f8ff] p-4">
+                    <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#2f6bff]">Prix négocié retenu</p>
+                    <p class="mt-1 text-lg font-extrabold text-[#07152f]">{{ number_format($latestNegotiatedAmount, 0, ',', ' ') }} {{ $invoice->currency }}</p>
+                    <p class="mt-1 text-xs font-bold text-[#6f7890]">La proforma et l’acompte sont recalculés sur cette base tant qu’aucun paiement n’est finalisé.</p>
+                </div>
+            @endif
+
             <div class="mt-5 overflow-hidden rounded-2xl border border-[#edf2fb]">
                 <div class="grid grid-cols-[minmax(0,1fr)_80px_120px_120px] bg-[#f7faff] px-4 py-3 text-xs font-extrabold uppercase text-[#7d8aa7] max-md:hidden">
                     <span>Désignation</span>
