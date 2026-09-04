@@ -9,11 +9,13 @@ use App\Enums\UserStatus;
 use App\Enums\VenueStatus;
 use App\Models\Booking;
 use App\Models\CommissionRule;
+use App\Models\EventProjectItem;
 use App\Models\EventServiceType;
 use App\Models\OwnerDepositRule;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\PortalAccessRequest;
+use App\Models\ServiceProviderProfile;
 use App\Models\SponsorshipCampaign;
 use App\Models\SponsorshipPlan;
 use App\Models\SubscriptionPlan;
@@ -75,6 +77,62 @@ class SapDashboardController extends Controller
                 ->latest()
                 ->paginate(10)
                 ->withQueryString(),
+        ]);
+    }
+
+    public function providers(Request $request): View
+    {
+        $providers = ServiceProviderProfile::query()
+            ->with(['user'])
+            ->withCount(['services'])
+            ->when($request->filled('status'), fn (Builder $query) => $query->where('verification_status', $request->string('status')))
+            ->when($request->filled('q'), function (Builder $query) use ($request): void {
+                $search = '%'.$request->string('q')->toString().'%';
+                $query->where('business_name', 'like', $search)
+                    ->orWhere('city', 'like', $search)
+                    ->orWhereHas('user', fn (Builder $query) => $query->where('name', 'like', $search)->orWhere('email', 'like', $search));
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $providers->getCollection()->transform(function (ServiceProviderProfile $provider): ServiceProviderProfile {
+            $provider->setRelation('published_services', $provider->services()->where('status', VenueStatus::Published)->get());
+            $provider->setRelation('reservation_items', EventProjectItem::query()
+                ->where('provider_type', 'service_provider_profile')
+                ->where('provider_id', $provider->id)
+                ->with('eventProject.client')
+                ->latest()
+                ->limit(4)
+                ->get());
+
+            return $provider;
+        });
+
+        return view('dashboards.sap.providers', [
+            ...$this->metrics(),
+            'providers' => $providers,
+        ]);
+    }
+
+    public function providerDetail(ServiceProviderProfile $serviceProviderProfile): View
+    {
+        $serviceProviderProfile->load(['user', 'services.type']);
+
+        $services = $serviceProviderProfile->services()->with('type')->latest()->get();
+        $recentReservations = EventProjectItem::query()
+            ->where('provider_type', 'service_provider_profile')
+            ->where('provider_id', $serviceProviderProfile->id)
+            ->with('eventProject.client')
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        return view('dashboards.sap.provider-detail', [
+            ...$this->metrics(),
+            'provider' => $serviceProviderProfile,
+            'services' => $services,
+            'recentReservations' => $recentReservations,
         ]);
     }
 

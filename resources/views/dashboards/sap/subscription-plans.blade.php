@@ -1,6 +1,6 @@
 <x-dashboards.sap-shell title="Forfaits abonnement" subtitle="Définissez les offres mensuelles ou annuelles proposées aux PEE." active="subscriptions" :owners-count="$ownersCount" :clients-count="$clientsCount" :published-venues-count="$publishedVenuesCount" :pending-access-requests-count="$pendingAccessRequestsCount" :pending-sponsorships-count="$pendingSponsorshipsCount" :gross-payments-amount="$grossPaymentsAmount" :active-bookings-count="$activeBookingsCount">
-    <div class="grid gap-6 xl:grid-cols-[400px_1fr]">
-        <form method="POST" action="{{ route('sap.subscription-plans.store') }}" class="rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
+    <div class="grid w-full max-w-full gap-6">
+        <form method="POST" action="{{ route('sap.subscription-plans.store') }}" class="w-full max-w-full rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
             @csrf
             <h2 class="text-xl font-extrabold text-[#07152f]">Nouvelle formule</h2>
             <div class="mt-5 space-y-3">
