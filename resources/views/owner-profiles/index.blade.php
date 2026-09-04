@@ -25,11 +25,7 @@
         <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
             <div class="mx-auto flex max-w-7xl items-center justify-between">
                 <a href="{{ url('/') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <span class="grid size-11 place-items-center rounded-2xl bg-[#2f6bff] text-lg font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">B</span>
-                    <span class="leading-none">
-                        <span class="block text-xl font-extrabold tracking-[-0.045em]">baobaa</span>
-                        <span class="block text-[11px] font-extrabold tracking-[-0.035em] text-[#6f7890]">marché événementiel</span>
-                    </span>
+                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
                 </a>
 
                 <x-navigation.public-menu active="partners" />

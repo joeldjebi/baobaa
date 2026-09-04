@@ -139,17 +139,31 @@ class PublicVenueController extends Controller
                 ->first();
         }
 
+        $publicEventServices = EventService::query()
+            ->with(['type', 'serviceProviderProfile'])
+            ->where('status', VenueStatus::Published)
+            ->when($venue?->city, fn ($query) => $query->where('city', $venue->city))
+            ->orderBy('starting_price')
+            ->get();
+
+        $publicEventProviders = $publicEventServices
+            ->groupBy(fn (EventService $service) => $service->service_provider_profile_id)
+            ->map(function ($services) {
+                $provider = $services->first()->serviceProviderProfile;
+
+                return [
+                    'provider' => $provider,
+                    'services' => $services,
+                ];
+            })
+            ->values();
+
         return view('venues.show', [
             'venue' => $venue,
             'fallback' => $this->fallbackVenue($slug),
             'depositAmount' => $venue ? $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price) : null,
-            'suggestedEventServices' => EventService::query()
-                ->with(['type', 'serviceProviderProfile'])
-                ->where('status', VenueStatus::Published)
-                ->when($venue?->city, fn ($query) => $query->where('city', $venue->city))
-                ->orderBy('starting_price')
-                ->limit(6)
-                ->get(),
+            'suggestedEventServices' => $publicEventServices,
+            'publicEventProviders' => $publicEventProviders,
             'similarVenues' => $this->fallbackSimilarVenues($slug),
             'approvedReviews' => $venue?->reviews
                 ?->where('status', 'approved')

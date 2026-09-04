@@ -66,12 +66,8 @@
             <div class="animate-baobaa-hero-drift absolute -right-[12%] top-[38%] h-[380px] w-[74%] rounded-[50%] bg-[#e7e4ff]/70 blur-3xl" style="animation-delay: -7s"></div>
 
             <header class="relative z-[120] mx-auto flex max-w-[1680px] items-center justify-between">
-                <a href="{{ url('/') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <span class="grid size-10 place-items-center rounded-2xl bg-white text-lg font-extrabold shadow-sm ring-1 ring-[#dbe3f8]">B</span>
-                    <span class="leading-none">
-                        <span class="block text-xl font-extrabold tracking-[-0.04em]">baobaa</span>
-                        <span class="block text-xs font-extrabold tracking-[-0.04em]">événements en minutes</span>
-                    </span>
+                <a href="{{ url('/') }}" class="flex shrink-0 items-center text-[#2f6bff]">
+                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-12 w-auto max-w-[180px] rounded-2xl bg-white/80 object-contain p-1 shadow-sm ring-1 ring-[#dbe3f8] sm:h-14" loading="eager">
                 </a>
 
                 <x-navigation.public-menu active="explore" class="border-white/80 bg-white/72 shadow-sm backdrop-blur" />
@@ -330,11 +326,7 @@
             <div class="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_auto_auto]">
                 <div>
                     <a href="{{ url('/') }}" class="inline-flex items-center gap-3 text-white">
-                        <span class="grid size-11 place-items-center rounded-2xl bg-[#2f6bff] text-lg font-extrabold shadow-lg shadow-[#2f6bff]/25">B</span>
-                        <span class="leading-none">
-                            <span class="block text-xl font-extrabold tracking-[-0.045em]">baobaa</span>
-                            <span class="block text-[11px] font-extrabold tracking-[-0.035em] text-white/55">Là où chaque événement prend racine</span>
-                        </span>
+                        <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
                     </a>
                     <p class="mt-5 max-w-xl text-sm font-semibold leading-7 text-white/62">Réservez des salles, jardins, rooftops, auditoriums et espaces professionnels vérifiés en Afrique francophone.</p>
                 </div>

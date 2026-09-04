@@ -31,12 +31,8 @@
         <div data-owner-mobile-overlay class="fixed inset-0 z-[80] hidden bg-[#07152f]/45 opacity-0 backdrop-blur-sm transition-opacity duration-200 lg:hidden"></div>
         <aside data-owner-mobile-menu class="fixed inset-y-0 left-0 z-[90] hidden w-[min(88vw,330px)] -translate-x-full overflow-y-auto border-r border-white/80 bg-white p-5 shadow-2xl shadow-[#07152f]/25 transition-transform duration-300 lg:hidden">
             <div class="flex items-center justify-between gap-3">
-                <a href="{{ route('owner.dashboard') }}" class="flex min-w-0 items-center gap-3 text-[#2f6bff]">
-                    <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#2f6bff] text-lg font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">B</span>
-                    <span class="min-w-0 leading-none">
-                        <span class="block truncate text-xl font-extrabold tracking-[-0.045em]">baobaa</span>
-                        <span class="block truncate text-[11px] font-extrabold tracking-[-0.035em] text-[#6f7890]">portail propriétaire</span>
-                    </span>
+                <a href="{{ route('owner.dashboard') }}" class="flex min-w-0 items-center justify-center text-[#2f6bff]">
+                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto max-w-[170px] rounded-2xl object-contain bg-white p-1 shadow-lg shadow-[#2f6bff]/20 ring-1 ring-[#dbe3f8]" loading="lazy">
                 </a>
                 <button type="button" data-owner-mobile-close class="grid size-10 shrink-0 place-items-center rounded-full bg-[#f2f6ff] text-[#07152f]" aria-label="Fermer le menu">
                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
@@ -73,12 +69,8 @@
 
         <div class="grid min-h-screen lg:grid-cols-[290px_1fr]">
             <aside class="sticky top-0 hidden h-screen overflow-y-auto border-r border-white/80 bg-white/88 p-5 shadow-2xl shadow-[#173e7a]/8 backdrop-blur-xl lg:block">
-                <a href="{{ route('owner.dashboard') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <span class="grid size-11 place-items-center rounded-2xl bg-[#2f6bff] text-lg font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">B</span>
-                    <span class="leading-none">
-                        <span class="block text-xl font-extrabold tracking-[-0.045em]">baobaa</span>
-                        <span class="block text-[11px] font-extrabold tracking-[-0.035em] text-[#6f7890]">portail propriétaire</span>
-                    </span>
+                <a href="{{ route('owner.dashboard') }}" class="flex items-center justify-center text-[#2f6bff]">
+                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto max-w-[170px] rounded-2xl object-contain bg-white p-1 shadow-lg shadow-[#2f6bff]/20 ring-1 ring-[#dbe3f8]" loading="lazy">
                 </a>
 
                 <div class="mt-7 rounded-[22px] border border-[#dce6f7] bg-[#f7faff] p-4">

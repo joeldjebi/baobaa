@@ -23,6 +23,24 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+test('guest sees a premium reservation CTA and login requirement on the venue page', function () {
+    $venue = Venue::factory()->create([
+        'name' => 'Salle réservation sécurisée',
+        'slug' => 'salle-reservation-securisee',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+
+    $this->get(route('venues.show', $venue->slug))
+        ->assertOk()
+        ->assertSeeText('Demander une réservation')
+        ->assertSeeText('Composer mon événement')
+        ->assertSee(route('portal.login', ['portal' => 'client', 'redirect' => route('venues.show', $venue->slug)]))
+        ->assertSeeText('Connexion client obligatoire avant la proforma et le paiement de l’acompte.');
+
+    $this->assertDatabaseCount('bookings', 0);
+});
+
 test('guest sees client login before saving a booking request', function () {
     $venue = Venue::factory()->create([
         'name' => 'Salle réservation sécurisée',
@@ -38,6 +56,82 @@ test('guest sees client login before saving a booking request', function () {
         ->assertSeeText('Connexion client obligatoire avant la proforma et le paiement de l’acompte.');
 
     $this->assertDatabaseCount('bookings', 0);
+});
+
+test('sap can list service providers with their published services and reservations', function () {
+    $sap = User::factory()->create([
+        'role' => UserRole::Sap,
+        'portal_roles' => [UserRole::Sap->value],
+    ]);
+
+    $profile = ServiceProviderProfile::factory()->create([
+        'business_name' => 'Studio Lumière PSE',
+        'city' => 'Abidjan',
+        'verification_status' => 'verified',
+    ]);
+
+    EventService::factory()->create([
+        'service_provider_profile_id' => $profile->id,
+        'name' => 'Sonorisation mobile',
+        'city' => 'Abidjan',
+        'status' => VenueStatus::Published,
+        'starting_price' => 120000,
+    ]);
+
+    $project = EventProject::factory()->create([
+        'client_id' => User::factory()->create(['role' => UserRole::Client])->id,
+    ]);
+
+    EventProjectItem::factory()->create([
+        'event_project_id' => $project->id,
+        'provider_type' => 'service_provider_profile',
+        'provider_id' => $profile->id,
+        'title' => 'Sonorisation mobile',
+        'status' => 'negotiating',
+    ]);
+
+    $this->actingAs($sap)
+        ->get(route('sap.providers'))
+        ->assertOk()
+        ->assertSeeText('PSE')
+        ->assertSeeText('Studio Lumière PSE')
+        ->assertSeeText('Sonorisation mobile')
+        ->assertSeeText('Réservations');
+});
+
+test('public venue flow lets clients choose a PSE before its services', function () {
+    $venue = Venue::factory()->create([
+        'name' => 'Salle premium',
+        'slug' => 'salle-premium',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'city' => 'Abidjan',
+    ]);
+
+    $pse = User::factory()->create([
+        'role' => UserRole::ServiceProvider,
+        'portal_roles' => [UserRole::ServiceProvider->value],
+    ]);
+
+    $profile = ServiceProviderProfile::factory()->create([
+        'user_id' => $pse->id,
+        'business_name' => 'Studio Lumière PSE',
+        'city' => 'Abidjan',
+    ]);
+
+    EventService::factory()->create([
+        'service_provider_profile_id' => $profile->id,
+        'name' => 'Sonorisation mobile',
+        'city' => 'Abidjan',
+        'status' => VenueStatus::Published,
+        'starting_price' => 120000,
+    ]);
+
+    $this->get(route('venues.show', $venue->slug))
+        ->assertOk()
+        ->assertSeeText('Choisir un prestataire PSE')
+        ->assertSeeText('Studio Lumière PSE')
+        ->assertSeeText('Services du prestataire');
 });
 
 test('client can save a booking request and gets an initiated deposit payment', function () {

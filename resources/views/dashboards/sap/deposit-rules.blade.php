@@ -6,8 +6,8 @@
 @endphp
 
 <x-dashboards.sap-shell title="Acomptes réservation" subtitle="Définissez le montant que chaque client doit payer avant confirmation, partenaire par partenaire." active="deposit-rules" :owners-count="$ownersCount" :clients-count="$clientsCount" :published-venues-count="$publishedVenuesCount" :pending-access-requests-count="$pendingAccessRequestsCount" :pending-sponsorships-count="$pendingSponsorshipsCount" :gross-payments-amount="$grossPaymentsAmount" :active-bookings-count="$activeBookingsCount">
-    <div class="grid gap-6 xl:grid-cols-[420px_1fr]">
-        <form method="POST" action="{{ route('sap.deposit-rules.store') }}" class="rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
+    <div class="grid w-full max-w-full gap-6">
+        <form method="POST" action="{{ route('sap.deposit-rules.store') }}" class="w-full max-w-full rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
             @csrf
             <div class="flex items-start justify-between gap-3">
                 <div>
