@@ -54,6 +54,13 @@
                 @endif
             </div>
 
+            <x-dashboards.partials.booking-workflow
+                :booking="$booking"
+                :message-route="route('owner.bookings.messages.store', $booking)"
+                :confirm-route="route('owner.bookings.proforma.confirm', $booking)"
+                actor-label="Votre équipe"
+            />
+
             <div class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
                 <h3 class="text-lg font-extrabold text-[#07152f]">Paiements liés</h3>
                 <div class="mt-4 overflow-x-auto rounded-2xl border border-[#edf2fb]">
@@ -90,12 +97,14 @@
             <div class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
                 <h3 class="text-sm font-extrabold text-[#07152f]">Actions</h3>
                 <div class="mt-4 grid gap-2">
-                    @if (in_array($booking->status->value, ['pending_owner', 'pending_payment'], true))
+                    @if ($booking->status->value === 'pending_owner')
                         <form method="POST" action="{{ route('owner.bookings.status', $booking) }}">
                             @csrf
                             <input type="hidden" name="action" value="confirm">
                             <button class="w-full rounded-2xl bg-[#2f6bff] px-4 py-3 text-sm font-extrabold text-white">Confirmer la réservation</button>
                         </form>
+                    @endif
+                    @if (in_array($booking->status->value, ['pending_owner', 'pending_payment'], true))
                         <form method="POST" action="{{ route('owner.bookings.status', $booking) }}">
                             @csrf
                             <input type="hidden" name="action" value="decline">

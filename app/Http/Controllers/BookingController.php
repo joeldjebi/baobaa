@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Venue;
 use App\Services\BookingDepositService;
+use App\Services\ProformaInvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,10 @@ use Illuminate\Validation\Rule;
 
 class BookingController extends Controller
 {
-    public function __construct(private readonly BookingDepositService $bookingDepositService) {}
+    public function __construct(
+        private readonly BookingDepositService $bookingDepositService,
+        private readonly ProformaInvoiceService $proformaInvoiceService,
+    ) {}
 
     public function store(Request $request, Venue $venue): RedirectResponse
     {
@@ -40,7 +44,7 @@ class BookingController extends Controller
         $reservationAmount = $this->bookingDepositService->amountFor($venue, $totalAmount);
         $paymentMethod = $validated['payment_method'];
 
-        DB::transaction(function () use ($request, $venue, $validated, $totalAmount, $reservationAmount, $paymentMethod): void {
+        $booking = DB::transaction(function () use ($request, $venue, $validated, $totalAmount, $reservationAmount, $paymentMethod): Booking {
             $booking = Booking::query()->create([
                 'client_id' => $request->user()->id,
                 'owner_profile_id' => $venue->owner_profile_id,
@@ -73,9 +77,15 @@ class BookingController extends Controller
                     'source' => 'sap_owner_deposit_rule',
                 ],
             ]);
+
+            $this->proformaInvoiceService->createForBooking($booking->load('venue'));
+
+            return $booking;
         });
 
-        return back()->with('booking_status', 'Votre demande est enregistrée. Payez l’acompte pour lancer la confirmation de réservation.');
+        return redirect()
+            ->route('client.reservations.show', $booking)
+            ->with('booking_status', 'Votre demande est enregistrée. Consultez la proforma, échangez avec le partenaire puis payez l’acompte de réservation.');
     }
 
     private function uniqueReference(): string

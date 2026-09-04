@@ -53,6 +53,11 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class, 'payer_id');
     }
 
+    public function sentBookingMessages(): HasMany
+    {
+        return $this->hasMany(BookingMessage::class, 'sender_id');
+    }
+
     public function venueReviews(): HasMany
     {
         return $this->hasMany(VenueReview::class, 'client_id');

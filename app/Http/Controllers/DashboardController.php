@@ -102,6 +102,26 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function clientBookingShow(Request $request, Booking $booking): View
+    {
+        $client = $request->user();
+
+        abort_unless((int) $booking->client_id === (int) $client->id, 404);
+
+        return view('dashboards.client-booking-show', [
+            ...$this->clientMetricsFor($client),
+            'client' => $client,
+            'booking' => $booking->load([
+                'venue.media',
+                'venue.category',
+                'venue.ownerProfile.user',
+                'payments',
+                'messages.sender',
+                'proformaInvoice.items',
+            ]),
+        ]);
+    }
+
     public function ownerVenues(Request $request): View
     {
         $ownerProfile = $this->ownerProfile($request);
@@ -179,7 +199,16 @@ class DashboardController extends Controller
         return view('dashboards.owner.booking-show', [
             ...$this->ownerMetrics($ownerProfile),
             'ownerProfile' => $ownerProfile,
-            'booking' => $booking->load(['venue.media', 'venue.category', 'client', 'payments', 'commission', 'payout']),
+            'booking' => $booking->load([
+                'venue.media',
+                'venue.category',
+                'client',
+                'payments',
+                'commission',
+                'payout',
+                'messages.sender',
+                'proformaInvoice.items',
+            ]),
         ]);
     }
 

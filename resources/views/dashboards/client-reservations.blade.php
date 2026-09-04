@@ -40,7 +40,7 @@
                         <p>{{ $booking->event_date?->format('d/m/Y') }} · {{ substr($booking->starts_at, 0, 5) }} - {{ substr($booking->ends_at, 0, 5) }}</p>
                         <p>{{ number_format($booking->guests_count, 0, ',', ' ') }} invités · acompte {{ number_format($booking->reservation_amount, 0, ',', ' ') }} {{ $booking->currency }}</p>
                     </div>
-                    <a href="{{ route('venues.show', $booking->venue?->slug) }}" class="mt-4 inline-flex rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Voir</a>
+                    <a href="{{ route('client.reservations.show', $booking) }}" class="mt-4 inline-flex rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir le dossier</a>
                 </article>
             @empty
                 <p class="rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-5 text-center text-sm font-semibold text-[#6f7890]">Aucune réservation trouvée.</p>
@@ -62,7 +62,7 @@
                             <td class="px-4 py-4 font-semibold text-[#52617b]">{{ number_format($booking->guests_count, 0, ',', ' ') }}</td>
                             <td class="px-4 py-4 font-extrabold text-[#07152f]">{{ number_format($booking->reservation_amount, 0, ',', ' ') }} {{ $booking->currency }}</td>
                             <td class="px-4 py-4"><span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $bookingStatusLabels[$booking->status->value] ?? 'À suivre' }}</span></td>
-                            <td class="px-4 py-4 text-right"><a href="{{ route('venues.show', $booking->venue?->slug) }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Voir</a></td>
+                            <td class="px-4 py-4 text-right"><a href="{{ route('client.reservations.show', $booking) }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir</a></td>
                         </tr>
                     @empty
                         <tr><td colspan="8" class="px-4 py-10 text-center font-semibold text-[#6f7890]">Aucune réservation trouvée.</td></tr>

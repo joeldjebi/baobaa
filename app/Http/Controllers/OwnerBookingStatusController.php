@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\OwnerProfile;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,16 @@ class OwnerBookingStatusController extends Controller
             'cancel' => BookingStatus::Cancelled,
             'complete' => BookingStatus::Completed,
         };
+
+        if ($validated['action'] === 'confirm') {
+            $hasPaidDeposit = $booking->payments()
+                ->where('status', PaymentStatus::Succeeded)
+                ->exists();
+
+            if (! $hasPaidDeposit) {
+                return back()->with('booking_status', 'La réservation pourra être confirmée après paiement de l’acompte client.');
+            }
+        }
 
         $booking->update([
             'status' => $nextStatus,

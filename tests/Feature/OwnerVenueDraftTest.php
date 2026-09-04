@@ -452,6 +452,13 @@ test('owner manages booking status from reservation dashboard', function () {
         'owner_profile_id' => $ownerProfile->id,
         'status' => BookingStatus::PendingOwner,
     ]);
+    Payment::factory()->create([
+        'booking_id' => $booking->id,
+        'payer_id' => $client->id,
+        'status' => PaymentStatus::Succeeded,
+        'amount' => $booking->reservation_amount,
+        'paid_at' => now(),
+    ]);
 
     $this->actingAs($owner)
         ->post(route('owner.bookings.status', $booking), ['action' => 'confirm'])
@@ -459,4 +466,23 @@ test('owner manages booking status from reservation dashboard', function () {
 
     expect($booking->refresh()->status)->toBe(BookingStatus::Confirmed)
         ->and($booking->confirmed_at)->not->toBeNull();
+});
+
+test('owner cannot confirm booking before deposit payment', function () {
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $client = User::factory()->create(['role' => UserRole::Client]);
+    $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    $booking = Booking::factory()->create([
+        'client_id' => $client->id,
+        'owner_profile_id' => $ownerProfile->id,
+        'status' => BookingStatus::PendingOwner,
+    ]);
+
+    $this->actingAs($owner)
+        ->post(route('owner.bookings.status', $booking), ['action' => 'confirm'])
+        ->assertRedirect()
+        ->assertSessionHas('booking_status', 'La réservation pourra être confirmée après paiement de l’acompte client.');
+
+    expect($booking->refresh()->status)->toBe(BookingStatus::PendingOwner)
+        ->and($booking->confirmed_at)->toBeNull();
 });

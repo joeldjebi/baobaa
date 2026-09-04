@@ -74,6 +74,16 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function messages(): HasMany
+    {
+        return $this->hasMany(BookingMessage::class);
+    }
+
+    public function proformaInvoice(): HasOne
+    {
+        return $this->hasOne(ProformaInvoice::class);
+    }
+
     public function commission(): HasOne
     {
         return $this->hasOne(BookingCommission::class);
