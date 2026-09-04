@@ -256,3 +256,51 @@ test('client cannot open another client booking workflow', function () {
         ->get(route('client.reservations.show', $booking))
         ->assertNotFound();
 });
+
+test('legacy booking detail generates missing proforma and deposit payment', function () {
+    $client = User::factory()->create(['role' => UserRole::Client]);
+    $owner = User::factory()->create(['role' => UserRole::Owner]);
+    $ownerProfile = OwnerProfile::factory()->create(['user_id' => $owner->id]);
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'starting_price' => 650000,
+        'reservation_amount' => 150000,
+        'payment_methods' => ['wave'],
+    ]);
+    $booking = Booking::factory()->create([
+        'client_id' => $client->id,
+        'owner_profile_id' => $ownerProfile->id,
+        'venue_id' => $venue->id,
+        'status' => BookingStatus::PendingPayment,
+        'total_amount' => 650000,
+        'reservation_amount' => 150000,
+    ]);
+
+    $this->assertDatabaseMissing('proforma_invoices', ['booking_id' => $booking->id]);
+    $this->assertDatabaseMissing('payments', ['booking_id' => $booking->id]);
+
+    $this->actingAs($owner)
+        ->get(route('owner.bookings.show', $booking))
+        ->assertOk()
+        ->assertSeeText('Facture proforma');
+
+    $this->assertDatabaseHas('proforma_invoices', [
+        'booking_id' => $booking->id,
+        'total_amount' => 650000,
+        'deposit_amount' => 150000,
+    ]);
+    $this->assertDatabaseHas('payments', [
+        'booking_id' => $booking->id,
+        'payer_id' => $client->id,
+        'status' => PaymentStatus::Initiated,
+        'amount' => 150000,
+        'payment_method' => 'wave',
+    ]);
+
+    $this->actingAs($client)
+        ->get(route('client.reservations.show', $booking))
+        ->assertOk()
+        ->assertSeeText('Paiement test après double confirmation');
+});

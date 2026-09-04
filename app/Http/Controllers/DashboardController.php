@@ -17,6 +17,7 @@ use App\Models\Venue;
 use App\Models\VenueAvailability;
 use App\Models\VenueCategory;
 use App\Models\VenueReview;
+use App\Services\BookingWorkflowService;
 use App\Services\PartnerLogoService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,8 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function __construct(private readonly BookingWorkflowService $bookingWorkflowService) {}
+
     public function sap(): View
     {
         return view('dashboards.sap', [
@@ -107,6 +110,8 @@ class DashboardController extends Controller
         $client = $request->user();
 
         abort_unless((int) $booking->client_id === (int) $client->id, 404);
+
+        $booking = $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
 
         return view('dashboards.client-booking-show', [
             ...$this->clientMetricsFor($client),
@@ -195,6 +200,8 @@ class DashboardController extends Controller
         $ownerProfile = $this->ownerProfile($request);
 
         abort_unless((int) $booking->owner_profile_id === (int) $ownerProfile->id, 403);
+
+        $booking = $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
 
         return view('dashboards.owner.booking-show', [
             ...$this->ownerMetrics($ownerProfile),

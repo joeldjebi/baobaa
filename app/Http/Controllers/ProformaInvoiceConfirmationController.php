@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Services\BookingWorkflowService;
 use App\Services\ProformaInvoiceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ProformaInvoiceConfirmationController extends Controller
 {
-    public function __construct(private readonly ProformaInvoiceService $proformaInvoiceService) {}
+    public function __construct(
+        private readonly ProformaInvoiceService $proformaInvoiceService,
+        private readonly BookingWorkflowService $bookingWorkflowService,
+    ) {}
 
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         $user = $request->user();
+        $booking = $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
         $booking->loadMissing(['ownerProfile.user', 'proformaInvoice']);
 
         abort_unless($booking->proformaInvoice, 404);

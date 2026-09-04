@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ProformaInvoiceStatus;
 use App\Models\Booking;
+use App\Services\BookingWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,10 +14,13 @@ use Illuminate\Support\Str;
 
 class TestPaymentController extends Controller
 {
+    public function __construct(private readonly BookingWorkflowService $bookingWorkflowService) {}
+
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless((int) $booking->client_id === (int) $request->user()->id, 404);
 
+        $booking = $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
         $booking->loadMissing(['payments', 'proformaInvoice']);
 
         if ($booking->proformaInvoice?->status !== ProformaInvoiceStatus::Confirmed) {
