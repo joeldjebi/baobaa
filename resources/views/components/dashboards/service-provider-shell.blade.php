@@ -21,12 +21,8 @@
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <div class="grid min-h-screen lg:grid-cols-[290px_1fr]">
             <aside class="sticky top-0 hidden h-screen overflow-y-auto border-r border-white/80 bg-white/88 p-5 shadow-2xl shadow-[#173e7a]/8 backdrop-blur-xl lg:block">
-                <a href="{{ route('service-provider.dashboard') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <span class="grid size-11 place-items-center rounded-2xl bg-[#2f6bff] text-lg font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">B</span>
-                    <span class="leading-none">
-                        <span class="block text-xl font-extrabold tracking-[-0.045em]">baobaa</span>
-                        <span class="block text-[11px] font-extrabold tracking-[-0.035em] text-[#6f7890]">portail prestataire</span>
-                    </span>
+                <a href="{{ route('service-provider.dashboard') }}" class="flex items-center justify-center text-[#2f6bff]">
+                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto max-w-[170px] rounded-2xl object-contain bg-white p-1 shadow-lg shadow-[#2f6bff]/20 ring-1 ring-[#dbe3f8]" loading="lazy">
                 </a>
 
                 <div class="mt-7 rounded-[22px] border border-[#dce6f7] bg-[#f7faff] p-4">

@@ -6,9 +6,8 @@
                 <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.96),rgba(47,107,255,.74))]"></div>
             </div>
 
-            <a href="{{ url('/') }}" class="relative z-10 flex items-center gap-3">
-                <span class="grid size-10 place-items-center rounded-full bg-white text-sm font-black text-[#0d47a1]">B</span>
-                <span class="text-lg font-semibold tracking-[0.22em]">BAOBAA</span>
+            <a href="{{ url('/') }}" class="relative z-10 flex items-center justify-start">
+                <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-10 w-auto max-w-[160px] rounded-full object-contain bg-white/90 p-1 shadow-lg shadow-[#2f6bff]/20" loading="lazy">
             </a>
 
             <div class="relative z-10 max-w-2xl py-14 lg:py-0">

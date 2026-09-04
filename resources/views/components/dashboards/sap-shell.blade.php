@@ -18,6 +18,7 @@
         ['key' => 'owners', 'label' => 'Partenaires PEE', 'route' => 'sap.owners', 'icon' => 'M4 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M8 7h2M12 7h2M8 11h2M12 11h2M2 21h20'],
         ['key' => 'venues', 'label' => 'Espaces', 'route' => 'sap.venues', 'icon' => 'M10 20v-6h4v6M4 10 12 3l8 7v10H4V10Z'],
         ['key' => 'clients', 'label' => 'Clients', 'route' => 'sap.clients', 'icon' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0'],
+        ['key' => 'providers', 'label' => 'PSE', 'route' => 'sap.providers', 'icon' => 'M7 7h10v10H7zm0 0V3m10 18v-4M12 3v6m0 6v6'],
         ['key' => 'bookings', 'label' => 'Réservations', 'route' => 'sap.bookings', 'icon' => 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'],
         ['key' => 'payments', 'label' => 'Paiements', 'route' => 'sap.payments', 'icon' => 'M3 7h18v10H3V7Zm3 4h5M16 14h2'],
         ['key' => 'subscriptions', 'label' => 'Abonnements', 'route' => 'sap.subscription-plans', 'icon' => 'M4 6h16M4 12h16M4 18h10'],
@@ -40,12 +41,8 @@
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <div class="sap-dashboard-grid grid min-h-screen">
             <aside class="sticky top-0 hidden h-screen w-[300px] overflow-y-auto border-r border-white/80 bg-white/90 p-5 shadow-2xl shadow-[#173e7a]/8 backdrop-blur-xl lg:block">
-                <a href="{{ route('sap.dashboard') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <span class="grid size-11 place-items-center rounded-2xl bg-[#2f6bff] text-lg font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">B</span>
-                    <span class="leading-none">
-                        <span class="block text-xl font-extrabold tracking-[-0.045em]">baobaa</span>
-                        <span class="block text-[11px] font-extrabold tracking-[-0.035em] text-[#6f7890]">super admin</span>
-                    </span>
+                <a href="{{ route('sap.dashboard') }}" class="flex items-center justify-center text-[#2f6bff]">
+                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-12 w-auto max-w-[180px] rounded-2xl object-contain bg-white p-1 shadow-lg shadow-[#2f6bff]/20 ring-1 ring-[#dbe3f8]" loading="lazy">
                 </a>
 
                 <div class="mt-7 rounded-[22px] border border-[#dce6f7] bg-[#07152f] p-4 text-white">
