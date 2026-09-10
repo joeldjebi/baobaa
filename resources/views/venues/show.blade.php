@@ -23,7 +23,7 @@
     $reviews = $venue?->reviews_count > 0 ? $venue->reviews_count : $fallback['reviews'];
     $description = $venue?->description ?: $fallback['description'];
     $venueMedia = $venue?->media?->sortBy('sort_order') ?? collect();
-    $images = $venueMedia->where('type', 'image')->map->signed_url->values()->all() ?: $fallback['images'];
+    $images = $venueMedia->where('type', 'image')->map->signed_url->filter()->values()->all() ?: $fallback['images'];
     $videos = $venueMedia->where('type', 'video')->map(fn ($media) => [
         'url' => $media->signed_url,
         'alt' => $media->alt_text ?: $title,
@@ -161,13 +161,75 @@
             </div>
 
             <div class="mt-4 flex flex-wrap gap-2">
-                <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $capacity }}</span>
-                <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">4-15 heures</span>
-                <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $surface }}</span>
-                <span class="rounded-full bg-[#eaf1ff] px-3 py-1.5 text-xs font-extrabold text-[#2f6bff]">{{ $city }}</span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    {{ $capacity }}
+                </span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+                    4-15 heures
+                </span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"/><path d="M5 7h14v10H5z"/><path d="M9 11V7"/><path d="M15 11V7"/></svg>
+                    {{ $surface }}
+                </span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-[#eaf1ff] px-3 py-1.5 text-xs font-extrabold text-[#2f6bff]">
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
+                    {{ $city }}
+                </span>
                 @foreach ($highlights as $highlight)
-                    <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $highlight }}</span>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">
+                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        {{ $highlight }}
+                    </span>
                 @endforeach
+            </div>
+
+            <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-[18px] border border-[#dce6f7] bg-white p-4 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 place-items-center rounded-2xl bg-[#eef4ff] text-[#2f6bff]">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/></svg>
+                        </span>
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">Capacité</p>
+                            <p class="mt-1 text-base font-extrabold text-[#151821]">{{ $capacity }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-[18px] border border-[#dce6f7] bg-white p-4 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 place-items-center rounded-2xl bg-[#eef4ff] text-[#2f6bff]">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-6h6v6"/></svg>
+                        </span>
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">Lieu</p>
+                            <p class="mt-1 text-base font-extrabold text-[#151821]">{{ $district }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-[18px] border border-[#dce6f7] bg-white p-4 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 place-items-center rounded-2xl bg-[#eef4ff] text-[#2f6bff]">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0-9-9 9 9 0 0 0 9 9Z"/><path d="M12 7v5l3 3"/></svg>
+                        </span>
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">Disponibilité</p>
+                            <p class="mt-1 text-base font-extrabold text-[#151821]">4-15 heures</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-[18px] border border-[#dce6f7] bg-white p-4 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 place-items-center rounded-2xl bg-[#eef4ff] text-[#2f6bff]">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="9"/></svg>
+                        </span>
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">Prix</p>
+                            <p class="mt-1 text-base font-extrabold text-[#151821]">{{ $price }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             @if (count($videos) > 0)
@@ -188,7 +250,7 @@
         <div class="sticky top-[64px] z-30 border-y border-[#edf2fb] bg-white/95 px-5 py-3 sm:px-8 baobaa-sticky-stable">
             <nav id="venue-tabs" class="mx-auto flex max-w-7xl gap-2 overflow-x-auto rounded-full border border-[#dfe7f8] bg-white p-1 text-sm font-extrabold text-[#6f7890] shadow-[0_16px_50px_rgba(23,62,122,0.08)] baobaa-scrollbar-none">
                 @foreach ($tabs as $target => $tab)
-                    <a href="#{{ $target }}" data-tab-link class="shrink-0 rounded-full px-4 py-2.5 transition hover:bg-[#f4f7ff] hover:text-[#2f6bff]">{{ $tab }}</a>
+                    <a href="#{{ $target }}" data-tab-link aria-current="{{ $loop->first ? 'true' : 'false' }}" class="shrink-0 rounded-full px-4 py-2.5 transition {{ $loop->first ? 'bg-[#2f6bff] text-white shadow-sm' : 'text-[#6f7890] hover:bg-[#f4f7ff] hover:text-[#2f6bff]' }}">{{ $tab }}</a>
                 @endforeach
             </nav>
         </div>
@@ -477,13 +539,13 @@
                     @endif
 
                     <div class="space-y-4 p-5">
-                        <button type="button" id="open-reservation-modal" class="flex w-full items-center justify-center gap-2 rounded-[18px] bg-[#2f6bff] px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">
-                            Demander une réservation
+                        <a href="{{ $venue ? route('venues.reservation', $venue->slug) : url('/') }}" class="flex w-full items-center justify-center gap-2 rounded-[18px] bg-[#2f6bff] px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">
+                            Composer le package de mon événement
                             <span aria-hidden="true">→</span>
-                        </button>
+                        </a>
 
-                        <a href="{{ route('event-composer.create') }}" class="flex w-full items-center justify-center gap-2 rounded-[18px] border border-[#dce6f7] bg-[#f7faff] px-4 py-3.5 text-sm font-extrabold text-[#2f6bff] transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef4ff]">
-                            Composer mon événement
+                        <a href="{{ route('event-services.index') }}" class="flex w-full items-center justify-center gap-2 rounded-[18px] border border-[#dce6f7] bg-[#f7faff] px-4 py-3.5 text-sm font-extrabold text-[#2f6bff] transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef4ff]">
+                            Réserver uniquement un service événementiel
                         </a>
 
                         <div class="rounded-[18px] bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">
@@ -491,8 +553,8 @@
                             <ul class="mt-3 space-y-2 text-xs font-semibold leading-5 text-[#52617b]">
                                 <li>• date, heure et nombre d’invités</li>
                                 <li>• prix proposé et négociation</li>
-                                <li>• modules du partenaire et services PSE</li>
-                                <li>• billetterie BAOBAA / SAP</li>
+                                <li>• modules du partenaire et services événementiels</li>
+                                <li>• billetterie digitale BAOBAA</li>
                             </ul>
                         </div>
 
@@ -539,10 +601,11 @@
             </div>
         </div>
 
-        <div id="venue-gallery-modal" class="fixed inset-0 z-50 hidden bg-[#071225]/95 p-4 text-white" aria-hidden="true">
-            <button type="button" id="gallery-close" class="absolute right-5 top-5 z-10 grid size-11 place-items-center rounded-full bg-white/10 text-2xl font-bold backdrop-blur transition hover:bg-white/20" aria-label="Fermer la galerie">&times;</button>
-            <button type="button" id="gallery-prev" class="absolute left-5 top-1/2 z-10 hidden size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-3xl font-bold backdrop-blur transition hover:bg-white/20 sm:grid" aria-label="Image précédente">‹</button>
-            <button type="button" id="gallery-next" class="absolute right-5 top-1/2 z-10 hidden size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-3xl font-bold backdrop-blur transition hover:bg-white/20 sm:grid" aria-label="Image suivante">›</button>
+        <div id="venue-gallery-modal" class="fixed inset-0 z-[90] hidden bg-[#071225]/95 p-4 text-white" aria-hidden="true">
+            <button type="button" id="gallery-close" class="absolute right-5 top-5 z-20 grid size-11 place-items-center rounded-full bg-white/10 text-2xl font-bold backdrop-blur transition hover:bg-white/20" aria-label="Fermer la galerie">&times;</button>
+            <button type="button" id="gallery-prev" class="absolute left-3 top-1/2 z-20 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-3xl font-bold backdrop-blur transition hover:bg-white/20 sm:left-5 sm:size-12" aria-label="Image précédente">‹</button>
+            <button type="button" id="gallery-next" class="absolute right-3 top-1/2 z-20 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-3xl font-bold backdrop-blur transition hover:bg-white/20 sm:right-5 sm:size-12" aria-label="Image suivante">›</button>
+            <div id="gallery-counter" class="absolute left-5 top-5 z-20 rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold text-white backdrop-blur"></div>
 
             <div class="mx-auto flex h-full max-w-6xl flex-col justify-center gap-4">
                 <div class="flex min-h-0 flex-1 items-center justify-center">
@@ -559,27 +622,45 @@
         </div>
 
         <div id="reservation-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-[#071225]/75 p-4 backdrop-blur-sm" aria-hidden="true">
-            <div class="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] bg-white shadow-2xl ring-1 ring-[#dfe7f8]">
-                <div class="flex items-center justify-between border-b border-[#edf2fb] px-5 py-4 sm:px-7">
-                    <div>
-                        <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Commander une réservation</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em] text-[#151821]">Composer mon événement</h2>
+            <div class="h-[92vh] w-full max-w-7xl overflow-hidden rounded-[34px] bg-[#f6f8fc] shadow-[0_30px_90px_rgba(7,22,47,0.28)] ring-1 ring-[#dfe7f8]">
+                <header class="bg-[#07162f] px-5 py-6 text-white sm:px-8 lg:px-10">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Planification événementielle</p>
+                            <h2 class="mt-5 max-w-3xl text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl lg:text-5xl">Composer mon événement</h2>
+                            <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#c7d4ec] sm:text-base">Choisissez les dates, vos services, la billetterie et les modules de votre espace pour centraliser la demande de réservation.</p>
+                        </div>
+                        <button type="button" id="close-reservation-modal" class="grid size-11 shrink-0 place-items-center rounded-full bg-white/8 text-2xl font-light text-white transition hover:bg-white/15" aria-label="Fermer le parcours de réservation">&times;</button>
                     </div>
-                    <button type="button" id="close-reservation-modal" class="grid size-10 place-items-center rounded-full text-2xl font-light text-[#4d5872] transition hover:bg-[#f4f7ff]" aria-label="Fermer le parcours de réservation">&times;</button>
-                </div>
 
-                <div class="border-b border-[#edf2fb] bg-[#f7faff] px-5 py-4 sm:px-7">
+                    <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-[22px] bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
+                            <p class="text-2xl font-extrabold text-white">{{ $venue?->max_capacity ?? 450 }}</p>
+                            <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#bfd2ff]">Capacité</p>
+                        </div>
+                        <div class="rounded-[22px] bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
+                            <p class="text-2xl font-extrabold text-white">{{ number_format(count($reservationAddOns), 0, ',', ' ') }}</p>
+                            <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#bfd2ff]">Modules</p>
+                        </div>
+                        <div class="rounded-[22px] bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
+                            <p class="text-2xl font-extrabold text-white">Billets</p>
+                            <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#bfd2ff]">Billetterie</p>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="border-b border-[#edf2fb] bg-white px-5 py-4 sm:px-8 lg:px-10">
                     <div class="flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#52617b]">
-                        <span data-step-badge="1" class="rounded-full bg-[#2f6bff] px-2.5 py-1 text-white">1</span>
-                        <span data-step-badge="2" class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#dce6f7] text-[#52617b]">2</span>
-                        <span data-step-badge="3" class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#dce6f7] text-[#52617b]">3</span>
-                        <span data-step-badge="4" class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#dce6f7] text-[#52617b]">4</span>
-                        <span data-step-badge="5" class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#dce6f7] text-[#52617b]">5</span>
-                        <span data-step-badge="6" class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#dce6f7] text-[#52617b]">6</span>
+                        <span data-step-badge="1" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2f6bff] text-sm font-black text-white shadow-lg shadow-[#2f6bff]/20">1</span>
+                        <span data-step-badge="2" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-[#dce6f7] text-[#52617b]">2</span>
+                        <span data-step-badge="3" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-[#dce6f7] text-[#52617b]">3</span>
+                        <span data-step-badge="4" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-[#dce6f7] text-[#52617b]">4</span>
+                        <span data-step-badge="5" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-[#dce6f7] text-[#52617b]">5</span>
+                        <span data-step-badge="6" class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-[#dce6f7] text-[#52617b]">6</span>
                     </div>
                 </div>
 
-                <div class="max-h-[72vh] overflow-y-auto p-5 sm:p-7">
+                <div class="max-h-[calc(92vh-250px)] overflow-y-auto p-5 sm:p-7 lg:p-8">
                     <form method="POST" action="{{ $venue ? route('bookings.store', $venue) : '#' }}" class="space-y-4">
                         @csrf
 
@@ -666,7 +747,7 @@
 
                         <div data-step-panel="5" class="hidden space-y-4">
                             <div class="rounded-[18px] border border-[#dce6f7] bg-[#fbfcff] p-4">
-                                <p class="text-sm font-extrabold text-[#151821]">Choisir un prestataire PSE</p>
+                                <p class="text-sm font-extrabold text-[#151821]">Choisir un prestataire événementiel</p>
                                 <div class="mt-3 grid gap-3 md:grid-cols-2">
                                     @forelse ($eventServiceProviderGroups as $providerGroup)
                                         @php $provider = $providerGroup['provider']; @endphp
@@ -681,7 +762,7 @@
                                             <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $providerGroup['services']->count() }}</span>
                                         </button>
                                     @empty
-                                        <p class="text-sm font-semibold text-[#6f7890]">Aucun prestataire PSE pour le moment.</p>
+                                        <p class="text-sm font-semibold text-[#6f7890]">Aucun prestataire événementiel pour le moment.</p>
                                     @endforelse
                                 </div>
 
@@ -705,7 +786,7 @@
                                                 @endforeach
                                             </div>
                                         @empty
-                                            <p class="text-sm font-semibold text-[#6f7890]">Aucun service PSE pour le moment.</p>
+                                            <p class="text-sm font-semibold text-[#6f7890]">Aucun service événementiel pour le moment.</p>
                                         @endforelse
                                     </div>
                                 </div>
@@ -718,14 +799,14 @@
                                 <div class="mt-3 space-y-3 text-sm font-bold text-[#52617b]">
                                     <div class="flex justify-between gap-3"><span>Prix de base</span><span class="text-[#151821]">{{ $price }}</span></div>
                                     <div class="flex justify-between gap-3"><span>Acompte estimé</span><span class="text-[#151821]">{{ $reservation }}</span></div>
-                                    <div class="flex justify-between gap-3"><span>Billetterie BAOBAA</span><span class="text-[#151821]">Selon votre demande</span></div>
+                                    <div class="flex justify-between gap-3"><span>Billetterie digitale</span><span class="text-[#151821]">Selon votre événement</span></div>
                                 </div>
 
                                 <label class="mt-4 flex cursor-pointer items-start gap-3 rounded-[16px] border border-[#cfe0ff] bg-[#f4f8ff] p-3">
                                     <input type="checkbox" name="ticketing_requested" value="1" class="mt-1 size-4 accent-[#2f6bff]" @checked(old('ticketing_requested'))>
                                     <span>
-                                        <span class="block text-sm font-extrabold text-[#151821]">Ajouter la billetterie BAOBAA</span>
-                                        <span class="mt-1 block text-xs font-semibold leading-5 text-[#6f7890]">Le SAP vous proposera une configuration dédiée.</span>
+                                        <span class="block text-sm font-extrabold text-[#151821]">Ajouter une billetterie digitale</span>
+                                        <span class="mt-1 block text-xs font-semibold leading-5 text-[#6f7890]">Vendez vos billets, suivez les accès et simplifiez l’accueil des invités.</span>
                                     </span>
                                 </label>
 
@@ -774,13 +855,19 @@
                 const actionToast = document.getElementById('venue-action-toast');
                 const openButtons = document.querySelectorAll('[data-gallery-index]');
                 const thumbButtons = document.querySelectorAll('[data-gallery-thumb]');
-                const tabLinks = document.querySelectorAll('[data-tab-link]');
+                const tabLinks = [...document.querySelectorAll('[data-tab-link]')];
                 const sections = [...tabLinks].map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
                 const addOnsModal = document.getElementById('addons-modal');
                 const addOnsSearch = document.getElementById('addons-search');
                 const addOnsRows = document.querySelectorAll('[data-addon-row]');
                 const addOnsCheckboxes = document.querySelectorAll('[data-addon-checkbox]');
                 const selectedAddOnsSummary = document.getElementById('selected-addons-summary');
+                const galleryPrevBtn = document.getElementById('gallery-prev');
+                const galleryNextBtn = document.getElementById('gallery-next');
+                const galleryCounter = document.getElementById('gallery-counter');
+                const openAddOnsButton = document.getElementById('open-addons-modal');
+                const closeAddOnsButton = document.getElementById('close-addons-modal');
+                const confirmAddOnsButton = document.getElementById('confirm-addons');
                 const reservationOpenButton = document.getElementById('open-reservation-modal');
                 const reservationCloseButton = document.getElementById('close-reservation-modal');
                 const reservationNextStep = document.getElementById('reservation-next-step');
@@ -824,12 +911,16 @@
                         badge.classList.toggle('text-[#52617b]', ! isActive);
                     });
 
-                    reservationPrevStep.classList.toggle('hidden', currentStep === 1);
-                    reservationNextStep.classList.toggle('hidden', currentStep === stepPanels.length);
-                    reservationSubmit.classList.toggle('hidden', currentStep !== stepPanels.length);
+                    reservationPrevStep?.classList.toggle('hidden', currentStep === 1);
+                    reservationNextStep?.classList.toggle('hidden', currentStep === stepPanels.length);
+                    reservationSubmit?.classList.toggle('hidden', currentStep !== stepPanels.length);
                 };
 
                 const openReservationModal = () => {
+                    if (! reservationModal) {
+                        return;
+                    }
+
                     reservationModal.classList.remove('hidden');
                     reservationModal.classList.add('flex');
                     reservationModal.setAttribute('aria-hidden', 'false');
@@ -837,6 +928,10 @@
                 };
 
                 const closeReservationModal = () => {
+                    if (! reservationModal) {
+                        return;
+                    }
+
                     reservationModal.classList.add('hidden');
                     reservationModal.classList.remove('flex');
                     reservationModal.setAttribute('aria-hidden', 'true');
@@ -880,24 +975,56 @@
                 };
 
                 const setActiveImage = (index) => {
+                    if (! activeImage || images.length === 0) {
+                        return;
+                    }
+
                     activeIndex = (index + images.length) % images.length;
                     activeImage.src = images[activeIndex];
+                    activeImage.alt = `${@json($title)} - photo ${activeIndex + 1}`;
+                    if (galleryCounter) {
+                        galleryCounter.textContent = `${activeIndex + 1} / ${images.length}`;
+                    }
+
                     thumbButtons.forEach((button) => {
                         const selected = Number(button.dataset.galleryThumb) === activeIndex;
                         button.classList.toggle('ring-white', selected);
                         button.classList.toggle('opacity-60', ! selected);
+
+                        if (selected) {
+                            button.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        }
                     });
+
+                    // Affiche/masque les contrôles prev/next selon le nombre d'images
+                    if (galleryPrevBtn && galleryNextBtn) {
+                        const showControls = images.length > 1;
+                        galleryPrevBtn.classList.toggle('invisible', !showControls);
+                        galleryPrevBtn.classList.toggle('pointer-events-none', !showControls);
+                        galleryNextBtn.classList.toggle('invisible', !showControls);
+                        galleryNextBtn.classList.toggle('pointer-events-none', !showControls);
+                    }
                 };
 
                 const openGallery = (index) => {
+                    if (! modal) {
+                        return;
+                    }
+
                     setActiveImage(index);
                     modal.classList.remove('hidden');
+                    modal.classList.add('flex');
                     modal.setAttribute('aria-hidden', 'false');
                     document.body.classList.add('overflow-hidden');
                 };
 
                 const closeGallery = () => {
+                    if (! modal) {
+                        return;
+                    }
+
                     modal.classList.add('hidden');
+                    modal.classList.remove('flex');
                     modal.setAttribute('aria-hidden', 'true');
                     document.body.classList.remove('overflow-hidden');
                 };
@@ -907,6 +1034,10 @@
                         .filter((checkbox) => checkbox.checked)
                         .map((checkbox) => checkbox.value);
 
+                    if (! selectedAddOnsSummary) {
+                        return;
+                    }
+
                     selectedAddOnsSummary.classList.toggle('hidden', selected.length === 0);
                     selectedAddOnsSummary.textContent = selected.length > 0
                         ? `${selected.length} module${selected.length > 1 ? 's' : ''} sélectionné${selected.length > 1 ? 's' : ''} : ${selected.join(', ')}`
@@ -914,6 +1045,10 @@
                 };
 
                 const openAddOnsModal = () => {
+                    if (! addOnsModal || ! addOnsSearch) {
+                        return;
+                    }
+
                     addOnsModal.classList.remove('hidden');
                     addOnsModal.classList.add('flex');
                     addOnsModal.setAttribute('aria-hidden', 'false');
@@ -922,6 +1057,10 @@
                 };
 
                 const closeAddOnsModal = () => {
+                    if (! addOnsModal) {
+                        return;
+                    }
+
                     addOnsModal.classList.add('hidden');
                     addOnsModal.classList.remove('flex');
                     addOnsModal.setAttribute('aria-hidden', 'true');
@@ -942,6 +1081,10 @@
                 };
 
                 const refreshSaveButton = () => {
+                    if (! saveButton) {
+                        return;
+                    }
+
                     const saved = savedVenues().some((venue) => venue.key === saveButton.dataset.saveKey);
                     saveButton.textContent = saved ? 'Sauvegardé' : 'Sauvegarder';
                     saveButton.classList.toggle('bg-[#2f6bff]', saved);
@@ -949,7 +1092,7 @@
                     saveButton.classList.toggle('border-[#2f6bff]', saved);
                 };
 
-                shareButton.addEventListener('click', async () => {
+                shareButton?.addEventListener('click', async () => {
                     const sharePayload = {
                         title: shareButton.dataset.shareTitle,
                         text: shareButton.dataset.shareText?.slice(0, 140),
@@ -973,7 +1116,7 @@
                     }
                 });
 
-                saveButton.addEventListener('click', () => {
+                saveButton?.addEventListener('click', () => {
                     const saved = savedVenues();
                     const alreadySaved = saved.some((venue) => venue.key === saveButton.dataset.saveKey);
 
@@ -996,40 +1139,65 @@
                     showToast('Espace sauvegardé.');
                 });
 
-                openButtons.forEach((button) => button.addEventListener('click', () => openGallery(Number(button.dataset.galleryIndex))));
-                thumbButtons.forEach((button) => button.addEventListener('click', () => setActiveImage(Number(button.dataset.galleryThumb))));
-                document.getElementById('gallery-close').addEventListener('click', closeGallery);
-                document.getElementById('gallery-prev').addEventListener('click', () => setActiveImage(activeIndex - 1));
-                document.getElementById('gallery-next').addEventListener('click', () => setActiveImage(activeIndex + 1));
-                document.getElementById('open-addons-modal').addEventListener('click', openAddOnsModal);
-                document.getElementById('close-addons-modal').addEventListener('click', closeAddOnsModal);
-                document.getElementById('confirm-addons').addEventListener('click', closeAddOnsModal);
+                openButtons.forEach((button) => {
+                    button.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openGallery(Number(button.dataset.galleryIndex || 0));
+                    });
+                });
+
+                // Délégation d'événements : capture les clics sur les images / miniatures même si DOM change
+                document.addEventListener('click', (event) => {
+                    const galleryToggle = event.target.closest('[data-gallery-index]');
+
+                    if (galleryToggle) {
+                        event.preventDefault();
+                        openGallery(Number(galleryToggle.dataset.galleryIndex));
+
+                        return;
+                    }
+
+                    const thumb = event.target.closest('[data-gallery-thumb]');
+
+                    if (thumb) {
+                        event.preventDefault();
+                        setActiveImage(Number(thumb.dataset.galleryThumb));
+                    }
+                });
+
+                document.getElementById('gallery-close')?.addEventListener('click', closeGallery);
+                galleryPrevBtn?.addEventListener('click', () => setActiveImage(activeIndex - 1));
+                galleryNextBtn?.addEventListener('click', () => setActiveImage(activeIndex + 1));
+                openAddOnsButton?.addEventListener('click', openAddOnsModal);
+                closeAddOnsButton?.addEventListener('click', closeAddOnsModal);
+                confirmAddOnsButton?.addEventListener('click', closeAddOnsModal);
                 addOnsCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelectedAddOns));
-                addOnsSearch.addEventListener('input', () => {
+                addOnsSearch?.addEventListener('input', () => {
                     const query = addOnsSearch.value.trim().toLowerCase();
 
                     addOnsRows.forEach((row) => {
                         row.classList.toggle('hidden', ! row.dataset.addonName.includes(query));
                     });
                 });
-                addOnsModal.addEventListener('click', (event) => {
+                addOnsModal?.addEventListener('click', (event) => {
                     if (event.target === addOnsModal) {
                         closeAddOnsModal();
                     }
                 });
-                modal.addEventListener('click', (event) => {
+                modal?.addEventListener('click', (event) => {
                     if (event.target === modal) {
                         closeGallery();
                     }
                 });
                 document.addEventListener('keydown', (event) => {
-                    if (! addOnsModal.classList.contains('hidden') && event.key === 'Escape') {
+                    if (addOnsModal && ! addOnsModal.classList.contains('hidden') && event.key === 'Escape') {
                         closeAddOnsModal();
 
                         return;
                     }
 
-                    if (modal.classList.contains('hidden')) {
+                    if (! modal || modal.classList.contains('hidden')) {
                         return;
                     }
 
@@ -1037,6 +1205,41 @@
                     if (event.key === 'ArrowLeft') setActiveImage(activeIndex - 1);
                     if (event.key === 'ArrowRight') setActiveImage(activeIndex + 1);
                 });
+
+                const activateTab = (activeSection, shouldScrollTab = false) => {
+                    if (! activeSection) {
+                        return;
+                    }
+
+                    tabLinks.forEach((link) => {
+                        const active = link.getAttribute('href') === `#${activeSection.id}`;
+
+                        link.classList.toggle('bg-[#2f6bff]', active);
+                        link.classList.toggle('text-white', active);
+                        link.classList.toggle('shadow-sm', active);
+                        link.classList.toggle('text-[#6f7890]', ! active);
+                        link.setAttribute('aria-current', active ? 'true' : 'false');
+
+                        if (active && shouldScrollTab) {
+                            link.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        }
+                    });
+                };
+
+                const setActiveTabFromScroll = () => {
+                    const activationLine = window.innerHeight * 0.34;
+                    const current = sections.reduce((activeSection, section) => {
+                        const rect = section.getBoundingClientRect();
+
+                        if (rect.top <= activationLine) {
+                            return section;
+                        }
+
+                        return activeSection;
+                    }, sections[0]);
+
+                    activateTab(current);
+                };
 
                 tabLinks.forEach((link) => {
                     link.addEventListener('click', (event) => {
@@ -1053,23 +1256,31 @@
 
                         window.scrollTo({ top, behavior: 'smooth' });
                         history.replaceState(null, '', link.getAttribute('href'));
+                        activateTab(target, true);
                     });
                 });
 
-                const setActiveTab = () => {
-                    const current = [...sections].reverse().find((section) => section.getBoundingClientRect().top <= 150) ?? sections[0];
+                if ('IntersectionObserver' in window && sections.length > 0) {
+                    const observer = new IntersectionObserver((entries) => {
+                        const visibleEntries = entries
+                            .filter((entry) => entry.isIntersecting)
+                            .sort((first, second) => first.boundingClientRect.top - second.boundingClientRect.top);
 
-                    tabLinks.forEach((link) => {
-                        const active = link.getAttribute('href') === `#${current.id}`;
-                        link.classList.toggle('bg-[#2f6bff]', active);
-                        link.classList.toggle('text-white', active);
-                        link.classList.toggle('text-[#6f7890]', ! active);
+                        if (visibleEntries[0]) {
+                            activateTab(visibleEntries[0].target);
+                        }
+                    }, {
+                        rootMargin: '-130px 0px -55% 0px',
+                        threshold: [0.01, 0.2, 0.55],
                     });
-                };
 
-                setActiveTab();
+                    sections.forEach((section) => observer.observe(section));
+                }
+
+                setActiveTabFromScroll();
                 refreshSaveButton();
-                document.addEventListener('scroll', setActiveTab, { passive: true });
+                window.addEventListener('scroll', setActiveTabFromScroll, { passive: true });
+                window.addEventListener('resize', setActiveTabFromScroll, { passive: true });
             })();
         </script>
     </main>

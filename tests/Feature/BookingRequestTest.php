@@ -12,6 +12,7 @@ use App\Models\EventProjectItem;
 use App\Models\EventService;
 use App\Models\EventServiceType;
 use App\Models\OwnerDepositRule;
+use App\Models\OwnerModuleTemplate;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\ProformaInvoice;
@@ -19,6 +20,8 @@ use App\Models\ProformaInvoiceItem;
 use App\Models\ServiceProviderProfile;
 use App\Models\User;
 use App\Models\Venue;
+use App\Models\VenueAddOn;
+use App\Models\VenueMedia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -33,12 +36,130 @@ test('guest sees a premium reservation CTA and login requirement on the venue pa
 
     $this->get(route('venues.show', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Demander une réservation')
-        ->assertSeeText('Composer mon événement')
+        ->assertSeeText('Composer le package de mon événement')
+        ->assertSeeText('Réserver uniquement un service événementiel')
+        ->assertSee(route('venues.reservation', $venue->slug))
+        ->assertSee(route('event-services.index'))
         ->assertSee(route('portal.login', ['portal' => 'client', 'redirect' => route('venues.show', $venue->slug)]))
         ->assertSeeText('Connexion client obligatoire avant la proforma et le paiement de l’acompte.');
 
     $this->assertDatabaseCount('bookings', 0);
+});
+
+test('venue detail keeps gallery available with a single image and initial active tab', function () {
+    $venue = Venue::factory()->create([
+        'name' => 'Jardin événementiel privatisable',
+        'slug' => 'jardin-evenementiel-privatisable',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+    VenueMedia::factory()->create([
+        'venue_id' => $venue->id,
+        'type' => 'image',
+        'disk' => 'public',
+        'path' => 'venues/jardin.jpg',
+        'is_primary' => true,
+        'sort_order' => 1,
+    ]);
+
+    $this->get(route('venues.show', $venue->slug))
+        ->assertOk()
+        ->assertSee('data-gallery-index="0"', false)
+        ->assertSee('id="venue-gallery-modal"', false)
+        ->assertSee('id="gallery-active-image"', false)
+        ->assertSee('id="gallery-counter"', false)
+        ->assertSee('aria-current="true"', false);
+});
+
+test('client can open a full page reservation flow for a venue', function () {
+    $venue = Venue::factory()->create([
+        'name' => 'Salle réservation longue page',
+        'slug' => 'salle-reservation-longue-page',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+    ]);
+
+    $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSeeText('Composez votre événement avec les bons prestataires.')
+        ->assertSeeText('Package événementiel');
+});
+
+test('venue package page lets client select published event services outside venue city', function () {
+    $venue = Venue::factory()->create([
+        'name' => 'Salle package avec services',
+        'slug' => 'salle-package-avec-services',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'city' => 'Abidjan',
+    ]);
+
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+    $provider = ServiceProviderProfile::factory()->create([
+        'business_name' => 'Studio Son Signature',
+        'city' => 'Dakar',
+    ]);
+    $type = EventServiceType::factory()->create([
+        'name' => 'Sonorisation',
+    ]);
+    EventService::factory()->create([
+        'service_provider_profile_id' => $provider->id,
+        'event_service_type_id' => $type->id,
+        'name' => 'Pack audio conférence',
+        'city' => 'Dakar',
+        'status' => VenueStatus::Published,
+    ]);
+
+    $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSeeText('Choisir les prestataires événementiels')
+        ->assertSeeText('Studio Son Signature')
+        ->assertSeeText('Pack audio conférence')
+        ->assertDontSeeText('PSE');
+});
+
+test('venue package page recovers active owner modules when venue modules were not synced yet', function () {
+    $owner = User::factory()->create([
+        'role' => UserRole::Owner,
+        'portal_roles' => [UserRole::Owner->value],
+    ]);
+    $ownerProfile = OwnerProfile::factory()->create([
+        'user_id' => $owner->id,
+    ]);
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'name' => 'Villa événementielle lagune avec jardin privé',
+        'slug' => 'villa-evenementielle-lagune-avec-jardin-prive',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+
+    OwnerModuleTemplate::query()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'name' => 'Sonorisation premium',
+        'description' => 'Microphones et régie',
+        'price' => 150000,
+        'currency' => 'XOF',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    expect($venue->addOns()->exists())->toBeFalse();
+
+    $this->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSeeText('Ajouter les modules optionnels')
+        ->assertSeeText('Sonorisation premium')
+        ->assertSee('selected_module_template_ids[]', false);
 });
 
 test('guest sees client login before saving a booking request', function () {
@@ -65,7 +186,7 @@ test('sap can list service providers with their published services and reservati
     ]);
 
     $profile = ServiceProviderProfile::factory()->create([
-        'business_name' => 'Studio Lumière PSE',
+        'business_name' => 'Studio Lumière Signature',
         'city' => 'Abidjan',
         'verification_status' => 'verified',
     ]);
@@ -94,12 +215,12 @@ test('sap can list service providers with their published services and reservati
         ->get(route('sap.providers'))
         ->assertOk()
         ->assertSeeText('PSE')
-        ->assertSeeText('Studio Lumière PSE')
+        ->assertSeeText('Studio Lumière Signature')
         ->assertSeeText('Sonorisation mobile')
         ->assertSeeText('Réservations');
 });
 
-test('public venue flow lets clients choose a PSE before its services', function () {
+test('public venue flow lets clients choose a service provider before its services', function () {
     $venue = Venue::factory()->create([
         'name' => 'Salle premium',
         'slug' => 'salle-premium',
@@ -115,7 +236,7 @@ test('public venue flow lets clients choose a PSE before its services', function
 
     $profile = ServiceProviderProfile::factory()->create([
         'user_id' => $pse->id,
-        'business_name' => 'Studio Lumière PSE',
+        'business_name' => 'Studio Lumière Signature',
         'city' => 'Abidjan',
     ]);
 
@@ -129,8 +250,8 @@ test('public venue flow lets clients choose a PSE before its services', function
 
     $this->get(route('venues.show', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Choisir un prestataire PSE')
-        ->assertSeeText('Studio Lumière PSE')
+        ->assertSeeText('Choisir un prestataire événementiel')
+        ->assertSeeText('Studio Lumière Signature')
         ->assertSeeText('Services du prestataire');
 });
 
@@ -200,6 +321,275 @@ test('client can save a booking request and gets an initiated deposit payment', 
         ->and($booking->eventProjectItem->eventProject->client_id)->toBe($client->id)
         ->and($booking->eventProjectItem->quoted_amount)->toBe(450000)
         ->and($booking->eventProjectItem->deposit_amount)->toBe(135000);
+});
+
+test('client can include venue optional modules in a package reservation', function () {
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+    ]);
+
+    $venue = Venue::factory()->create([
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'starting_price' => 500000,
+        'reservation_amount' => 100000,
+        'max_capacity' => 250,
+        'payment_methods' => ['baobaa_checkout'],
+    ]);
+
+    OwnerDepositRule::factory()->create([
+        'owner_profile_id' => $venue->owner_profile_id,
+        'deposit_type' => 'percentage',
+        'percentage_rate' => 20,
+        'minimum_amount' => 25000,
+        'maximum_amount' => null,
+    ]);
+
+    $audio = VenueAddOn::factory()->create([
+        'venue_id' => $venue->id,
+        'name' => 'Système audio premium',
+        'price' => 150000,
+        'currency' => 'XOF',
+        'is_available' => true,
+        'sort_order' => 1,
+    ]);
+
+    $podium = VenueAddOn::factory()->create([
+        'venue_id' => $venue->id,
+        'name' => 'Podium modulable',
+        'price' => 75000,
+        'currency' => 'XOF',
+        'is_available' => true,
+        'sort_order' => 2,
+    ]);
+
+    VenueAddOn::factory()->create([
+        'venue_id' => $venue->id,
+        'name' => 'Module indisponible',
+        'price' => 50000,
+        'currency' => 'XOF',
+        'is_available' => false,
+        'sort_order' => 3,
+    ]);
+
+    $this->actingAs($client)
+        ->post(route('bookings.store', $venue), [
+            'start_date' => now()->addDays(14)->toDateString(),
+            'end_date' => now()->addDays(14)->toDateString(),
+            'starts_at' => '09:00',
+            'ends_at' => '18:00',
+            'event_type' => 'conference',
+            'guests_count' => 120,
+            'payment_method' => 'baobaa_checkout',
+            'selected_add_on_ids' => [$audio->id, $podium->id],
+        ])
+        ->assertRedirect();
+
+    $booking = Booking::query()->with(['proformaInvoice.items', 'eventProjectItem', 'payments'])->firstOrFail();
+
+    expect($booking->selected_add_ons)->toHaveCount(2)
+        ->and($booking->selected_add_ons[0]['name'])->toBe('Système audio premium')
+        ->and($booking->selected_add_ons[1]['name'])->toBe('Podium modulable')
+        ->and($booking->total_amount)->toBe(725000)
+        ->and($booking->reservation_amount)->toBe(145000);
+
+    expect($booking->proformaInvoice)
+        ->not->toBeNull()
+        ->and($booking->proformaInvoice->total_amount)->toBe(725000)
+        ->and($booking->proformaInvoice->deposit_amount)->toBe(145000)
+        ->and($booking->proformaInvoice->items)->toHaveCount(3);
+
+    expect($booking->proformaInvoice->items->pluck('description')->all())->toContain(
+        $venue->name,
+        'Système audio premium',
+        'Podium modulable'
+    );
+
+    expect($booking->eventProjectItem)
+        ->quoted_amount->toBe(725000)
+        ->deposit_amount->toBe(145000)
+        ->and($booking->eventProjectItem->metadata['selected_add_ons'])->toHaveCount(2);
+
+    expect($booking->payments->first())
+        ->amount->toBe(145000)
+        ->and($booking->payments->first()->provider_payload['selected_add_ons'])->toHaveCount(2);
+});
+
+test('client can include recovered owner module templates in a package reservation', function () {
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+    ]);
+    $ownerProfile = OwnerProfile::factory()->create();
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'starting_price' => 500000,
+        'reservation_amount' => 100000,
+        'max_capacity' => 250,
+        'payment_methods' => ['baobaa_checkout'],
+    ]);
+    OwnerDepositRule::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'deposit_type' => 'percentage',
+        'percentage_rate' => 20,
+        'minimum_amount' => 25000,
+        'maximum_amount' => null,
+    ]);
+    $module = OwnerModuleTemplate::query()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'name' => 'Service café et thé',
+        'description' => 'Accueil et pauses chaudes',
+        'price' => 50000,
+        'currency' => 'XOF',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $this->actingAs($client)
+        ->post(route('bookings.store', $venue), [
+            'start_date' => now()->addDays(14)->toDateString(),
+            'end_date' => now()->addDays(14)->toDateString(),
+            'starts_at' => '09:00',
+            'ends_at' => '18:00',
+            'event_type' => 'conference',
+            'guests_count' => 120,
+            'payment_method' => 'baobaa_checkout',
+            'selected_module_template_ids' => [$module->id],
+        ])
+        ->assertRedirect();
+
+    $booking = Booking::query()->with(['proformaInvoice.items', 'payments'])->firstOrFail();
+
+    expect($booking->selected_add_ons)->toHaveCount(1)
+        ->and($booking->selected_add_ons[0]['source_type'])->toBe('owner_module_template')
+        ->and($booking->selected_add_ons[0]['name'])->toBe('Service café et thé')
+        ->and($booking->total_amount)->toBe(550000)
+        ->and($booking->reservation_amount)->toBe(110000)
+        ->and($booking->proformaInvoice->items)->toHaveCount(2)
+        ->and($booking->payments->first()->amount)->toBe(110000);
+});
+
+test('client can update package modules and services before deposit payment', function () {
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+    $ownerProfile = OwnerProfile::factory()->create();
+    $venue = Venue::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'starting_price' => 500000,
+        'reservation_amount' => 100000,
+        'max_capacity' => 250,
+        'payment_methods' => ['baobaa_checkout'],
+    ]);
+    OwnerDepositRule::factory()->create([
+        'owner_profile_id' => $ownerProfile->id,
+        'deposit_type' => 'percentage',
+        'percentage_rate' => 20,
+        'minimum_amount' => 25000,
+        'maximum_amount' => null,
+    ]);
+    $audio = VenueAddOn::factory()->create([
+        'venue_id' => $venue->id,
+        'name' => 'Système audio premium',
+        'price' => 50000,
+        'currency' => 'XOF',
+        'is_available' => true,
+        'sort_order' => 1,
+    ]);
+    $podium = VenueAddOn::factory()->create([
+        'venue_id' => $venue->id,
+        'name' => 'Podium modulable',
+        'price' => 75000,
+        'currency' => 'XOF',
+        'is_available' => true,
+        'sort_order' => 2,
+    ]);
+    $provider = ServiceProviderProfile::factory()->create([
+        'business_name' => 'Studio Lumière Signature',
+        'city' => $venue->city,
+    ]);
+    $type = EventServiceType::factory()->create([
+        'name' => 'Lumière',
+    ]);
+    $firstService = EventService::factory()->create([
+        'service_provider_profile_id' => $provider->id,
+        'event_service_type_id' => $type->id,
+        'name' => 'Pack lumière entrée',
+        'status' => VenueStatus::Published,
+        'starting_price' => 100000,
+    ]);
+    $secondService = EventService::factory()->create([
+        'service_provider_profile_id' => $provider->id,
+        'event_service_type_id' => $type->id,
+        'name' => 'Pack lumière scène',
+        'status' => VenueStatus::Published,
+        'starting_price' => 80000,
+    ]);
+
+    $this->actingAs($client)
+        ->post(route('bookings.store', $venue), [
+            'start_date' => now()->addDays(14)->toDateString(),
+            'end_date' => now()->addDays(14)->toDateString(),
+            'starts_at' => '09:00',
+            'ends_at' => '18:00',
+            'event_type' => 'conference',
+            'guests_count' => 120,
+            'payment_method' => 'baobaa_checkout',
+            'selected_add_on_ids' => [$audio->id],
+            'event_service_ids' => [$firstService->id],
+        ])
+        ->assertRedirect();
+
+    $booking = Booking::query()->firstOrFail();
+
+    $this->actingAs($client)
+        ->get(route('client.reservations.show', $booking))
+        ->assertOk()
+        ->assertSeeText('Ajuster mon package')
+        ->assertSeeText('Système audio premium')
+        ->assertSeeText('Pack lumière entrée');
+
+    $this->actingAs($client)
+        ->patch(route('client.reservations.package.update', $booking), [
+            'selected_add_on_ids' => [$podium->id],
+            'add_on_quantities' => [
+                $podium->id => 2,
+            ],
+            'event_service_ids' => [$secondService->id],
+            'event_service_quantities' => [
+                $secondService->id => 3,
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('package_status');
+
+    $booking->refresh()->load(['proformaInvoice.items', 'payments', 'eventProjectItem.eventProject.items']);
+
+    expect($booking->selected_add_ons)->toHaveCount(1)
+        ->and($booking->selected_add_ons[0]['name'])->toBe('Podium modulable')
+        ->and($booking->selected_add_ons[0]['quantity'])->toBe(2)
+        ->and($booking->total_amount)->toBe(650000)
+        ->and($booking->reservation_amount)->toBe(130000)
+        ->and($booking->proformaInvoice->total_amount)->toBe(650000)
+        ->and($booking->proformaInvoice->deposit_amount)->toBe(130000)
+        ->and($booking->payments->first()->amount)->toBe(130000);
+
+    expect($booking->proformaInvoice->items->pluck('description')->all())->toContain('Podium modulable')
+        ->and($booking->proformaInvoice->items->last()->quantity)->toBe(2)
+        ->and($booking->proformaInvoice->items->last()->total_price)->toBe(150000);
+
+    $project = $booking->eventProjectItem->eventProject;
+
+    expect($project->items()->where('item_type', 'event_service')->where('source_id', $firstService->id)->exists())->toBeFalse();
+
+    $serviceItem = $project->items()->where('item_type', 'event_service')->where('source_id', $secondService->id)->firstOrFail();
+
+    expect($serviceItem->quoted_amount)->toBe(240000)
+        ->and($serviceItem->metadata['quantity'])->toBe(3);
 });
 
 test('client can start a booking with a negotiated amount and initial message', function () {
@@ -286,7 +676,7 @@ test('client can attach PSE services and SAP ticketing to a venue booking projec
     ]);
     $serviceProviderProfile = ServiceProviderProfile::factory()->create([
         'user_id' => $pse->id,
-        'business_name' => 'Studio Lumière PSE',
+        'business_name' => 'Studio Lumière Signature',
         'city' => 'Abidjan',
     ]);
     $serviceType = EventServiceType::factory()->create([

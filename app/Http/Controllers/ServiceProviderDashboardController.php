@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\VenueStatus;
+use App\Models\EventProjectItem;
 use App\Models\EventService;
 use App\Models\EventServiceType;
 use App\Models\ServiceProviderProfile;
@@ -95,8 +96,18 @@ class ServiceProviderDashboardController extends Controller
         return [
             'activeServicesCount' => $profile->services()->where('status', VenueStatus::Published)->count(),
             'draftServicesCount' => $profile->services()->where('status', VenueStatus::Draft)->count(),
-            'requestsCount' => 0,
-            'grossRevenue' => 0,
+            'requestsCount' => EventProjectItem::query()
+                ->where('item_type', 'event_service')
+                ->where('provider_type', 'service_provider_profile')
+                ->where('provider_id', $profile->id)
+                ->distinct('event_project_id')
+                ->count('event_project_id'),
+            'grossRevenue' => (int) EventProjectItem::query()
+                ->where('item_type', 'event_service')
+                ->where('provider_type', 'service_provider_profile')
+                ->where('provider_id', $profile->id)
+                ->whereNotNull('paid_at')
+                ->sum('quoted_amount'),
         ];
     }
 }

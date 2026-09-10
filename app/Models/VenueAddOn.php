@@ -14,6 +14,7 @@ class VenueAddOn extends Model
 
     protected $fillable = [
         'venue_id',
+        'owner_module_template_id',
         'name',
         'description',
         'price',
@@ -32,5 +33,10 @@ class VenueAddOn extends Model
     public function venue(): BelongsTo
     {
         return $this->belongsTo(Venue::class);
+    }
+
+    public function ownerModuleTemplate(): BelongsTo
+    {
+        return $this->belongsTo(OwnerModuleTemplate::class);
     }
 }

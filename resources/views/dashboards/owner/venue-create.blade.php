@@ -238,13 +238,14 @@
                         </div>
                         <div class="grid gap-3 md:grid-cols-2">
                             @php
+                                $selectedModuleTemplateIds = $currentVenue?->addOns?->pluck('owner_module_template_id')->filter()->map(fn ($id) => (string) $id)->all() ?? [];
                                 $selectedModuleNames = $currentVenue?->addOns?->pluck('name')->all() ?? [];
                                 $oldModuleTemplateIds = collect(old('module_template_ids', []))->map(fn ($id) => (string) $id)->all();
                             @endphp
                             @forelse ($moduleTemplates as $module)
                                 <label class="cursor-pointer rounded-2xl border border-[#dce6f7] bg-[#f7faff] p-4 transition has-[:checked]:border-[#2f6bff] has-[:checked]:bg-[#eef4ff]">
                                     <div class="flex items-start gap-3">
-                                        <input type="checkbox" name="module_template_ids[]" value="{{ $module->id }}" class="mt-1 accent-[#2f6bff]" @checked(in_array($module->name, $selectedModuleNames, true) || in_array((string) $module->id, $oldModuleTemplateIds, true))>
+                                        <input type="checkbox" name="module_template_ids[]" value="{{ $module->id }}" class="mt-1 accent-[#2f6bff]" @checked(in_array((string) $module->id, $selectedModuleTemplateIds, true) || in_array($module->name, $selectedModuleNames, true) || in_array((string) $module->id, $oldModuleTemplateIds, true))>
                                         <span>
                                             <span class="block text-sm font-extrabold text-[#151821]">{{ $module->name }}</span>
                                             <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">{{ number_format($module->price, 0, ',', ' ') }} {{ $module->currency }} · {{ $module->description ?? 'Option disponible' }}</span>

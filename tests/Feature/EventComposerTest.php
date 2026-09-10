@@ -5,6 +5,7 @@ use App\Enums\VenueStatus;
 use App\Models\EventProject;
 use App\Models\EventService;
 use App\Models\EventServiceType;
+use App\Models\ManagedLocation;
 use App\Models\ServiceProviderProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('event composer page displays PSE providers and SAP ticketing', function () {
+    createActiveComposerLocations();
+
     $pse = User::factory()->create([
         'role' => UserRole::ServiceProvider,
         'portal_roles' => [UserRole::ServiceProvider->value],
@@ -30,15 +33,31 @@ test('event composer page displays PSE providers and SAP ticketing', function ()
         'status' => VenueStatus::Published,
     ]);
 
-    $this->get(route('event-composer.create'))
+    $this->get(route('event-services.index'))
         ->assertOk()
-        ->assertSeeText('Composer mon événement')
+        ->assertSeeText('Réservez les prestataires qui donnent vie à votre événement.')
+        ->assertSeeText('Conférence / Séminaire')
+        ->assertSeeText('Côte d’Ivoire')
+        ->assertSeeText('Abidjan')
+        ->assertSeeText('Cocody')
         ->assertSeeText('Studio Son Signature')
         ->assertSeeText('Pack audio corporate')
-        ->assertSeeText('Billetterie BAOBAA');
+        ->assertSeeText('Billetterie digitale BAOBAA')
+        ->assertDontSeeText('Réserver un espace obligatoire');
+});
+
+test('legacy event composer route still opens the dedicated PSE service booking page', function () {
+    createActiveComposerLocations();
+
+    $this->get(route('event-composer.create'))
+        ->assertOk()
+        ->assertSeeText('Réservez les prestataires qui donnent vie à votre événement.')
+        ->assertSeeText('Aucun espace obligatoire');
 });
 
 test('guest cannot save an event composer project', function () {
+    createActiveComposerLocations();
+
     $this->post(route('event-composer.store'), [
         'name' => 'Gala visiteur',
         'country_code' => 'CI',
@@ -48,6 +67,8 @@ test('guest cannot save an event composer project', function () {
 });
 
 test('client creates a standalone event project with PSE services and ticketing', function () {
+    createActiveComposerLocations();
+
     $client = User::factory()->create([
         'role' => UserRole::Client,
         'portal_roles' => [UserRole::Client->value],
@@ -75,7 +96,7 @@ test('client creates a standalone event project with PSE services and ticketing'
     $this->actingAs($client)
         ->post(route('event-composer.store'), [
             'name' => 'Gala annuel BAOBAA',
-            'event_type' => 'Gala',
+            'event_type' => 'gala',
             'event_date' => now()->addMonth()->toDateString(),
             'starts_at' => '18:00',
             'ends_at' => '23:00',
@@ -111,3 +132,113 @@ test('client creates a standalone event project with PSE services and ticketing'
         ->provider_type->toBe('sap')
         ->quoted_amount->toBe(0);
 });
+
+test('client can reserve only PSE services without a venue booking item', function () {
+    createActiveComposerLocations();
+
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+    $pse = User::factory()->create([
+        'role' => UserRole::ServiceProvider,
+        'portal_roles' => [UserRole::ServiceProvider->value],
+    ]);
+    $profile = ServiceProviderProfile::factory()->create([
+        'user_id' => $pse->id,
+        'business_name' => 'Maison Podium Pro',
+    ]);
+    $type = EventServiceType::factory()->create([
+        'name' => 'Podium',
+    ]);
+    $service = EventService::factory()->create([
+        'service_provider_profile_id' => $profile->id,
+        'event_service_type_id' => $type->id,
+        'name' => 'Podium modulable avec lumière',
+        'status' => VenueStatus::Published,
+        'starting_price' => 180000,
+    ]);
+
+    $this->actingAs($client)
+        ->post(route('event-composer.store'), [
+            'name' => 'Installation scène sans espace',
+            'event_type' => 'concert',
+            'event_date' => now()->addWeeks(3)->toDateString(),
+            'guests_count' => 150,
+            'country_code' => 'CI',
+            'city' => 'Abidjan',
+            'event_service_ids' => [$service->id],
+        ])
+        ->assertRedirect(route('client.projects'));
+
+    $project = EventProject::query()->with('items')->firstOrFail();
+
+    expect($project->items)->toHaveCount(1)
+        ->and($project->items->first()->item_type)->toBe('event_service')
+        ->and($project->items()->where('item_type', 'venue_booking')->exists())->toBeFalse()
+        ->and($project->estimated_total_amount)->toBe(180000)
+        ->and($project->metadata['created_from'])->toBe('event_composer');
+});
+
+test('event composer only exposes and accepts SAP active locations', function () {
+    createActiveComposerLocations();
+    ManagedLocation::factory()->country()->inactive()->create([
+        'name' => 'Pays masqué',
+        'slug' => 'pays-masque',
+        'code' => 'PM',
+        'country_code' => 'PM',
+    ]);
+    ManagedLocation::factory()->city()->inactive()->create([
+        'name' => 'Ville masquée',
+        'slug' => 'ville-masquee',
+        'country_code' => 'CI',
+    ]);
+
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+
+    $this->get(route('event-services.index'))
+        ->assertOk()
+        ->assertSeeText('Côte d’Ivoire')
+        ->assertSeeText('Abidjan')
+        ->assertDontSeeText('Pays masqué')
+        ->assertDontSeeText('Ville masquée');
+
+    $this->actingAs($client)
+        ->from(route('event-services.index'))
+        ->post(route('event-composer.store'), [
+            'name' => 'Service dans une ville masquée',
+            'country_code' => 'CI',
+            'city' => 'Ville masquée',
+            'ticketing_requested' => true,
+        ])
+        ->assertRedirect(route('event-services.index'))
+        ->assertSessionHasErrors('city');
+});
+
+function createActiveComposerLocations(): void
+{
+    $country = ManagedLocation::factory()->country()->create([
+        'name' => 'Côte d’Ivoire',
+        'slug' => 'cote-divoire',
+        'code' => 'CI',
+        'country_code' => 'CI',
+        'sort_order' => 1,
+    ]);
+    $city = ManagedLocation::factory()->city()->create([
+        'parent_id' => $country->id,
+        'name' => 'Abidjan',
+        'slug' => 'abidjan',
+        'country_code' => 'CI',
+        'sort_order' => 2,
+    ]);
+    ManagedLocation::factory()->district()->create([
+        'parent_id' => $city->id,
+        'name' => 'Cocody',
+        'slug' => 'cocody',
+        'country_code' => 'CI',
+        'sort_order' => 3,
+    ]);
+}

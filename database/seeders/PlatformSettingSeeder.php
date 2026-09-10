@@ -18,6 +18,10 @@ class PlatformSettingSeeder extends Seeder
         $settings = [
             'platform.default_currency' => ['value' => 'XOF', 'group' => 'platform', 'is_public' => true],
             'platform.active_countries' => ['value' => ['CI', 'SN', 'BJ', 'TG', 'CM'], 'group' => 'platform', 'is_public' => true],
+            // Defaults managed by SAP for public pages and composer
+            'platform.default_country' => ['value' => 'CI', 'group' => 'platform', 'is_public' => true],
+            'platform.default_city' => ['value' => 'Abidjan', 'group' => 'platform', 'is_public' => true],
+            'platform.default_district' => ['value' => '', 'group' => 'platform', 'is_public' => true],
             'monetization.model' => ['value' => 'commission_and_subscription', 'group' => 'monetization', 'is_public' => false],
             'payout.delay_days' => ['value' => 3, 'group' => 'payments', 'is_public' => false],
             'security.require_owner_verification' => ['value' => true, 'group' => 'security', 'is_public' => false],

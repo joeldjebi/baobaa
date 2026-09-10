@@ -66,6 +66,29 @@ class EventProjectService
     }
 
     /**
+     * @param  array<int, int>  $eventServiceQuantitiesById
+     */
+    public function syncBookingEventServices(Booking $booking, array $eventServiceQuantitiesById): void
+    {
+        $venueItem = $this->ensureVenueBookingItem($booking);
+        $project = $venueItem->eventProject;
+        $selectedServiceIds = collect($eventServiceQuantitiesById)
+            ->filter(fn (int $quantity): bool => $quantity > 0)
+            ->keys()
+            ->map(fn (int|string $id): int => (int) $id)
+            ->values()
+            ->all();
+
+        $project->items()
+            ->where('item_type', 'event_service')
+            ->when($selectedServiceIds !== [], fn ($query) => $query->whereNotIn('source_id', $selectedServiceIds))
+            ->delete();
+
+        $this->attachEventServices($project, $selectedServiceIds, $eventServiceQuantitiesById);
+        $this->refreshTotals($project);
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      * @param  array<int, int>  $eventServiceIds
      */
@@ -107,7 +130,7 @@ class EventProjectService
     /**
      * @param  array<int, int>  $eventServiceIds
      */
-    private function attachEventServices(EventProject $project, array $eventServiceIds): void
+    private function attachEventServices(EventProject $project, array $eventServiceIds, array $quantitiesByServiceId = []): void
     {
         if ($eventServiceIds === []) {
             return;
@@ -118,7 +141,11 @@ class EventProjectService
             ->whereIn('id', $eventServiceIds)
             ->where('status', VenueStatus::Published)
             ->get()
-            ->each(function (EventService $service) use ($project): void {
+            ->each(function (EventService $service) use ($project, $quantitiesByServiceId): void {
+                $quantity = max(1, (int) ($quantitiesByServiceId[$service->id] ?? 1));
+                $unitAmount = (int) $service->starting_price;
+                $unitDeposit = (int) ($service->deposit_amount ?: 0);
+
                 $project->items()->updateOrCreate([
                     'item_type' => 'event_service',
                     'source_type' => EventService::class,
@@ -130,12 +157,15 @@ class EventProjectService
                     'title' => $service->name,
                     'description' => $service->short_description ?: $service->description,
                     'currency' => $service->currency,
-                    'quoted_amount' => (int) $service->starting_price,
-                    'deposit_amount' => (int) ($service->deposit_amount ?: 0),
+                    'quoted_amount' => $unitAmount * $quantity,
+                    'deposit_amount' => $unitDeposit * $quantity,
                     'metadata' => [
                         'service_type' => $service->type?->name,
                         'provider_name' => $service->serviceProviderProfile?->business_name,
                         'pricing_unit' => $service->pricing_unit,
+                        'quantity' => $quantity,
+                        'unit_amount' => $unitAmount,
+                        'unit_deposit_amount' => $unitDeposit,
                     ],
                 ]);
             });
@@ -221,6 +251,7 @@ class EventProjectService
                 'starts_at' => $booking->starts_at,
                 'ends_at' => $booking->ends_at,
                 'guests_count' => $booking->guests_count,
+                'selected_add_ons' => $booking->selected_add_ons ?: [],
             ],
         ];
     }

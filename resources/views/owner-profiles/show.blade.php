@@ -26,7 +26,7 @@
                 </a>
 
                 <div class="mt-5 overflow-hidden rounded-[28px] border border-white bg-white shadow-2xl shadow-[#173e7a]/10">
-                    <div class="h-40 bg-[linear-gradient(135deg,#1d4ed8,#2f6bff_45%,#9bb8ff)]"></div>
+                    <div class="partner-cover h-40 bg-[linear-gradient(135deg,#1d4ed8,#2f6bff_45%,#9bb8ff)]" data-partner-cover="{{ $ownerProfile->logo_url ?? '' }}" data-default-gradient="linear-gradient(135deg, #1d4ed8, #2f6bff 45%, #9bb8ff)" style="background-image: linear-gradient(135deg, #1d4ed8, #2f6bff 45%, #9bb8ff);"></div>
                     <div class="p-6 sm:p-8">
                         <div class="-mt-20 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                             <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -114,4 +114,66 @@
             </div>
         </section>
     </main>
+
+    <script>
+        (() => {
+            const createGradientFromImage = (img) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const sampleSize = 40;
+
+                if (!ctx || !img || !img.width || !img.height) {
+                    return null;
+                }
+
+                canvas.width = sampleSize;
+                canvas.height = sampleSize;
+                ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+
+                const { data } = ctx.getImageData(0, 0, sampleSize, sampleSize);
+                let r = 0, g = 0, b = 0, count = 0;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const alpha = data[i + 3];
+                    if (alpha < 128) continue;
+
+                    r += data[i];
+                    g += data[i + 1];
+                    b += data[i + 2];
+                    count += 1;
+                }
+
+                if (!count) return null;
+
+                const avgR = Math.round(r / count);
+                const avgG = Math.round(g / count);
+                const avgB = Math.round(b / count);
+
+                const shift = 20;
+                const first = `rgb(${avgR}, ${avgG}, ${avgB})`;
+                const second = `rgb(${Math.min(255, avgR + shift)}, ${Math.min(255, avgG + shift)}, ${Math.min(255, avgB + shift)})`;
+                const third = `rgb(${Math.max(0, avgR - 35)}, ${Math.max(0, avgG - 35)}, ${Math.max(0, avgB - 35)})`;
+
+                return `linear-gradient(135deg, ${first} 0%, ${second} 45%, ${third} 100%)`;
+            };
+
+            document.querySelectorAll('[data-partner-cover]').forEach((cover) => {
+                const source = cover.dataset.partnerCover;
+                if (!source) return;
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    const gradient = createGradientFromImage(img);
+                    if (gradient) {
+                        cover.style.backgroundImage = gradient;
+                    }
+                };
+                img.onerror = () => {
+                    cover.style.backgroundImage = cover.dataset.defaultGradient || 'linear-gradient(135deg, #1d4ed8, #2f6bff 45%, #9bb8ff)';
+                };
+                img.src = source;
+            });
+        })();
+    </script>
 </x-layouts.baobaa>

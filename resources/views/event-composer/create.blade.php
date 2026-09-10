@@ -1,9 +1,14 @@
 @php
-    $selectedProviderId = old('provider_id', $providers->first()?->id);
+    $selectedProviderId = old('provider_id', $selectedProviderId ?? $providers->first()?->id);
     $selectedServiceIds = collect(old('event_service_ids', []))->map(fn ($id) => (int) $id)->all();
+    $selectedEventType = old('event_type', $defaultEventType ?? '');
+    $selectedCountry = old('country_code', $defaultCountry ?? 'CI');
+    $selectedCity = old('city', $defaultCity ?? '');
+    $selectedDistrict = old('district', $defaultDistrict ?? '');
+    $selectClass = 'mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white';
 @endphp
 
-<x-layouts.baobaa title="Composer mon événement - BAOBAA">
+<x-layouts.baobaa title="Réserver des services événementiels - BAOBAA">
     <main class="min-h-screen bg-[#f6f8fc] text-[#07152f]">
         <header class="sticky top-0 z-50 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
             <div class="mx-auto flex max-w-7xl items-center justify-between">
@@ -20,22 +25,22 @@
             <div class="overflow-hidden rounded-[34px] bg-[#07162f] text-white shadow-2xl shadow-[#07162f]/18">
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
-                        <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Planification événementielle</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Composez votre événement avec les bons prestataires.</h1>
-                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Choisissez vos services, ajoutez une billetterie si besoin, puis centralisez les échanges et proformas dans votre espace client.</p>
+                        <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Services événementiels</p>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Réservez les prestataires qui donnent vie à votre événement.</h1>
+                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Son, lumière, photo, vidéo, podium ou mobilier : choisissez uniquement les services dont vous avez besoin, sans réserver d’espace.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
                         <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ number_format($providers->count(), 0, ',', ' ') }}</p>
-                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">PSE actifs</p>
+                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Prestataires</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }}</p>
                                 <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Services</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
-                                <p class="text-2xl font-extrabold">SAP</p>
+                                <p class="text-2xl font-extrabold">Billets</p>
                                 <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Billetterie</p>
                             </div>
                         </div>
@@ -58,18 +63,24 @@
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 1</p>
                                 <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Informations de l’événement</h2>
                             </div>
-                            <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">Projet sans espace obligatoire</span>
+                            <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">Aucun espace obligatoire</span>
                         </div>
 
                         <div class="mt-5 grid gap-4 md:grid-cols-2">
                             <label class="md:col-span-2">
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Nom du projet</span>
-                                <input name="name" value="{{ old('name') }}" placeholder="Gala entreprise, concert privé, séminaire annuel..." class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                                <input name="name" value="{{ old('name') }}" placeholder="Sonorisation mariage, captation conférence, installation lumière..." class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
                                 @error('name') <span class="mt-1 block text-xs font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                             <label>
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Type d’événement</span>
-                                <input name="event_type" value="{{ old('event_type') }}" placeholder="Mariage, conférence, concert..." class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                                <select name="event_type" class="{{ $selectClass }}">
+                                    <option value="">Choisir un type d’événement</option>
+                                    @foreach ($eventTypeOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected($selectedEventType === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('event_type') <span class="mt-1 block text-xs font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                             <label>
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Nombre d’invités</span>
@@ -91,24 +102,38 @@
                             </div>
                             <label>
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Pays</span>
-                                <input name="country_code" value="{{ old('country_code', 'CI') }}" maxlength="2" class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold uppercase outline-none focus:border-[#2f6bff]">
-                            </label>
-                            <label>
-                                <span class="text-xs font-extrabold uppercase text-[#7d879d]">Ville</span>
-                                <input name="city" list="composer-cities" value="{{ old('city') }}" placeholder="Abidjan" class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                <datalist id="composer-cities">
-                                    @foreach ($cities as $city)
-                                        <option value="{{ $city }}"></option>
+                                <select name="country_code" data-country-select class="{{ $selectClass }}">
+                                    @foreach ($countryOptions as $code => $label)
+                                        <option value="{{ $code }}" @selected($selectedCountry === $code)>{{ $label }}</option>
                                     @endforeach
-                                </datalist>
+                                </select>
+                                @error('country_code') <span class="mt-1 block text-xs font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
-                            <label class="md:col-span-2">
+                            <label data-city-field>
+                                <span class="text-xs font-extrabold uppercase text-[#7d879d]">Ville</span>
+                                <input type="search" data-city-search placeholder="Filtrer les villes" class="mt-2 h-10 w-full rounded-xl border border-[#dce6f7] bg-white px-3 text-xs font-bold text-[#07152f] outline-none transition focus:border-[#2f6bff]">
+                                <select name="city" data-city-select class="{{ $selectClass }} mt-2">
+                                    <option value="">Choisir une ville</option>
+                                    @foreach ($cityOptions as $city)
+                                        <option value="{{ $city['name'] }}" data-country="{{ $city['country_code'] }}" @selected($selectedCity === $city['name'])>{{ $city['name'] }}</option>
+                                    @endforeach
+                                </select>
+                                @error('city') <span class="mt-1 block text-xs font-bold text-red-600">{{ $message }}</span> @enderror
+                            </label>
+                            <label class="md:col-span-2" data-district-field>
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Commune ou quartier</span>
-                                <input name="district" value="{{ old('district') }}" placeholder="Cocody, Plateau, Almadies..." class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                                <input type="search" data-district-search placeholder="Filtrer les communes" class="mt-2 h-10 w-full rounded-xl border border-[#dce6f7] bg-white px-3 text-xs font-bold text-[#07152f] outline-none transition focus:border-[#2f6bff]">
+                                <select name="district" data-district-select class="{{ $selectClass }} mt-2">
+                                    <option value="">Choisir une commune ou un quartier</option>
+                                    @foreach ($districtOptions as $district)
+                                        <option value="{{ $district['name'] }}" data-country="{{ $district['country_code'] }}" data-city="{{ $district['city'] }}" @selected($selectedDistrict === $district['name'])>{{ $district['name'] }}</option>
+                                    @endforeach
+                                </select>
+                                @error('district') <span class="mt-1 block text-xs font-bold text-red-600">{{ $message }}</span> @enderror
                             </label>
                             <label class="md:col-span-2">
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Brief ou attentes</span>
-                                <textarea name="client_notes" rows="4" placeholder="Décrivez l’ambiance, les contraintes, le budget ou les prestations attendues." class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('client_notes') }}</textarea>
+                                <textarea name="client_notes" rows="4" placeholder="Décrivez les prestations souhaitées, le lieu d’intervention, le budget, les horaires et les contraintes techniques." class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('client_notes') }}</textarea>
                             </label>
                         </div>
                     </div>
@@ -117,7 +142,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir les prestataires</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir les prestataires événementiels</h2>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }} services disponibles</p>
                         </div>
@@ -125,7 +150,7 @@
                         @error('event_service_ids') <div class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{{ $message }}</div> @enderror
 
                         @if ($providers->isNotEmpty())
-                            <div class="mt-5 flex gap-2 overflow-x-auto pb-2 baobaa-scrollbar-none" role="tablist" aria-label="Prestataires PSE">
+                            <div class="mt-5 flex gap-2 overflow-x-auto pb-2 baobaa-scrollbar-none" role="tablist" aria-label="Prestataires événementiels">
                                 @foreach ($providers as $provider)
                                     <button type="button" data-provider-tab="{{ $provider->id }}" class="shrink-0 rounded-full px-4 py-2 text-sm font-extrabold transition {{ (int) $selectedProviderId === (int) $provider->id ? 'bg-[#2f6bff] text-white shadow-lg shadow-[#2f6bff]/20' : 'bg-[#f2f6ff] text-[#52617b] hover:bg-white hover:text-[#2f6bff]' }}">
                                         {{ $provider->business_name }}
@@ -161,8 +186,8 @@
                             </div>
                         @else
                             <div class="mt-5 rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-8 text-center">
-                                <p class="text-lg font-extrabold text-[#07152f]">Aucun service PSE publié pour le moment.</p>
-                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Le SAP doit créer des types de services et les PSE doivent publier leurs offres.</p>
+                                <p class="text-lg font-extrabold text-[#07152f]">Aucun service événementiel publié pour le moment.</p>
+                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Les types de services doivent être configurés, puis les prestataires peuvent publier leurs offres.</p>
                             </div>
                         @endif
                     </div>
@@ -171,13 +196,13 @@
                 <aside class="lg:sticky lg:top-24 lg:self-start">
                     <div class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/12 ring-1 ring-[#dce6f7]">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Résumé</h2>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Résumé de services</h2>
 
                         <label class="mt-5 flex cursor-pointer items-start gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f4f8ff] p-4 transition hover:border-[#2f6bff]">
                             <input type="checkbox" name="ticketing_requested" value="1" data-ticketing-checkbox class="mt-1 size-5 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(old('ticketing_requested'))>
                             <span>
-                                <span class="block text-sm font-extrabold text-[#07152f]">Billetterie BAOBAA</span>
-                                <span class="mt-1 block text-xs font-semibold leading-5 text-[#6f7890]">Le SAP proposera le modèle de commission ou montant fixe négocié hors ligne.</span>
+                                <span class="block text-sm font-extrabold text-[#07152f]">Billetterie digitale BAOBAA</span>
+                                <span class="mt-1 block text-xs font-semibold leading-5 text-[#6f7890]">Créez une expérience fluide pour vendre les billets, suivre les accès et accueillir vos invités avec sérénité.</span>
                             </span>
                         </label>
 
@@ -194,11 +219,11 @@
                         </div>
 
                         @guest
-                            <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => route('event-composer.create')]) }}" class="mt-5 flex w-full justify-center rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Me connecter pour composer</a>
-                            <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Connexion client obligatoire avant de sauvegarder le projet.</p>
+                            <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => route('event-services.index')]) }}" class="mt-5 flex w-full justify-center rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Me connecter pour réserver</a>
+                            <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Connexion client obligatoire avant d’envoyer la demande aux prestataires.</p>
                         @else
                             @if (auth()->user()?->hasPortal(\App\Enums\UserRole::Client))
-                                <button class="mt-5 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Créer mon projet événementiel</button>
+                                <button class="mt-5 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande de services</button>
                             @else
                                 <p class="mt-5 rounded-2xl bg-[#fff8e8] p-4 text-sm font-bold leading-6 text-[#8a5b00]">Vous devez disposer du portail client pour composer un événement.</p>
                             @endif
@@ -215,10 +240,17 @@
             const panels = document.querySelectorAll('[data-provider-panel]');
             const serviceCheckboxes = document.querySelectorAll('[data-service-checkbox]');
             const ticketingCheckbox = document.querySelector('[data-ticketing-checkbox]');
+            const countrySelect = document.querySelector('[data-country-select]');
+            const citySelect = document.querySelector('[data-city-select]');
+            const citySearch = document.querySelector('[data-city-search]');
+            const districtSelect = document.querySelector('[data-district-select]');
+            const districtSearch = document.querySelector('[data-district-search]');
             const count = document.getElementById('composer-services-count');
             const total = document.getElementById('composer-total');
             const selection = document.getElementById('composer-selection');
             const formatter = new Intl.NumberFormat('fr-FR');
+            const cityOptions = citySelect ? [...citySelect.options] : [];
+            const districtOptions = districtSelect ? [...districtSelect.options] : [];
 
             const updateSummary = () => {
                 const selected = [...serviceCheckboxes].filter((checkbox) => checkbox.checked);
@@ -238,7 +270,7 @@
                 if (ticketingCheckbox?.checked) {
                     const row = document.createElement('p');
                     row.className = 'rounded-xl bg-[#eef4ff] px-3 py-2 font-extrabold text-[#2f6bff] ring-1 ring-[#cfe0ff]';
-                    row.textContent = 'Billetterie BAOBAA demandée';
+                    row.textContent = 'Billetterie digitale demandée';
                     selection.appendChild(row);
                 }
             };
@@ -259,8 +291,102 @@
                 });
             });
 
+            const normalize = (value) => (value || '').toString().trim().toLowerCase();
+            const matchesSearch = (label, search) => normalize(label).includes(normalize(search));
+
+            const syncCities = () => {
+                if (!countrySelect || !citySelect) {
+                    return;
+                }
+
+                const selectedCountry = countrySelect.value;
+                const currentCity = citySelect.value;
+                const search = citySearch?.value || '';
+
+                citySelect.innerHTML = '';
+                cityOptions.forEach((option) => {
+                    if (option.value === '') {
+                        citySelect.appendChild(option.cloneNode(true));
+                        return;
+                    }
+
+                    if (option.dataset.country === selectedCountry && matchesSearch(option.textContent, search)) {
+                        citySelect.appendChild(option.cloneNode(true));
+                    }
+                });
+
+                if ([...citySelect.options].some((option) => option.value === currentCity)) {
+                    citySelect.value = currentCity;
+                }
+
+                if (citySelect.selectedIndex < 0) {
+                    citySelect.value = '';
+                }
+
+                syncDistricts();
+            };
+
+            const syncDistricts = () => {
+                if (!countrySelect || !citySelect || !districtSelect) {
+                    return;
+                }
+
+                const selectedCountry = countrySelect.value;
+                const selectedCity = citySelect.value;
+                const currentDistrict = districtSelect.value;
+                const search = districtSearch?.value || '';
+
+                districtSelect.innerHTML = '';
+                districtOptions.forEach((option) => {
+                    if (option.value === '') {
+                        districtSelect.appendChild(option.cloneNode(true));
+                        return;
+                    }
+
+                    if (
+                        option.dataset.country === selectedCountry &&
+                        option.dataset.city === selectedCity &&
+                        matchesSearch(option.textContent, search)
+                    ) {
+                        districtSelect.appendChild(option.cloneNode(true));
+                    }
+                });
+
+                if ([...districtSelect.options].some((option) => option.value === currentDistrict)) {
+                    districtSelect.value = currentDistrict;
+                }
+
+                if (districtSelect.selectedIndex < 0) {
+                    districtSelect.value = '';
+                }
+            };
+
+            countrySelect?.addEventListener('change', () => {
+                if (citySearch) {
+                    citySearch.value = '';
+                }
+
+                if (districtSearch) {
+                    districtSearch.value = '';
+                }
+
+                citySelect.value = '';
+                districtSelect.value = '';
+                syncCities();
+            });
+            citySelect?.addEventListener('change', () => {
+                if (districtSearch) {
+                    districtSearch.value = '';
+                }
+
+                districtSelect.value = '';
+                syncDistricts();
+            });
+            citySearch?.addEventListener('input', syncCities);
+            districtSearch?.addEventListener('input', syncDistricts);
             serviceCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSummary));
             ticketingCheckbox?.addEventListener('change', updateSummary);
+            syncCities();
             updateSummary();
         })();
     </script>

@@ -4,6 +4,57 @@ Use this skill whenever you work on BAOBAA domain flows: public pages, venue boo
 
 This skill is a handoff document for future agents. Read it before editing code.
 
+## Ajouts de contexte effectués pendant cette session
+
+Cette section distingue explicitement les éléments ajoutés pendant le travail de cette session par rapport au contexte initial déjà existant dans le projet.
+
+### 1) UX publique et landing page
+
+- La page d’accueil a été structurée autour d’un hero premium inspiré du style Eventsinminutes, avec hiérarchie claire, CTA fort, badges de confiance et recherche plus lisible.
+- Le formulaire de recherche public a été conservé dans son design initial après validation, afin de respecter l’identité visuelle déjà existante et éviter une régression de style.
+- Le comportement de la recherche publique et de la réservation doit rester inchangé ; seules les améliorations visuelles doivent être appliquées avec prudence.
+- La logique de recherche/suggestion doit continuer à faire appel aux composants déjà présents et aux filtres existants, sans dupliquer de code ni introduire de nouveaux points de friction.
+
+### 2) Branding et identité visuelle
+
+- Le logo BAOBAA a été standardisé sur l’image réelle `public/images/baobaa.jpg` dans les menus et les composants de dashboard.
+- Les logos ne doivent plus être des textes ou des identités hybrides ; ils doivent rester visibles et correctement dimensionnés sans déformer les menus ni les sidebars.
+- La charte visuelle publique doit rester premium, blue-first, sobre et centrée sur des conteneurs arrondis, des ombres discrètes et des cartes bien structurées.
+- Les public-facing copy doivent rester en français avec accents et ne jamais exposer d’informations internes ou techniques.
+
+### 3) SAP / listes de fournisseurs et visibilité de l’écosystème
+
+- Le SAP a désormais une visibilité plus claire sur les fournisseurs et services publiés grâce à des pages dédiées de liste et de détail.
+- La navigation SAP a été complétée pour exposer les organisations/services plus proprement dans les tableaux et vues de dashboard.
+- La logique de visibilité des prestataires, services et réservations doit rester limitée aux écrans autorisés et ne pas fuir vers l’interface publique.
+
+### 4) Dashboard et composants shell
+
+- Les `shells` des dashboards client, propriétaire, SAP et prestataire ont été harmonisés avec le logo BAOBAA et un style visuel plus cohérent.
+- Les composants de sidebar et navigation doivent rester stables, lisibles et proportionnés sur mobile et desktop.
+- Les actions et liens doivent rester rôle-spécifiques et éviter toute fuite de navigation interne vers des portails non autorisés.
+
+### 5) Parcours de réservation et de négociation
+
+- Le parcours de réservation public a été enrichi en direction d’une expérience “Composer mon événement” plus premium.
+- La logique de réservation, de devis et de négociation continue à passer par les modèles/services existants : `Booking`, `EventProject`, `EventProjectItem`, `EventProjectMessage`, `ProformaInvoice`, `BookingMessage`.
+- Règle métier essentielle : une réservation composée est une seule ligne métier au niveau `EventProject`; les `EventProjectItem` sont les éléments internes du dossier et ne doivent pas être présentés comme plusieurs réservations séparées.
+- La négociation prestataire porte sur la réservation/le dossier `EventProject` pour le prestataire concerné, pas sur une ligne `EventProjectItem` isolée.
+- Les travaux futurs doivent continuer à respecter la séparation actuelle entre public, client, propriétaire, PSE et SAP.
+- Les étapes de négociation/proforma doivent rester pilotées par les services déjà créés et ne pas être réécrites en logique ad hoc dans les vues.
+
+### 6) État de la roadmap UX / priorités restantes
+
+- Les éléments encore à livrer sont clairement identifiés comme la suite de la négociation par `EventProjectItem`, la billetterie SAP, le catalogue public des PSE, les notifications et le paiement réel.
+- Les travaux de design et d’UX doivent rester concentrés sur les points à forte valeur réelle : home, reservation flow, catalog, dashboard logic, and trust-building UI.
+- Les tâches plus lourdes doivent être abordées par branches intermédiaires à partir de `develop`, après synchronisation avec `main`.
+
+### 7) Validation de régression
+
+- Validation ciblée exécutée sur le parcours principal de réservation/public booking : `php artisan test --compact tests/Feature/BookingRequestTest.php`.
+- Résultat vérifié : 13 tests passés, 111 assertions, exit code 0.
+- Cette validation confirme qu’une modification d’UX ne doit pas casser la logique de réservation déjà validée.
+
 ## Product Identity
 
 BAOBAA is a premium francophone pan-African marketplace for event venues and event services.
@@ -11,12 +62,14 @@ BAOBAA is a premium francophone pan-African marketplace for event venues and eve
 Baseline: `Là où chaque événement prend racine`.
 
 Product promise:
+
 - help clients find, compare, negotiate, reserve and pay for event venues;
 - help clients compose a full event with independent service providers;
 - let BAOBAA/SAP control trust, validation, commissions, subscriptions, deposits, sponsorship and ticketing;
 - keep public UX modern, premium, blue-first, highly organized and not overloaded.
 
 Design inspiration requested by the user:
+
 - Reference platform: `https://www.eventsinminutes.com/`;
 - reference venue search page: `https://www.eventsinminutes.com/venues?top_category_type=single_category_vendor&main_category=698c11484177d07fb3cbc5ea&q=conference+room&where=San+Francisco%2C+CA&radius_miles=25&apply_filter=true`;
 - reference venue detail page: `https://www.eventsinminutes.com/venues/oakland-ca/modern-and-chic-conference-room-for-up-to-12-guests-400-sq-ft`;
@@ -31,6 +84,7 @@ Design inspiration requested by the user:
 BAOBAA must feel like a premium marketplace, not a generated admin template. Future agents must preserve a refined, modern, trustworthy UX across public pages and all dashboards.
 
 Visual identity:
+
 - primary brand direction: premium blue-first interface, with BAOBAA red used carefully for logo/brand accents, not as the dominant UI color;
 - footer background requested and applied: `#07162f`;
 - typography should stay modern, readable and French-first; use a Google Font already integrated or a similar clean sans-serif;
@@ -39,28 +93,32 @@ Visual identity:
 - UI should feel dense enough for a marketplace, but calm and scannable.
 
 Public UX principles:
+
 - public users are final clients, so never expose internal statuses, IDs, commissions, debug labels, storage paths, or provider-only data;
 - write all visible hardcoded text in French with accents;
+- avoid internal abbreviations on public pages; use `prestataire événementiel` instead of `PSE` and `partenaire`/`propriétaire` instead of `PEE`;
 - use marketing copy that builds trust and clarity, not technical descriptions;
 - prioritize fast comparison: photo, title, city/commune, capacity, starting price, rating/reviews, availability hint, partner/logo when relevant;
 - large datasets must be organized with filters, pagination, horizontal carousels, sections and AJAX updates instead of dumping everything on one screen.
 
 Homepage requirements:
+
 - hero inspired closely by Eventsinminutes: centered premium headline, trust badge, search bar, category carousel on one line, smooth animated polish;
 - category icons/logos and labels come from SAP-managed categories, and only categories with spaces should appear publicly;
 - category carousel must support manual left/right navigation and horizontal scroll;
 - search suggestions should appear after 3 typed characters and search category labels plus venue names;
 - below hero, keep curated marketplace sections:
-  - `Tendances actuelles` / `Annonces les plus populaires`;
-  - popular by category;
-  - popular by city;
-  - popular by commune;
+    - `Tendances actuelles` / `Annonces les plus populaires`;
+    - popular by category;
+    - popular by city;
+    - popular by commune;
 - carousel cards should show 4 full columns plus part of a 5th card on desktop to signal scrollability;
 - the popular section can use two carousel rows, but each row needs its own left/right controls;
 - sections need clear vertical spacing; do not let carousel controls float in confusing positions;
 - footer must be premium, structured and dark navy with logo/brand, navigation, contact, legal links and trust copy.
 
 Search and catalog UX:
+
 - `/espaces` must be a premium catalog page, not an empty/simple list;
 - keep the search/filter form visible and useful;
 - filters should include what, where, date range, budget min/max, capacity/guest minimum, and category;
@@ -70,22 +128,26 @@ Search and catalog UX:
 - form controls must not overlap on responsive breakpoints; use consistent heights and one visual container per field.
 
 Venue detail UX:
+
 - page should follow the reference detail page structure: gallery, metadata chips, sticky section tabs, content sections, similar venues and footer;
 - sticky tabs must work without page reload and scroll to sections correctly;
 - gallery images should open in a large viewer/modal with navigation through all images;
 - reservation must become a compact CTA card plus a modal/stepper named around `Composer mon événement` or `Demander une réservation`;
+- venue detail page should expose a clear premium CTA button to compose the client's event package from this venue;
+- the client must also be able to reserve only PSE services without being forced to reserve a venue;
 - reservation modal should group:
-  - date and time;
-  - guests/budget;
-  - negotiation/proposed price;
-  - PEE modules;
-  - PSE tabs and selectable services;
-  - SAP ticketing request;
-  - summary/proforma preview;
+    - date and time;
+    - guests/budget;
+    - negotiation/proposed price;
+    - PEE modules;
+    - PSE tabs and selectable services;
+    - SAP ticketing request;
+    - summary/proforma preview;
 - the reservation flow must make it clear that login is required before saving booking/payment data;
 - sticky reservation UI must not slide under sticky tabs or headers while scrolling.
 
 Dashboard UX:
+
 - SAP, PEE, PSE and Client dashboards should share the same premium system language;
 - each dashboard needs a left sidebar on desktop and a hamburger/off-canvas menu on mobile;
 - sidebar links should go to real pages, not tabs/anchors;
@@ -95,12 +157,14 @@ Dashboard UX:
 - actions must be clear and role-specific: client should not see owner/SAP links, PEE should not see SAP actions, etc.
 
 Interaction and motion:
+
 - animations should be subtle: hover elevation, soft fade/slide, carousel movement, loading skeletons;
 - avoid shaky/stuttering scroll behavior; check sticky elements, `position: sticky`, transforms and excessive shadows when a page trembles;
 - all dropdowns/modals must have high enough z-index and close when clicking outside;
 - loaders should be intelligent: skeletons for content loading, inline saving state for forms, no blocking full-page loader for draft autosave.
 
 Responsive and accessibility:
+
 - every page must work cleanly on mobile, tablet and desktop;
 - avoid text overflow in buttons, cards, filters and tables;
 - use semantic buttons/links, focus states, labels and keyboard-friendly modals/dropdowns;
@@ -108,9 +172,10 @@ Responsive and accessibility:
 - dashboard tables should become responsive cards or horizontally scrollable tables on small screens.
 
 Design debt and missing UX:
+
 - reservation form still needs the premium modal/stepper redesign;
 - public PSE/service catalog and service detail pages are missing;
-- event project detail should show each provider/entity as its own negotiation/invoice lane;
+- event project detail should show each provider/entity as its own negotiation/invoice lane, but each lane must remain grouped by reservation/project rather than split into one reservation row per selected service;
 - notification center is missing;
 - payment gateway UX is still test-only;
 - SAP ticketing needs a full management UX;
@@ -122,6 +187,7 @@ Design debt and missing UX:
 The user repeatedly asked to stay close to the Eventsinminutes experience. Do not copy copyrighted assets or proprietary implementation, but use the same product logic and visual rhythm.
 
 Homepage reference traits:
+
 - lightweight top navigation with logo on the left and compact action/account/cart controls on the right;
 - hero centered in the first viewport;
 - pill-shaped trust badge above the headline;
@@ -133,12 +199,14 @@ Homepage reference traits:
 - content sections use horizontal discovery, not long vertical grids only.
 
 Venue search reference traits:
+
 - search intent is preserved in the URL/query string;
 - filters are immediately available and scannable;
 - cards highlight image, title, place, distance/context, price and trust signals;
 - the UX lets users compare many options quickly.
 
 Venue detail reference traits:
+
 - breadcrumb, title, location and category near top;
 - image gallery has one large image plus smaller images and a "view all photos" action;
 - compact chips for capacity, duration, surface, location and request/payment type;
@@ -150,6 +218,7 @@ Venue detail reference traits:
 - footer closes the page with brand, links and contact.
 
 Important adaptation for BAOBAA:
+
 - BAOBAA is francophone and pan-African, so all public copy must be in French with accents;
 - BAOBAA has PEE, PSE and SAP ticketing flows, so the reservation experience must go beyond the reference and support event composition;
 - BAOBAA must avoid showing internal platform mechanics publicly;
@@ -170,20 +239,24 @@ Important adaptation for BAOBAA:
 ## Current Route Map
 
 Public:
+
 - `/` home.
 - `/espaces` venue catalog with filters/AJAX results.
 - `/espaces/{slug}` venue detail.
 - `/partenaires` public PEE profiles.
 - `/partenaires/{ownerProfile}` public PEE detail/list of spaces.
-- `/composer-mon-evenement` standalone event composer for clients who may not want a venue first.
+- `/services-evenementiels` dedicated PSE-only service booking page.
+- `/composer-mon-evenement` legacy/compatible standalone event composer route for clients who may not want a venue first.
 
 Portal login routes:
+
 - `/sap/login`
 - `/proprietaire/login`
 - `/client/login`
 - `/prestataire/login`
 
 Client:
+
 - `/client/dashboard`
 - `/client/evenements`
 - `/client/evenements/composer` POST store standalone event project.
@@ -197,6 +270,7 @@ Client:
 - `/client/mot-de-passe`
 
 PEE:
+
 - `/proprietaire/dashboard`
 - `/proprietaire/espaces`
 - `/proprietaire/espaces/nouveau`
@@ -217,6 +291,7 @@ PEE:
 - `/proprietaire/parametres`
 
 PSE:
+
 - `/prestataire/inscription`
 - `/prestataire/dashboard`
 - `/prestataire/services`
@@ -225,6 +300,7 @@ PSE:
 - `/prestataire/parametres`
 
 SAP:
+
 - `/sap/dashboard`
 - `/sap/partenaires`
 - `/sap/clients`
@@ -239,6 +315,7 @@ SAP:
 - `/sap/demandes-portails`
 
 Portal access requests:
+
 - `/portails/client`
 - `/portails/proprietaire`
 - `/portails/proprietaire/demande`
@@ -250,6 +327,7 @@ Portal access requests:
 Role enum: `App\Enums\UserRole`.
 
 Role values:
+
 - `sap`
 - `admin`
 - `owner`
@@ -257,12 +335,14 @@ Role values:
 - `client`
 
 Users have:
+
 - primary `users.role`;
 - multi-portal `users.portal_roles` array.
 
 Access protection uses `App\Http\Middleware\EnsureUserHasRole`, which calls `User::hasPortal()`.
 
 Important rules:
+
 - Do not grant `owner` or `service_provider` directly from public/client self-service.
 - Client to PEE/PSE and PEE to client/PSE must go through `PortalAccessRequest` and SAP approval.
 - `User::grantPortal()` is the supported way to add a portal after SAP approval.
@@ -271,12 +351,14 @@ Important rules:
 ## Core Domain Models
 
 User and profiles:
+
 - `User`
 - `OwnerProfile`
 - `ServiceProviderProfile`
 - `PortalAccessRequest`
 
 Venue:
+
 - `Venue`
 - `VenueCategory`
 - `Amenity`
@@ -290,6 +372,7 @@ Venue:
 - `VenueReview`
 
 Booking/proforma/payment:
+
 - `Booking`
 - `BookingMessage`
 - `ProformaInvoice`
@@ -300,12 +383,15 @@ Booking/proforma/payment:
 - `OwnerDepositRule`
 
 Event project and PSE:
+
 - `EventProject`
 - `EventProjectItem`
+- `EventProjectMessage`
 - `EventServiceType`
 - `EventService`
 
 SAP monetization:
+
 - `SubscriptionPlan`
 - `CommissionRule`
 - `SponsorshipPlan`
@@ -315,6 +401,7 @@ SAP monetization:
 ## Services To Reuse
 
 Do not duplicate these flows in controllers:
+
 - `BookingWorkflowService`: orchestrates booking financial workflow, proforma, deposit payment and event project sync.
 - `EventProjectService`: creates/syncs `EventProject` and `EventProjectItem`.
 - `ProformaInvoiceService`: creates/updates proforma invoice for booking.
@@ -327,6 +414,7 @@ Do not duplicate these flows in controllers:
 Venue detail route: `/espaces/{slug}`.
 
 Current intended flow:
+
 1. Client opens a venue detail page.
 2. Public form displays price, estimated deposit, payment methods, modules, PSE services in same city, and SAP ticketing request.
 3. Guest must log in as client before saving.
@@ -335,10 +423,10 @@ Current intended flow:
 6. If `booking_intent = negotiate` and `proposed_amount` is present, that amount becomes the initial negotiated amount.
 7. Initial `client_notes` become a `BookingMessage`.
 8. `BookingWorkflowService::ensureReadyForNegotiation()` creates/updates:
-   - `ProformaInvoice`;
-   - initiated deposit `Payment`;
-   - `EventProject`;
-   - `EventProjectItem` for the venue.
+    - `ProformaInvoice`;
+    - initiated deposit `Payment`;
+    - `EventProject`;
+    - `EventProjectItem` for the venue.
 9. `BookingWorkflowService::syncRequestedAdditions()` adds selected PSE services and ticketing request to the event project.
 10. Client and PEE can continue negotiating through `BookingMessage`.
 11. Latest `BookingMessage.proposed_amount` becomes the negotiated base amount until a deposit payment succeeds.
@@ -353,6 +441,7 @@ Important: current real payment is a test flow. Do not represent it as a complet
 Current proforma workflow is strongest for venue bookings.
 
 When negotiated amount changes:
+
 - `booking.total_amount` updates;
 - `booking.reservation_amount` recalculates from SAP/PEE deposit rule;
 - `proforma_invoices.total_amount` updates;
@@ -362,23 +451,46 @@ When negotiated amount changes:
 - proforma status resets to sent if needed.
 
 When successful deposit payment exists:
+
 - do not recalculate totals from new negotiation messages.
 
 Current limitation:
-- PSE services and ticketing are stored as project items, but they do not yet have full independent proforma/payment/negotiation workflows. Future work should add per-item proformas and messages, because one event can involve multiple providers.
+
+- PSE services and ticketing are stored as project items.
+- PSE-side reservation list/detail exists and is grouped by `EventProject`, not by `EventProjectItem`.
+- PSE-side negotiation messages are stored in `EventProjectMessage` with `provider_type` and `provider_id`.
+- PSE-side proforma confirmation applies to every `event_service` item for the same provider inside the reservation.
+- `EventProjectItemMessage` exists from an earlier implementation attempt but is not the intended current flow for grouped PSE reservations.
+- Client-side detail/reply/confirmation for standalone PSE reservations and independent payment per provider lane still need dedicated UI/workflow.
+
+## Grouped Reservation Rule
+
+This rule is important and must not be regressed.
+
+- A client reservation is a single business object represented by `EventProject`.
+- `EventProjectItem` rows are internal line items: venue, service, ticketing, modules or provider-specific selections.
+- Do not display `/prestataire/reservations` as one row per `EventProjectItem`; display one row per `EventProject`.
+- A reservation row can summarize multiple services selected from the same PSE.
+- PSE negotiation operates on the provider's lane inside the `EventProject`: one message thread, one global proposed amount, one provider-side confirmation.
+- When a PSE proposes a global amount, distribute that amount across that PSE's service items only for calculation consistency, then refresh project totals through `EventProjectService::refreshTotals()`.
+- Counts and dashboard metrics should count distinct `event_project_id` for reservation volume.
+- Route model binding for PSE reservation detail uses `{eventProject}`.
 
 ## Event Projects
 
 `EventProject` centralizes a client event, whether it starts from:
+
 - venue detail reservation form;
 - standalone event composer.
 
 `EventProjectItem` separates all involved entities:
+
 - `venue_booking`: venue reservation from a PEE.
 - `event_service`: PSE service selected by client.
 - `ticketing`: BAOBAA/SAP ticketing request.
 
 Use `EventProjectService` for:
+
 - `ensureVenueBookingItem()`
 - `syncRequestedAdditions()`
 - `createStandaloneProject()`
@@ -391,6 +503,7 @@ Do not build project items manually in controllers unless there is no service me
 Route: `/composer-mon-evenement`.
 
 Purpose:
+
 - Client can compose an event without booking a venue.
 - PSE providers are displayed as tabs.
 - Clicking a PSE tab shows only that provider's published services.
@@ -400,46 +513,63 @@ Purpose:
 - Saving redirects to `/client/evenements`.
 
 Store route:
+
 - `POST /client/evenements/composer`
 - controller: `EventComposerController::store()`
 
 Created item types:
+
 - selected PSE services become `event_service`;
 - SAP ticketing request becomes `ticketing`.
 
 Current limitation:
+
 - no dedicated public PSE/service catalog page yet;
-- no independent negotiation/chat per PSE service yet;
-- no independent proforma/payment per PSE item yet.
+- PSE-side negotiation and provider-side proforma confirmation exist for service project items;
+- client-side service item detail/reply/confirmation still needs a dedicated UI;
+- independent payment per PSE item is not implemented yet.
 
 ## PSE Scope
 
 PSE account:
+
 - register through `/prestataire/inscription`;
 - starts as client plus pending PSE request;
 - SAP approves request;
 - login through `/prestataire/login`.
 
 PSE dashboard:
+
 - `/prestataire/dashboard`
 - `/prestataire/services`
 - `/prestataire/services/nouveau`
 - `/prestataire/services/{eventService}/modifier`
+- `/prestataire/reservations`
+- `/prestataire/reservations/{eventProject}`
+- `/prestataire/reservations/{eventProject}/messages`
+- `/prestataire/reservations/{eventProject}/proforma/confirmer`
 - `/prestataire/parametres`
 
 PSE can:
+
 - create services;
 - select existing SAP-defined service type;
 - define name, descriptions, location, service area, pricing unit, starting price, deposit amount, attributes and availability notes;
 - publish/unpublish services;
 - delete services;
 - update logo/profile.
+- view service reservations from `/prestataire/reservations`;
+- open a grouped reservation detail page containing all of this PSE's services for the client event;
+- negotiate one global provider-side amount through `EventProjectMessage`;
+- confirm the grouped service proforma from the provider side.
 
 PSE cannot:
+
 - create service types. SAP owns service types.
 - bypass SAP validation.
 
 Seeded local demo PSE:
+
 - email: `pse.demo@baobaa.local`
 - password: `12345678`
 - Use only for local/demo testing. Do not reuse this password in production.
@@ -447,6 +577,7 @@ Seeded local demo PSE:
 ## SAP Scope
 
 SAP dashboard handles:
+
 - PEE list;
 - client list;
 - venues;
@@ -461,21 +592,24 @@ SAP dashboard handles:
 - sponsorship approvals.
 
 SAP service types:
+
 - route: `/sap/types-services`;
 - model: `EventServiceType`;
 - seed: `EventServiceTypeSeeder`;
 - examples seeded: Sonorisation, Lumière et scénographie, Podium et scène, Photo et vidéo, Mobilier événementiel.
 
 SAP ticketing:
+
 - Currently client can request ticketing.
 - Ticketing request is stored as `EventProjectItem`:
-  - `item_type = ticketing`
-  - `provider_type = sap`
-  - `quoted_amount = 0`
-  - metadata says commission/montant is negotiated offline.
+    - `item_type = ticketing`
+    - `provider_type = sap`
+    - `quoted_amount = 0`
+    - metadata says commission/montant is negotiated offline.
 - Future work: SAP should manage ticketing packages/options and generate a dedicated proforma.
 
 SAP seeded account:
+
 - Existing seeders include SAP creation.
 - Check `database/seeders/SapUserSeeder.php` locally when credentials are needed.
 - Do not put real production credentials, personal admin emails, or secrets in this skill.
@@ -483,6 +617,7 @@ SAP seeded account:
 ## PEE Scope
 
 PEE can:
+
 - manage venue CRUD;
 - save venue creation/update by steps as draft;
 - activate/deactivate venues;
@@ -500,6 +635,7 @@ PEE can:
 - update profile/logo in `/proprietaire/parametres`.
 
 Important venue creation UX:
+
 - multi-step form;
 - button label should be `Continuer` except final step should save;
 - Ajax save should not lock the page indefinitely;
@@ -508,6 +644,7 @@ Important venue creation UX:
 ## Client Scope
 
 Client can:
+
 - register through `/client/inscription`;
 - login through `/client/login`;
 - browse venues;
@@ -529,6 +666,7 @@ Client dashboard navigation should stay coherent and responsive.
 Key file: `resources/views/venues/show.blade.php`.
 
 Important UX constraints from user:
+
 - public detail page inspired by Eventsinminutes;
 - tabs should be sticky and functional;
 - reservation CTA/form must stay visible, but not go under sticky tabs;
@@ -539,6 +677,7 @@ Important UX constraints from user:
 - future preferred UX: turn full reservation form into a modal/stepper launched by a main button, because the form is becoming too rich.
 
 Current implementation:
+
 - sidebar form exists;
 - supports reserve/propose amount;
 - supports initial message;
@@ -547,15 +686,40 @@ Current implementation:
 - sticky offset adjusted to avoid tabs overlap.
 
 Recommended next UI step:
+
 - replace sidebar full form with a compact pricing/CTA card;
 - open a polished modal stepper on `Demander une réservation`;
 - steps: event details, negotiation, PSE tabs/services, ticketing, summary.
+
+## Reservation Entry Modes
+
+The platform must support two public client entry modes.
+
+Mode 1: venue-first event package:
+- entry point: venue detail page `/espaces/{slug}`;
+- primary CTA: `Composer mon événement`;
+- client starts from a selected venue;
+- modal/stepper lets the client reserve or negotiate the venue, then add PEE modules, PSE services and optional SAP ticketing;
+- saving creates a `Booking` for the venue and an `EventProject` containing related `EventProjectItem` rows.
+
+Mode 2: PSE-only service booking:
+- primary entry point: `/services-evenementiels`;
+- compatible legacy entry point: `/composer-mon-evenement`;
+- do not expose `/services-evenementiels` in the main public menu unless the user explicitly asks for it again;
+- future entry points can be a public PSE catalog or a PSE/service detail page;
+- client does not have to select or reserve a venue;
+- client can choose one or many PSE services, negotiate if needed, then get proforma/payment flow per provider in a later implementation;
+- saving creates an `EventProject` with `event_service` items and no required `venue_booking` item.
+
+Important UX rule:
+- never force a client who only needs a provider service, e.g. sound, lighting, podium, camera, photo, furniture, decoration, to reserve a venue first.
 
 ## Media And Wasabi
 
 Venue media and partner logos use a Wasabi/S3-compatible disk.
 
 Environment variable names used:
+
 - `WAS_ACCESS_KEY`
 - `WAS_SECRET_KEY`
 - `WASABI_BUCKET`
@@ -566,6 +730,7 @@ Environment variable names used:
 Never commit actual values.
 
 Production issue previously seen:
+
 - `Class "League\Flysystem\AwsS3V3\PortableVisibilityConverter" not found`
 - fix requires installing the S3 Flysystem adapter on the server if missing and running Composer install/update correctly.
 
@@ -576,6 +741,7 @@ php artisan baobaa:diagnose-wasabi-images
 ```
 
 Deployment notes:
+
 - production path used by the user previously: `/home/baobaa/app`;
 - production Linux user used previously: `baobaa`;
 - branch used previously: `main`;
@@ -623,6 +789,7 @@ sudo chmod -R ug+rwX storage bootstrap/cache
 ```
 
 Production `.env` checklist:
+
 - `APP_ENV=production`;
 - `APP_DEBUG=false`;
 - `APP_URL` must match the real domain;
@@ -632,6 +799,7 @@ Production `.env` checklist:
 - never commit `.env`.
 
 Wasabi production checklist:
+
 - install/keep the S3 adapter dependency required by Laravel Flysystem;
 - confirm bucket, endpoint, region and URL match Wasabi;
 - confirm uploaded objects are readable through signed URLs generated by the app;
@@ -639,6 +807,7 @@ Wasabi production checklist:
 - if images open directly but not in the app, inspect signed URL generation, CORS, mixed-content HTTPS, cached config and storage disk config.
 
 Common deployment issues already seen:
+
 - dirty server worktree from `.gitignore` files under `storage` and `bootstrap/cache`;
 - untracked `error_log`;
 - missing S3/Flysystem adapter causing `PortableVisibilityConverter` errors;
@@ -646,6 +815,7 @@ Common deployment issues already seen:
 - frontend not updated because `npm run build` was not executed.
 
 Do not commit:
+
 - `.env`
 - `error_log`
 - production logs
@@ -655,6 +825,7 @@ Do not commit:
 ## Seeders And Demo Accounts
 
 Relevant seeders:
+
 - `SapUserSeeder`
 - `VenueCategorySeeder`
 - `AmenitySeeder`
@@ -670,6 +841,7 @@ Relevant seeders:
 - `PlatformSettingSeeder`
 
 PSE local demo:
+
 - `pse.demo@baobaa.local`
 - `12345678`
 - `/prestataire/login`
@@ -685,9 +857,11 @@ php artisan db:seed --class=ServiceProviderSeeder
 ## Important Files By Area
 
 Routes:
+
 - `routes/web.php`
 
 Public:
+
 - `resources/views/welcome.blade.php`
 - `resources/views/venues/index.blade.php`
 - `resources/views/venues/show.blade.php`
@@ -696,6 +870,7 @@ Public:
 - `resources/views/components/navigation/account-menu.blade.php`
 
 Client:
+
 - `resources/views/components/dashboards/client-shell.blade.php`
 - `resources/views/dashboards/client.blade.php`
 - `resources/views/dashboards/client-reservations.blade.php`
@@ -705,11 +880,13 @@ Client:
 - `resources/views/dashboards/client-profile.blade.php`
 
 PEE:
+
 - `resources/views/components/dashboards/owner-shell.blade.php`
 - `resources/views/dashboards/owner*.blade.php`
 - `resources/views/dashboards/owner/venue-create.blade.php`
 
 PSE:
+
 - `resources/views/components/dashboards/service-provider-shell.blade.php`
 - `resources/views/dashboards/service-provider/index.blade.php`
 - `resources/views/dashboards/service-provider/services.blade.php`
@@ -717,10 +894,12 @@ PSE:
 - `resources/views/dashboards/service-provider/settings.blade.php`
 
 SAP:
+
 - `resources/views/components/dashboards/sap-shell.blade.php`
 - `resources/views/dashboards/sap/*.blade.php`
 
 Controllers:
+
 - `PublicVenueController`
 - `BookingController`
 - `BookingMessageController`
@@ -736,6 +915,7 @@ Controllers:
 - `ServiceProviderRegisteredUserController`
 
 Tests:
+
 - `tests/Feature/BookingRequestTest.php`
 - `tests/Feature/EventComposerTest.php`
 - `tests/Feature/OwnerDashboardTest.php`
@@ -746,23 +926,27 @@ Tests:
 ## Validation And Security Expectations
 
 Before accepting user-submitted IDs:
+
 - validate with `exists`;
 - restrict by status where relevant, e.g. published services only;
 - authorize ownership in controller with `abort_unless`.
 
 Before showing public data:
+
 - show only published venues/services;
 - do not expose private owner/PSE/internal fields;
 - use UUID/public identifiers for partner profiles where already implemented;
 - do not leak raw storage paths if signed URLs are expected.
 
 Money-related rules:
+
 - keep amount changes covered by tests;
 - use integer minor unit style amounts, currently XOF whole amounts;
 - do not silently recalculate after a successful deposit payment;
 - keep proforma confirmation before test payment.
 
 Role-related rules:
+
 - do not mutate role/portal from public action without SAP validation;
 - use `PortalAccessRequest`;
 - use `User::grantPortal()` after SAP approval.
@@ -779,6 +963,7 @@ npm run build
 ```
 
 Expected focused result after event composer/PSE workflow:
+
 - 70 tests passing;
 - 445 assertions.
 
@@ -787,6 +972,7 @@ If only editing Markdown, tests are not required, but still check for secrets be
 ## Current Known Limitations
 
 These are intentional unfinished areas, not bugs unless the user asks for them now:
+
 - reservation form should be moved to a modal/stepper for premium UX;
 - PSE services selected in event projects do not yet have independent negotiation/messages;
 - PSE services do not yet have independent proforma/payment records;
@@ -798,6 +984,7 @@ These are intentional unfinished areas, not bugs unless the user asks for them n
 ## Recommended Next Steps
 
 Strongest next implementation path:
+
 1. Replace venue detail reservation sidebar form with compact CTA plus modal stepper.
 2. Add per-`EventProjectItem` negotiation thread so each PSE/PEE/SAP can manage its own invoice.
 3. Add per-`EventProjectItem` proforma/payment records or polymorphic invoice source.
@@ -811,6 +998,7 @@ Strongest next implementation path:
 User may ask to push manually. Do not push unless explicitly requested.
 
 Before pushing:
+
 - `git status --short`
 - confirm `.env` is not staged;
 - search for secrets:
@@ -822,4 +1010,5 @@ rg -n "WAS_ACCESS_KEY|WAS_SECRET_KEY|WASABI|SECRET|ACCESS_KEY" . --glob '!vendor
 Acceptable hits are config files using `env(...)`, not real credential values.
 
 Last known pushed feature commit before this skill expansion:
+
 - `6c83215 Add event composer and PSE workflow`

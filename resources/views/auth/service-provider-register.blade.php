@@ -20,7 +20,7 @@
                     <div class="max-w-2xl py-14">
                         <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Prestataire événementiel</p>
                         <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.05em] sm:text-6xl">Proposez vos services aux bons organisateurs.</h1>
-                        <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">Son, lumière, podium, photo, vidéo, mobilier ou services terrain : le SAP vérifie les profils pour garder une marketplace fiable et premium.</p>
+                        <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">Son, lumière, podium, photo, vidéo, mobilier ou services terrain : l’équipe BAOBAA vérifie les profils pour garder une marketplace fiable et premium.</p>
                     </div>
 
                     <div class="grid gap-3 sm:grid-cols-3">
@@ -35,15 +35,15 @@
                 <div class="w-full max-w-2xl">
                     @if ($pendingRequest)
                         <div class="mb-5 rounded-[22px] border border-[#b9d3ff] bg-white p-5 shadow-xl shadow-[#173e7a]/8">
-                            <p class="text-sm font-extrabold text-[#2f6bff]">Votre demande PSE est déjà en cours de validation.</p>
-                            <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Le SAP analysera vos informations avant d’activer votre portail prestataire.</p>
+                            <p class="text-sm font-extrabold text-[#2f6bff]">Votre demande prestataire est déjà en cours de validation.</p>
+                            <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">L’équipe BAOBAA analysera vos informations avant d’activer votre portail prestataire.</p>
                         </div>
                     @endif
 
                     <div class="mb-7">
                         <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">{{ $isAuthenticatedMode ? 'Compte connecté' : 'Nouveau prestataire' }}</p>
-                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demande d’accès PSE</h2>
-                        <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Renseignez vos informations professionnelles. Les types de services disponibles seront définis par le SAP.</p>
+                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demande d’accès prestataire</h2>
+                        <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Renseignez vos informations professionnelles. Les familles de services disponibles sont configurées par BAOBAA.</p>
                     </div>
 
                     <form method="POST" action="{{ $action }}" class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">
@@ -135,11 +135,11 @@
                         </label>
 
                         <label class="mt-4 block">
-                            <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Message au SAP</span>
+                            <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Message à l’équipe BAOBAA</span>
                             <textarea name="motivation" rows="3" class="w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('motivation') }}</textarea>
                         </label>
 
-                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer au SAP</button>
+                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer à BAOBAA</button>
                     </form>
                 </div>
             </div>

@@ -11,6 +11,7 @@ use App\Models\Booking;
 use App\Models\CommissionRule;
 use App\Models\EventProjectItem;
 use App\Models\EventServiceType;
+use App\Models\ManagedLocation;
 use App\Models\OwnerDepositRule;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SapDashboardController extends Controller
@@ -384,6 +386,124 @@ class SapDashboardController extends Controller
         $eventServiceType->update(['is_active' => ! $eventServiceType->is_active]);
 
         return back()->with('sap_status', 'Type de service mis à jour.');
+    }
+
+    public function locations(Request $request): View
+    {
+        return view('dashboards.sap.locations', [
+            ...$this->metrics(),
+            'countries' => ManagedLocation::query()
+                ->active()
+                ->countries()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(['id', 'name', 'code']),
+            'cities' => ManagedLocation::query()
+                ->active()
+                ->cities()
+                ->with('parent:id,name,code')
+                ->whereHas('parent', fn (Builder $query) => $query->active()->countries())
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(['id', 'parent_id', 'name', 'country_code']),
+            'locationStats' => [
+                'countries' => ManagedLocation::query()->countries()->count(),
+                'cities' => ManagedLocation::query()->cities()->count(),
+                'districts' => ManagedLocation::query()->districts()->count(),
+                'active' => ManagedLocation::query()->active()->count(),
+            ],
+            'locations' => ManagedLocation::query()
+                ->with('parent')
+                ->withCount('children')
+                ->when($request->filled('type'), fn (Builder $query) => $query->where('type', $request->string('type')))
+                ->when($request->filled('status'), fn (Builder $query) => $query->where('is_active', $request->string('status')->toString() === 'active'))
+                ->when($request->filled('q'), fn (Builder $query) => $query->where('name', 'like', '%'.$request->string('q')->toString().'%'))
+                ->orderBy('type')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->paginate(12)
+                ->withQueryString(),
+        ]);
+    }
+
+    public function storeLocation(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'in:country,city,district'],
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['nullable', 'string', 'size:2', 'required_if:type,country'],
+            'country_id' => [
+                'nullable',
+                'integer',
+                'required_if:type,city',
+                Rule::exists('managed_locations', 'id')
+                    ->where('type', ManagedLocation::TypeCountry)
+                    ->where('is_active', true),
+            ],
+            'city_id' => [
+                'nullable',
+                'integer',
+                'required_if:type,district',
+                Rule::exists('managed_locations', 'id')
+                    ->where('type', ManagedLocation::TypeCity)
+                    ->where('is_active', true),
+            ],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
+        ]);
+
+        $type = $validated['type'];
+        $name = trim($validated['name']);
+        $parentId = null;
+        $countryCode = null;
+        $code = null;
+
+        if ($type === ManagedLocation::TypeCountry) {
+            $code = Str::upper($validated['code']);
+            $countryCode = $code;
+        }
+
+        if ($type === ManagedLocation::TypeCity) {
+            $country = ManagedLocation::query()
+                ->active()
+                ->countries()
+                ->findOrFail($validated['country_id']);
+            $parentId = $country->id;
+            $countryCode = $country->code;
+        }
+
+        if ($type === ManagedLocation::TypeDistrict) {
+            $city = ManagedLocation::query()
+                ->active()
+                ->cities()
+                ->whereHas('parent', fn (Builder $query) => $query->active()->countries())
+                ->findOrFail($validated['city_id']);
+            $parentId = $city->id;
+            $countryCode = $city->country_code;
+        }
+
+        ManagedLocation::query()->updateOrCreate([
+            'type' => $type,
+            'parent_id' => $parentId,
+            'slug' => Str::slug($name),
+        ], [
+            'parent_id' => $parentId,
+            'type' => $type,
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'code' => $code,
+            'country_code' => $countryCode,
+            'is_active' => true,
+            'sort_order' => $validated['sort_order'] ?? ManagedLocation::query()->where('type', $type)->count() + 1,
+        ]);
+
+        return back()->with('sap_status', 'Localisation ajoutée.');
+    }
+
+    public function toggleLocation(ManagedLocation $managedLocation): RedirectResponse
+    {
+        $managedLocation->update(['is_active' => ! $managedLocation->is_active]);
+
+        return back()->with('sap_status', 'Localisation mise à jour.');
     }
 
     public function sponsorshipPlans(Request $request): View

@@ -13,6 +13,7 @@
     $navigation = [
         ['key' => 'overview', 'label' => 'Vue d’ensemble', 'route' => 'service-provider.dashboard', 'icon' => 'M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z'],
         ['key' => 'services', 'label' => 'Mes services', 'route' => 'service-provider.services', 'icon' => 'M12 3l7 4v10l-7 4-7-4V7l7-4Zm0 0v8m7-4-7 4-7-4'],
+        ['key' => 'reservations', 'label' => 'Réservations', 'route' => 'service-provider.reservations', 'icon' => 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'],
         ['key' => 'settings', 'label' => 'Paramètres', 'route' => 'service-provider.settings', 'icon' => 'M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5ZM19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3.4-.2-.1a1.7 1.7 0 0 0-1.9.1 8 8 0 0 1-1.7 1l-.3.1-.7-2.1h-4l-.7 2.1-.3-.1a8 8 0 0 1-1.7-1 1.7 1.7 0 0 0-1.9-.1l-.2.1-2-3.4.1-.1A1.7 1.7 0 0 0 4.6 15a8 8 0 0 1 0-2 1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3.4.2.1a1.7 1.7 0 0 0 1.9-.1 8 8 0 0 1 1.7-1l.3-.1.7 2.1h4l.7-2.1.3.1a8 8 0 0 1 1.7 1 1.7 1.7 0 0 0 1.9.1l.2-.1 2 3.4-.1.1a1.7 1.7 0 0 0-.3 1.9 8 8 0 0 1 0 2Z'],
     ];
 @endphp
@@ -75,7 +76,7 @@
                         @foreach ([
                             ['label' => 'Services publiés', 'value' => number_format($activeServicesCount, 0, ',', ' '), 'hint' => 'visibles côté client'],
                             ['label' => 'Brouillons', 'value' => number_format($draftServicesCount, 0, ',', ' '), 'hint' => 'à compléter'],
-                            ['label' => 'Demandes', 'value' => number_format($requestsCount, 0, ',', ' '), 'hint' => 'à traiter bientôt'],
+                            ['label' => 'Réservations', 'value' => number_format($requestsCount, 0, ',', ' '), 'hint' => 'à traiter'],
                             ['label' => 'Revenus', 'value' => number_format($grossRevenue, 0, ',', ' ').' XOF', 'hint' => 'paiements confirmés'],
                         ] as $metric)
                             <div class="rounded-[22px] border border-white/80 bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">

@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
             CommissionRuleSeeder::class,
             OwnerDepositRuleSeeder::class,
             PlatformSettingSeeder::class,
+            ManagedLocationSeeder::class,
         ]);
     }
 }

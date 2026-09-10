@@ -6,12 +6,15 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\VenueStatus;
 use App\Models\Booking;
+use App\Models\OwnerModuleTemplate;
 use App\Models\Payment;
 use App\Models\Venue;
+use App\Models\VenueAddOn;
 use App\Services\BookingDepositService;
 use App\Services\BookingWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -39,6 +42,20 @@ class BookingController extends Controller
             'booking_intent' => ['nullable', Rule::in(['reserve', 'negotiate'])],
             'proposed_amount' => ['nullable', 'integer', 'min:1'],
             'client_notes' => ['nullable', 'string', 'max:2000'],
+            'selected_add_on_ids' => ['nullable', 'array', 'max:12'],
+            'selected_add_on_ids.*' => [
+                'integer',
+                Rule::exists('venue_add_ons', 'id')
+                    ->where('venue_id', $venue->id)
+                    ->where('is_available', true),
+            ],
+            'selected_module_template_ids' => ['nullable', 'array', 'max:12'],
+            'selected_module_template_ids.*' => [
+                'integer',
+                Rule::exists('owner_module_templates', 'id')
+                    ->where('owner_profile_id', $venue->owner_profile_id)
+                    ->where('is_active', true),
+            ],
             'event_service_ids' => ['nullable', 'array', 'max:6'],
             'event_service_ids.*' => [
                 'integer',
@@ -48,15 +65,20 @@ class BookingController extends Controller
         ]);
 
         $venue->loadMissing('ownerProfile.depositRules');
+        $selectedAddOns = $this->selectedVenueAddOnsFor($venue, array_map('intval', $validated['selected_add_on_ids'] ?? []))
+            ->concat($this->selectedModuleTemplatesFor($venue, array_map('intval', $validated['selected_module_template_ids'] ?? [])));
+        $selectedAddOnsTotal = (int) $selectedAddOns->sum('price');
 
         $wantsNegotiation = ($validated['booking_intent'] ?? 'reserve') === 'negotiate' && filled($validated['proposed_amount'] ?? null);
-        $totalAmount = $wantsNegotiation ? (int) $validated['proposed_amount'] : (int) $venue->starting_price;
+        $baseAmount = $wantsNegotiation ? (int) $validated['proposed_amount'] : (int) $venue->starting_price;
+        $totalAmount = $baseAmount + $selectedAddOnsTotal;
         $reservationAmount = $this->bookingDepositService->amountFor($venue, $totalAmount);
         $paymentMethod = $validated['payment_method'];
         $eventServiceIds = array_map('intval', $validated['event_service_ids'] ?? []);
         $ticketingRequested = $request->boolean('ticketing_requested');
+        $selectedAddOnsPayload = $this->selectedAddOnsPayload($selectedAddOns);
 
-        $booking = DB::transaction(function () use ($request, $venue, $validated, $totalAmount, $reservationAmount, $paymentMethod, $wantsNegotiation, $eventServiceIds, $ticketingRequested): Booking {
+        $booking = DB::transaction(function () use ($request, $venue, $validated, $baseAmount, $totalAmount, $reservationAmount, $paymentMethod, $wantsNegotiation, $eventServiceIds, $ticketingRequested, $selectedAddOnsPayload): Booking {
             $booking = Booking::query()->create([
                 'client_id' => $request->user()->id,
                 'owner_profile_id' => $venue->owner_profile_id,
@@ -73,6 +95,7 @@ class BookingController extends Controller
                 'total_amount' => $totalAmount,
                 'reservation_amount' => $reservationAmount,
                 'client_notes' => $validated['client_notes'] ?? null,
+                'selected_add_ons' => $selectedAddOnsPayload,
                 'expires_at' => now()->addMinutes(30),
             ]);
 
@@ -81,7 +104,7 @@ class BookingController extends Controller
                     'sender_id' => $request->user()->id,
                     'recipient_id' => $venue->ownerProfile?->user_id,
                     'message' => $validated['client_notes'] ?: 'Je souhaite négocier cette réservation.',
-                    'proposed_amount' => $wantsNegotiation ? $totalAmount : null,
+                    'proposed_amount' => $wantsNegotiation ? $baseAmount : null,
                     'currency' => $venue->currency,
                 ]);
             }
@@ -99,6 +122,7 @@ class BookingController extends Controller
                     'reason' => 'reservation_deposit',
                     'source' => 'sap_owner_deposit_rule',
                     'price_source' => $wantsNegotiation ? 'client_proposal' : 'venue_public_price',
+                    'selected_add_ons' => $selectedAddOnsPayload,
                 ],
             ]);
 
@@ -139,5 +163,61 @@ class BookingController extends Controller
         $paymentMethods = $venue->payment_methods ?: [];
 
         return $paymentMethods ?: ['baobaa_checkout'];
+    }
+
+    /**
+     * @param  array<int, int>  $selectedAddOnIds
+     */
+    private function selectedVenueAddOnsFor(Venue $venue, array $selectedAddOnIds): Collection
+    {
+        if ($selectedAddOnIds === []) {
+            return collect();
+        }
+
+        return VenueAddOn::query()
+            ->where('venue_id', $venue->id)
+            ->where('is_available', true)
+            ->whereIn('id', array_unique($selectedAddOnIds))
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * @param  array<int, int>  $selectedModuleTemplateIds
+     */
+    private function selectedModuleTemplatesFor(Venue $venue, array $selectedModuleTemplateIds): Collection
+    {
+        if ($selectedModuleTemplateIds === []) {
+            return collect();
+        }
+
+        return OwnerModuleTemplate::query()
+            ->where('owner_profile_id', $venue->owner_profile_id)
+            ->where('is_active', true)
+            ->whereIn('id', array_unique($selectedModuleTemplateIds))
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * @param  Collection<int, VenueAddOn|OwnerModuleTemplate>  $selectedAddOns
+     * @return array<int, array{id: int, source_type: string, source_id: int, name: string, price: int, quantity: int, currency: string}>
+     */
+    private function selectedAddOnsPayload(Collection $selectedAddOns): array
+    {
+        return $selectedAddOns
+            ->map(fn (VenueAddOn|OwnerModuleTemplate $addOn): array => [
+                'id' => $addOn->id,
+                'source_type' => $addOn instanceof VenueAddOn ? 'venue_add_on' : 'owner_module_template',
+                'source_id' => $addOn->id,
+                'name' => $addOn->name,
+                'price' => (int) $addOn->price,
+                'quantity' => 1,
+                'currency' => $addOn->currency,
+            ])
+            ->values()
+            ->all();
     }
 }

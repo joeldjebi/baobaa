@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ClientRegisteredUserController;
 use App\Http\Controllers\Auth\PortalAuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingMessageController;
+use App\Http\Controllers\ClientBookingPackageController;
 use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventComposerController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\SapDashboardController;
 use App\Http\Controllers\SapPortalRequestController;
 use App\Http\Controllers\ServiceProviderDashboardController;
 use App\Http\Controllers\ServiceProviderRegisteredUserController;
+use App\Http\Controllers\ServiceProviderReservationController;
 use App\Http\Controllers\TestPaymentController;
 use App\Http\Controllers\VenueReviewController;
 use App\Models\Venue;
@@ -121,7 +123,9 @@ Route::get('/lister-un-espace', function () {
     return redirect()->route('owner.register');
 })->name('venues.list-venue');
 Route::get('/espaces', [PublicVenueController::class, 'index'])->name('venues.index');
+Route::get('/espaces/{slug}/reservation', [PublicVenueController::class, 'reservation'])->name('venues.reservation');
 Route::get('/espaces/{slug}', [PublicVenueController::class, 'show'])->name('venues.show');
+Route::get('/services-evenementiels', [EventComposerController::class, 'create'])->name('event-services.index');
 Route::get('/composer-mon-evenement', [EventComposerController::class, 'create'])->name('event-composer.create');
 Route::post('/espaces/{venue}/reservation', [BookingController::class, 'store'])
     ->middleware(['auth', 'role:client'])
@@ -188,6 +192,9 @@ Route::middleware(['auth', 'role:sap'])->group(function (): void {
     Route::get('/sap/types-services', [SapDashboardController::class, 'serviceTypes'])->name('sap.service-types');
     Route::post('/sap/types-services', [SapDashboardController::class, 'storeServiceType'])->name('sap.service-types.store');
     Route::post('/sap/types-services/{eventServiceType}/statut', [SapDashboardController::class, 'toggleServiceType'])->name('sap.service-types.toggle');
+    Route::get('/sap/localisations', [SapDashboardController::class, 'locations'])->name('sap.locations');
+    Route::post('/sap/localisations', [SapDashboardController::class, 'storeLocation'])->name('sap.locations.store');
+    Route::post('/sap/localisations/{managedLocation}/statut', [SapDashboardController::class, 'toggleLocation'])->name('sap.locations.toggle');
     Route::get('/sap/forfaits-sponsoring', [SapDashboardController::class, 'sponsorshipPlans'])->name('sap.sponsorship-plans');
     Route::post('/sap/forfaits-sponsoring', [SapDashboardController::class, 'storeSponsorshipPlan'])->name('sap.sponsorship-plans.store');
     Route::post('/sap/forfaits-sponsoring/{sponsorshipPlan}/statut', [SapDashboardController::class, 'toggleSponsorshipPlan'])->name('sap.sponsorship-plans.toggle');
@@ -205,6 +212,10 @@ Route::middleware(['auth', 'role:service_provider'])->group(function (): void {
     Route::patch('/prestataire/services/{eventService}', [EventServiceController::class, 'update'])->name('service-provider.services.update');
     Route::post('/prestataire/services/{eventService}/statut', [EventServiceController::class, 'toggle'])->name('service-provider.services.toggle');
     Route::delete('/prestataire/services/{eventService}', [EventServiceController::class, 'destroy'])->name('service-provider.services.destroy');
+    Route::get('/prestataire/reservations', [ServiceProviderReservationController::class, 'index'])->name('service-provider.reservations');
+    Route::get('/prestataire/reservations/{eventProject}', [ServiceProviderReservationController::class, 'show'])->name('service-provider.reservations.show');
+    Route::post('/prestataire/reservations/{eventProject}/messages', [ServiceProviderReservationController::class, 'storeMessage'])->name('service-provider.reservations.messages.store');
+    Route::post('/prestataire/reservations/{eventProject}/proforma/confirmer', [ServiceProviderReservationController::class, 'confirm'])->name('service-provider.reservations.proforma.confirm');
     Route::get('/prestataire/parametres', [ServiceProviderDashboardController::class, 'settings'])->name('service-provider.settings');
     Route::patch('/prestataire/parametres', [EventServiceController::class, 'updateSettings'])->name('service-provider.settings.update');
 });
@@ -244,6 +255,7 @@ Route::middleware(['auth', 'role:client'])->group(function (): void {
     Route::post('/client/evenements/composer', [EventComposerController::class, 'store'])->name('event-composer.store');
     Route::get('/client/reservations', [DashboardController::class, 'clientReservations'])->name('client.reservations');
     Route::get('/client/reservations/{booking}', [DashboardController::class, 'clientBookingShow'])->name('client.reservations.show');
+    Route::patch('/client/reservations/{booking}/package', [ClientBookingPackageController::class, 'update'])->name('client.reservations.package.update');
     Route::post('/client/reservations/{booking}/messages', [BookingMessageController::class, 'store'])->name('client.reservations.messages.store');
     Route::post('/client/reservations/{booking}/proforma/confirmer', [ProformaInvoiceConfirmationController::class, 'store'])->name('client.reservations.proforma.confirm');
     Route::post('/client/reservations/{booking}/paiement-test', [TestPaymentController::class, 'store'])->name('client.reservations.test-payment');

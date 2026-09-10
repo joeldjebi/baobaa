@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\VenueStatus;
 use App\Models\Booking;
 use App\Models\EventProject;
+use App\Models\EventService;
 use App\Models\OwnerModuleTemplate;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
@@ -84,24 +85,26 @@ class DashboardController extends Controller
     {
         $client = $request->user();
 
+        // List EventProject (reservation dossier) rather than raw Booking rows.
         return view('dashboards.client-reservations', [
             ...$this->clientMetricsFor($client),
             'client' => $client,
-            'bookings' => Booking::query()
-                ->with(['venue.ownerProfile', 'payments'])
+            'projects' => EventProject::query()
+                ->with(['items.booking.venue', 'items'])
+                ->withCount('items')
                 ->where('client_id', $client->id)
                 ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')))
                 ->when($request->filled('q'), function (Builder $query) use ($request): void {
                     $search = '%'.$request->string('q')->toString().'%';
                     $query->where(function (Builder $query) use ($search): void {
                         $query->where('reference', 'like', $search)
-                            ->orWhereHas('venue', fn (Builder $query) => $query->where('name', 'like', $search));
+                            ->orWhereHas('items.booking.venue', fn (Builder $query) => $query->where('name', 'like', $search));
                     });
                 })
                 ->when($request->filled('date_from'), fn (Builder $query) => $query->whereDate('event_date', '>=', $request->date('date_from')))
                 ->when($request->filled('date_to'), fn (Builder $query) => $query->whereDate('event_date', '<=', $request->date('date_to')))
                 ->latest('event_date')
-                ->paginate(10, ['*'], 'bookings_page')
+                ->paginate(10, ['*'], 'projects_page')
                 ->withQueryString(),
         ]);
     }
@@ -139,19 +142,101 @@ class DashboardController extends Controller
         abort_unless((int) $booking->client_id === (int) $client->id, 404);
 
         $booking = $this->bookingWorkflowService->ensureReadyForNegotiation($booking);
+        $booking->load([
+            'venue.media',
+            'venue.category',
+            'venue.addOns',
+            'venue.ownerProfile.user',
+            'payments',
+            'messages.sender',
+            'proformaInvoice.items',
+            'eventProjectItem.eventProject.items',
+        ]);
+        $selectedEventServiceIds = $booking->eventProjectItem?->eventProject?->items
+            ?->where('item_type', 'event_service')
+            ->pluck('source_id')
+            ->filter()
+            ->map(fn (int|string $id): int => (int) $id)
+            ->values()
+            ->all() ?? [];
+
+        $publicEventServices = EventService::query()
+            ->with(['type', 'serviceProviderProfile'])
+            ->where(function (Builder $query) use ($selectedEventServiceIds): void {
+                $query->where('status', VenueStatus::Published)
+                    ->when($selectedEventServiceIds !== [], fn (Builder $query) => $query->orWhereIn('id', $selectedEventServiceIds));
+            })
+            ->when($booking->venue?->city, fn (Builder $query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$booking->venue->city]))
+            ->orderBy('starting_price')
+            ->limit(48)
+            ->get();
 
         return view('dashboards.client-booking-show', [
             ...$this->clientMetricsFor($client),
             'client' => $client,
-            'booking' => $booking->load([
-                'venue.media',
-                'venue.category',
-                'venue.ownerProfile.user',
-                'payments',
-                'messages.sender',
-                'proformaInvoice.items',
-            ]),
+            'booking' => $booking,
+            'packageAddOns' => $this->packageAddOnsFor($booking),
+            'publicEventProviders' => $publicEventServices
+                ->groupBy(fn (EventService $service) => $service->service_provider_profile_id)
+                ->map(fn ($services): array => [
+                    'provider' => $services->first()->serviceProviderProfile,
+                    'services' => $services,
+                ])
+                ->values(),
+            'selectedServiceQuantities' => $booking->eventProjectItem?->eventProject?->items
+                ?->where('item_type', 'event_service')
+                ->mapWithKeys(fn ($item): array => [
+                    (int) $item->source_id => max(1, (int) ($item->metadata['quantity'] ?? 1)),
+                ])
+                ->all() ?? [],
+            'canEditPackage' => $this->clientCanEditPackage($booking),
         ]);
+    }
+
+    /**
+     * @return array<int, array{id: int, source: string, name: string, amount: int, currency: string, price: string}>
+     */
+    private function packageAddOnsFor(Booking $booking): array
+    {
+        $venueAddOns = $booking->venue?->addOns
+            ?->where('is_available', true)
+            ->sortBy([
+                ['sort_order', 'asc'],
+                ['name', 'asc'],
+            ])
+            ->values() ?? collect();
+
+        $addOns = $venueAddOns->isNotEmpty()
+            ? $venueAddOns->map(fn ($addOn): array => [
+                'id' => $addOn->id,
+                'source' => 'venue_add_on',
+                'name' => $addOn->name,
+                'amount' => (int) $addOn->price,
+                'currency' => $addOn->currency,
+                'price' => number_format($addOn->price, 0, ',', ' ').' '.$addOn->currency,
+            ])
+            : $booking->venue?->ownerProfile
+                ?->moduleTemplates()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (OwnerModuleTemplate $module): array => [
+                    'id' => $module->id,
+                    'source' => 'owner_module_template',
+                    'name' => $module->name,
+                    'amount' => (int) $module->price,
+                    'currency' => $module->currency,
+                    'price' => number_format($module->price, 0, ',', ' ').' '.$module->currency,
+                ]);
+
+        return ($addOns ?? collect())->values()->all();
+    }
+
+    private function clientCanEditPackage(Booking $booking): bool
+    {
+        return ! $booking->payments->contains(fn (Payment $payment): bool => $payment->status === PaymentStatus::Succeeded)
+            && ! in_array($booking->status, [BookingStatus::Cancelled, BookingStatus::Declined, BookingStatus::Completed], true);
     }
 
     public function ownerVenues(Request $request): View

@@ -142,8 +142,9 @@ class PublicVenueController extends Controller
         $publicEventServices = EventService::query()
             ->with(['type', 'serviceProviderProfile'])
             ->where('status', VenueStatus::Published)
-            ->when($venue?->city, fn ($query) => $query->where('city', $venue->city))
+            ->when($venue?->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
             ->orderBy('starting_price')
+            ->limit(24)
             ->get();
 
         $publicEventProviders = $publicEventServices
@@ -171,6 +172,84 @@ class PublicVenueController extends Controller
                 ->values() ?? collect(),
             'canReview' => $venue && $eligibleBooking && ! $existingReview,
             'existingReview' => $existingReview,
+        ]);
+    }
+
+    public function reservation(string $slug): View
+    {
+        $venue = Venue::query()
+            ->with([
+                'category',
+                'ownerProfile.depositRules',
+                'amenities',
+                'media',
+                'rates',
+                'configurations',
+                'addOns',
+                'policies',
+                'faqs',
+                'reviews.client',
+            ])
+            ->where('slug', $slug)
+            ->where('status', VenueStatus::Published)
+            ->firstOrFail();
+
+        $publicEventServices = EventService::query()
+            ->with(['type', 'serviceProviderProfile'])
+            ->where('status', VenueStatus::Published)
+            ->when($venue->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
+            ->orderBy('starting_price')
+            ->limit(24)
+            ->get();
+
+        $publicEventProviders = $publicEventServices
+            ->groupBy(fn (EventService $service) => $service->service_provider_profile_id)
+            ->map(function ($services) {
+                $provider = $services->first()->serviceProviderProfile;
+
+                return [
+                    'provider' => $provider,
+                    'services' => $services,
+                ];
+            })
+            ->values();
+
+        $addOns = $venue->addOns()
+            ->where('is_available', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $reservationAddOns = $addOns->isNotEmpty()
+            ? $addOns->map(fn ($addOn) => [
+                'id' => $addOn->id,
+                'source' => 'venue_add_on',
+                'name' => $addOn->name,
+                'amount' => (int) $addOn->price,
+                'currency' => $addOn->currency,
+                'price' => number_format($addOn->price, 0, ',', ' ').' '.$addOn->currency,
+            ])
+            : $venue->ownerProfile
+                ?->moduleTemplates()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($module) => [
+                    'id' => $module->id,
+                    'source' => 'owner_module_template',
+                    'name' => $module->name,
+                    'amount' => (int) $module->price,
+                    'currency' => $module->currency,
+                    'price' => number_format($module->price, 0, ',', ' ').' '.$module->currency,
+                ]);
+
+        return view('venues.reservation', [
+            'venue' => $venue,
+            'depositAmount' => $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price),
+            'publicEventProviders' => $publicEventProviders,
+            'suggestedEventServices' => $publicEventServices,
+            'reservationAddOns' => ($reservationAddOns ?? collect())->values()->all(),
         ]);
     }
 

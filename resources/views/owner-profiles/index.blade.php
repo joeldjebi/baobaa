@@ -80,7 +80,7 @@
                 <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($partnerCards as $profile)
                         <a href="{{ route('owner-profiles.show', $profile['public_uuid']) }}" class="group overflow-hidden rounded-[22px] border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#173e7a]/12">
-                            <div class="h-24 bg-[linear-gradient(135deg,#2f6bff,#7ea2ff_55%,#eef4ff)]"></div>
+                            <div class="partner-cover h-24 bg-[linear-gradient(135deg,#2f6bff,#7ea2ff_55%,#eef4ff)]" data-partner-cover="{{ $profile['logo_url'] ? $profile['logo_url'] : '' }}" data-default-gradient="linear-gradient(135deg, #2f6bff, #7ea2ff 55%, #eef4ff)" style="background-image: linear-gradient(135deg, #2f6bff, #7ea2ff 55%, #eef4ff);"></div>
                             <div class="p-5">
                                 <div class="-mt-12 flex items-end justify-between gap-4">
                                     <span class="grid size-20 shrink-0 place-items-center overflow-hidden rounded-[22px] border-4 border-white bg-[#eaf1ff] text-3xl font-extrabold text-[#2f6bff] shadow-lg shadow-[#173e7a]/8">
@@ -102,6 +102,68 @@
                         </a>
                     @endforeach
                 </div>
+
+                <script>
+                    (() => {
+                        const createGradientFromImage = (img) => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const sampleSize = 40;
+
+                            if (!ctx || !img || !img.width || !img.height) {
+                                return null;
+                            }
+
+                            canvas.width = sampleSize;
+                            canvas.height = sampleSize;
+                            ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+
+                            const { data } = ctx.getImageData(0, 0, sampleSize, sampleSize);
+                            let r = 0, g = 0, b = 0, count = 0;
+
+                            for (let i = 0; i < data.length; i += 4) {
+                                const alpha = data[i + 3];
+                                if (alpha < 128) continue;
+
+                                r += data[i];
+                                g += data[i + 1];
+                                b += data[i + 2];
+                                count += 1;
+                            }
+
+                            if (!count) return null;
+
+                            const avgR = Math.round(r / count);
+                            const avgG = Math.round(g / count);
+                            const avgB = Math.round(b / count);
+
+                            const shift = 20;
+                            const first = `rgb(${avgR}, ${avgG}, ${avgB})`;
+                            const second = `rgb(${Math.min(255, avgR + shift)}, ${Math.min(255, avgG + shift)}, ${Math.min(255, avgB + shift)})`;
+                            const third = `rgb(${Math.max(0, avgR - 30)}, ${Math.max(0, avgG - 30)}, ${Math.max(0, avgB - 30)})`;
+
+                            return `linear-gradient(135deg, ${first} 0%, ${second} 45%, ${third} 100%)`;
+                        };
+
+                        document.querySelectorAll('[data-partner-cover]').forEach((cover) => {
+                            const source = cover.dataset.partnerCover;
+                            if (!source) return;
+
+                            const img = new Image();
+                            img.crossOrigin = 'anonymous';
+                            img.onload = () => {
+                                const gradient = createGradientFromImage(img);
+                                if (gradient) {
+                                    cover.style.backgroundImage = gradient;
+                                }
+                            };
+                            img.onerror = () => {
+                                cover.style.backgroundImage = cover.dataset.defaultGradient || 'linear-gradient(135deg, #2f6bff, #7ea2ff 55%, #eef4ff)';
+                            };
+                            img.src = source;
+                        });
+                    })();
+                </script>
 
                 @if (method_exists($profiles, 'links') && $profiles->isNotEmpty())
                     <div class="mt-8">

@@ -44,15 +44,37 @@ class ProformaInvoiceService
                 ])->save();
             }
 
+            $selectedAddOns = collect($booking->selected_add_ons ?: []);
+            $selectedAddOnsTotal = (int) $selectedAddOns->sum(fn (array $addOn): int => (int) ($addOn['price'] ?? 0) * max(1, (int) ($addOn['quantity'] ?? 1)));
+            $venueAmount = max(0, (int) $booking->total_amount - $selectedAddOnsTotal);
+
             $invoice->items()->updateOrCreate([
                 'sort_order' => 1,
             ], [
                 'label' => 'Location de l’espace',
                 'description' => $booking->venue?->name ?: 'Espace événementiel BAOBAA',
                 'quantity' => 1,
-                'unit_price' => $booking->total_amount,
-                'total_price' => $booking->total_amount,
+                'unit_price' => $venueAmount,
+                'total_price' => $venueAmount,
             ]);
+
+            $invoice->items()->where('sort_order', '>', 1)->delete();
+
+            $selectedAddOns
+                ->values()
+                ->each(function (array $addOn, int $index) use ($invoice): void {
+                    $quantity = max(1, (int) ($addOn['quantity'] ?? 1));
+                    $unitPrice = (int) ($addOn['price'] ?? 0);
+
+                    $invoice->items()->create([
+                        'label' => 'Module optionnel',
+                        'description' => (string) ($addOn['name'] ?? 'Module complémentaire'),
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $unitPrice * $quantity,
+                        'sort_order' => $index + 2,
+                    ]);
+                });
 
             if ($invoice->event_project_item_id !== $booking->event_project_item_id) {
                 $invoice->update(['event_project_item_id' => $booking->event_project_item_id]);

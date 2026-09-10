@@ -7,6 +7,7 @@ use Database\Factories\EventProjectItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -63,5 +64,10 @@ class EventProjectItem extends Model
     public function proformaInvoice(): HasOne
     {
         return $this->hasOne(ProformaInvoice::class);
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(EventProjectItemMessage::class)->latest();
     }
 }

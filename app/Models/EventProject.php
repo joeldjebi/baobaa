@@ -48,4 +48,9 @@ class EventProject extends Model
     {
         return $this->hasMany(EventProjectItem::class);
     }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(EventProjectMessage::class)->latest();
+    }
 }

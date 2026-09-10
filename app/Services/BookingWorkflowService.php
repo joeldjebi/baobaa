@@ -22,8 +22,11 @@ class BookingWorkflowService
             $booking->loadMissing('venue.ownerProfile.depositRules');
 
             if ($booking->venue) {
-                $totalAmount = $this->negotiatedAmountFor($booking)
-                    ?: (int) ($booking->total_amount ?: $booking->venue->starting_price);
+                $selectedAddOnsTotal = $this->selectedAddOnsTotal($booking);
+                $negotiatedAmount = $this->negotiatedAmountFor($booking);
+                $totalAmount = $negotiatedAmount
+                    ? $negotiatedAmount + $selectedAddOnsTotal
+                    : (int) ($booking->total_amount ?: ($booking->venue->starting_price + $selectedAddOnsTotal));
                 $reservationAmount = $this->bookingDepositService->amountFor($booking->venue, $totalAmount);
 
                 $booking->forceFill([
@@ -74,6 +77,7 @@ class BookingWorkflowService
                 'payment_method' => $pendingPayment->payment_method ?: $paymentMethod,
                 'provider_payload' => array_merge($pendingPayment->provider_payload ?: [], [
                     'source' => 'booking_workflow_negotiated_amount',
+                    'selected_add_ons' => $booking->selected_add_ons ?: [],
                 ]),
             ]);
 
@@ -92,6 +96,7 @@ class BookingWorkflowService
             'provider_payload' => [
                 'reason' => 'reservation_deposit',
                 'source' => 'booking_workflow_auto_repair',
+                'selected_add_ons' => $booking->selected_add_ons ?: [],
             ],
         ]);
     }
@@ -112,6 +117,12 @@ class BookingWorkflowService
             ->value('proposed_amount');
 
         return $amount ? (int) $amount : null;
+    }
+
+    private function selectedAddOnsTotal(Booking $booking): int
+    {
+        return collect($booking->selected_add_ons ?: [])
+            ->sum(fn (array $addOn): int => (int) ($addOn['price'] ?? 0) * max(1, (int) ($addOn['quantity'] ?? 1)));
     }
 
     private function uniquePaymentReference(): string

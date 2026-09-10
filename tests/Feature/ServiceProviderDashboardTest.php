@@ -1,8 +1,11 @@
 <?php
 
+use App\Enums\EventProjectItemStatus;
 use App\Enums\UserRole;
 use App\Enums\VenueStatus;
 use App\Enums\VerificationStatus;
+use App\Models\EventProject;
+use App\Models\EventProjectItem;
 use App\Models\EventService;
 use App\Models\EventServiceType;
 use App\Models\PortalAccessRequest;
@@ -174,4 +177,116 @@ test('service provider dashboard and service CRUD are protected and functional',
         ->assertRedirect();
 
     expect($service->refresh()->status)->toBe(VenueStatus::Published);
+});
+
+test('service provider manages one reservation containing multiple service items', function () {
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+    $pse = User::factory()->create([
+        'role' => UserRole::ServiceProvider,
+        'portal_roles' => [UserRole::ServiceProvider->value],
+    ]);
+    $otherPse = User::factory()->create([
+        'role' => UserRole::ServiceProvider,
+        'portal_roles' => [UserRole::ServiceProvider->value],
+    ]);
+    $profile = ServiceProviderProfile::factory()->create([
+        'user_id' => $pse->id,
+        'business_name' => 'Studio Son Signature',
+        'verification_status' => VerificationStatus::Verified,
+    ]);
+    $otherProfile = ServiceProviderProfile::factory()->create([
+        'user_id' => $otherPse->id,
+        'verification_status' => VerificationStatus::Verified,
+    ]);
+    $project = EventProject::factory()->create([
+        'client_id' => $client->id,
+        'name' => 'Gala corporate',
+        'city' => 'Abidjan',
+    ]);
+    $reservation = EventProjectItem::factory()->create([
+        'event_project_id' => $project->id,
+        'item_type' => 'event_service',
+        'provider_type' => 'service_provider_profile',
+        'provider_id' => $profile->id,
+        'title' => 'Pack audio corporate',
+        'quoted_amount' => 300000,
+        'deposit_amount' => 90000,
+        'metadata' => [
+            'service_type' => 'Sonorisation',
+            'quantity' => 1,
+            'unit_amount' => 300000,
+        ],
+    ]);
+    $secondReservationItem = EventProjectItem::factory()->create([
+        'event_project_id' => $project->id,
+        'item_type' => 'event_service',
+        'provider_type' => 'service_provider_profile',
+        'provider_id' => $profile->id,
+        'title' => 'Pack lumière architectural',
+        'quoted_amount' => 200000,
+        'deposit_amount' => 40000,
+        'metadata' => [
+            'service_type' => 'Lumière',
+            'quantity' => 1,
+            'unit_amount' => 200000,
+        ],
+    ]);
+    $privateProject = EventProject::factory()->create([
+        'client_id' => $client->id,
+        'name' => 'Projet privé',
+    ]);
+    $privateReservation = EventProjectItem::factory()->create([
+        'event_project_id' => $privateProject->id,
+        'item_type' => 'event_service',
+        'provider_type' => 'service_provider_profile',
+        'provider_id' => $otherProfile->id,
+        'title' => 'Pack privé',
+    ]);
+
+    $this->actingAs($pse)
+        ->get(route('service-provider.reservations'))
+        ->assertOk()
+        ->assertSeeText('Pack audio corporate')
+        ->assertSeeText('Pack lumière architectural')
+        ->assertDontSeeText('Pack privé');
+
+    $this->actingAs($pse)
+        ->get(route('service-provider.reservations.show', $project))
+        ->assertOk()
+        ->assertSeeText('Proforma de réservation')
+        ->assertSeeText('Pack audio corporate')
+        ->assertSeeText('Pack lumière architectural')
+        ->assertSeeText('Gala corporate');
+
+    $this->actingAs($pse)
+        ->post(route('service-provider.reservations.messages.store', $project), [
+            'message' => 'Nous pouvons ajuster la formule avec un technicien supplémentaire.',
+            'proposed_amount' => 400000,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('pse_status');
+
+    expect($reservation->refresh()->quoted_amount)->toBe(240000)
+        ->and($reservation->deposit_amount)->toBe(72000)
+        ->and($reservation->status)->toBe(EventProjectItemStatus::Negotiating)
+        ->and($secondReservationItem->refresh()->quoted_amount)->toBe(160000)
+        ->and($secondReservationItem->deposit_amount)->toBe(32000)
+        ->and($project->messages)->toHaveCount(1);
+
+    $this->actingAs($pse)
+        ->post(route('service-provider.reservations.proforma.confirm', $project))
+        ->assertRedirect()
+        ->assertSessionHas('pse_status');
+
+    expect($reservation->refresh()->provider_confirmed_at)->not->toBeNull()
+        ->and($reservation->status)->toBe(EventProjectItemStatus::AwaitingClientConfirmation)
+        ->and($secondReservationItem->refresh()->provider_confirmed_at)->not->toBeNull()
+        ->and($secondReservationItem->status)->toBe(EventProjectItemStatus::AwaitingClientConfirmation);
+
+    $this->actingAs($pse)
+        ->get(route('service-provider.reservations.show', $privateProject))
+        ->assertNotFound();
 });

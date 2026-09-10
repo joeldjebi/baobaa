@@ -209,6 +209,7 @@ class OwnerVenueDraftController extends Controller
         $venue->addOns()->delete();
         foreach ($templates as $index => $module) {
             $venue->addOns()->create([
+                'owner_module_template_id' => $module->id,
                 'name' => $module->name,
                 'description' => $module->description,
                 'price' => $module->price,

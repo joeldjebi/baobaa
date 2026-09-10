@@ -136,15 +136,22 @@
         </form>
 
         <div class="mt-5 space-y-3">
-            @forelse ($booking->messages as $message)
+            @php
+                $project = $booking->eventProjectItem?->eventProject;
+                $bookingMessages = $booking->messages->map(fn($m) => (object) array_merge($m->toArray(), ['_source' => 'booking']));
+                $projectMessages = $project ? $project->messages->map(fn($m) => (object) array_merge($m->toArray(), ['_source' => 'project'])) : collect();
+                $conversation = $bookingMessages->concat($projectMessages)->sortBy('created_at')->values();
+            @endphp
+
+            @forelse ($conversation as $message)
                 @php($isMine = (int) $message->sender_id === (int) auth()->id())
                 <article class="rounded-2xl border {{ $isMine ? 'border-[#cfe0ff] bg-[#f4f8ff]' : 'border-[#edf2fb] bg-white' }} p-4">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <p class="font-extrabold text-[#151821]">{{ $isMine ? $actorLabel : $message->sender?->name }}</p>
-                        <p class="text-xs font-bold text-[#8a94aa]">{{ $message->created_at?->format('d/m/Y H:i') }}</p>
+                        <p class="font-extrabold text-[#151821]">{{ $isMine ? $actorLabel : ($message->sender?->name ?? ($message->sender_id ? App\Models\User::find($message->sender_id)?->name : 'Partenaire')) }}</p>
+                        <p class="text-xs font-bold text-[#8a94aa]">{{ \Illuminate\Support\Carbon::parse($message->created_at)->format('d/m/Y H:i') }}</p>
                     </div>
                     <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">{{ $message->message }}</p>
-                    @if ($message->proposed_amount)
+                    @if (! empty($message->proposed_amount))
                         <p class="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">Proposition : {{ number_format($message->proposed_amount, 0, ',', ' ') }} {{ $message->currency }}</p>
                     @endif
                 </article>

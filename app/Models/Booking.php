@@ -34,6 +34,7 @@ class Booking extends Model
         'total_amount',
         'reservation_amount',
         'client_notes',
+        'selected_add_ons',
         'expires_at',
         'confirmed_at',
         'cancelled_at',
@@ -44,6 +45,7 @@ class Booking extends Model
         return [
             'status' => BookingStatus::class,
             'event_date' => 'date',
+            'selected_add_ons' => 'array',
             'expires_at' => 'datetime',
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
