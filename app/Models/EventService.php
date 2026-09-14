@@ -7,6 +7,7 @@ use Database\Factories\EventServiceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class EventService extends Model
@@ -53,6 +54,11 @@ class EventService extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(EventServiceType::class, 'event_service_type_id');
+    }
+
+    public function availabilityHolds(): MorphMany
+    {
+        return $this->morphMany(AvailabilityHold::class, 'holdable');
     }
 
     protected static function booted(): void

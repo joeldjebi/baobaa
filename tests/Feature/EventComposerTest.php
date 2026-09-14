@@ -2,6 +2,7 @@
 
 use App\Enums\UserRole;
 use App\Enums\VenueStatus;
+use App\Models\AvailabilityHold;
 use App\Models\EventProject;
 use App\Models\EventService;
 use App\Models\EventServiceType;
@@ -178,6 +179,63 @@ test('client can reserve only PSE services without a venue booking item', functi
         ->and($project->items()->where('item_type', 'venue_booking')->exists())->toBeFalse()
         ->and($project->estimated_total_amount)->toBe(180000)
         ->and($project->metadata['created_from'])->toBe('event_composer');
+});
+
+test('service booking blocks overlapping reservations for ten minutes', function () {
+    createActiveComposerLocations();
+
+    $firstClient = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+    $secondClient = User::factory()->create([
+        'role' => UserRole::Client,
+        'portal_roles' => [UserRole::Client->value],
+    ]);
+    $profile = ServiceProviderProfile::factory()->create();
+    $type = EventServiceType::factory()->create([
+        'name' => 'Sonorisation',
+    ]);
+    $service = EventService::factory()->create([
+        'service_provider_profile_id' => $profile->id,
+        'event_service_type_id' => $type->id,
+        'name' => 'Pack audio premium',
+        'status' => VenueStatus::Published,
+        'starting_price' => 250000,
+    ]);
+    $eventDate = now()->addWeeks(3)->toDateString();
+
+    $this->actingAs($firstClient)
+        ->post(route('event-composer.store'), [
+            'name' => 'Conférence matin',
+            'event_type' => 'conference',
+            'event_date' => $eventDate,
+            'starts_at' => '09:00',
+            'ends_at' => '14:00',
+            'country_code' => 'CI',
+            'city' => 'Abidjan',
+            'event_service_ids' => [$service->id],
+        ])
+        ->assertRedirect(route('client.projects'));
+
+    $this->actingAs($secondClient)
+        ->from(route('event-services.index'))
+        ->post(route('event-composer.store'), [
+            'name' => 'Séminaire midi',
+            'event_type' => 'conference',
+            'event_date' => $eventDate,
+            'starts_at' => '12:00',
+            'ends_at' => '18:00',
+            'country_code' => 'CI',
+            'city' => 'Abidjan',
+            'event_service_ids' => [$service->id],
+        ])
+        ->assertRedirect(route('event-services.index'))
+        ->assertSessionHasErrors('event_service_ids');
+
+    expect(EventProject::query()->count())->toBe(1)
+        ->and(AvailabilityHold::query()->where('holdable_type', EventService::class)->where('holdable_id', $service->id)->count())->toBe(1)
+        ->and(AvailabilityHold::query()->first()?->expires_at->diffInMinutes(now()))->toBeLessThanOrEqual(10);
 });
 
 test('event composer only exposes and accepts SAP active locations', function () {

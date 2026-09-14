@@ -21,6 +21,7 @@ use App\Http\Controllers\OwnerVenueStatusController;
 use App\Http\Controllers\PortalAccessController;
 use App\Http\Controllers\ProformaInvoiceConfirmationController;
 use App\Http\Controllers\PublicOwnerProfileController;
+use App\Http\Controllers\PublicServiceProviderProfileController;
 use App\Http\Controllers\PublicVenueController;
 use App\Http\Controllers\SapDashboardController;
 use App\Http\Controllers\SapPortalRequestController;
@@ -123,8 +124,11 @@ Route::get('/lister-un-espace', function () {
     return redirect()->route('owner.register');
 })->name('venues.list-venue');
 Route::get('/espaces', [PublicVenueController::class, 'index'])->name('venues.index');
+Route::get('/espaces/{slug}/disponibilites-bloquees', [PublicVenueController::class, 'blockedDates'])->name('venues.blocked-dates');
 Route::get('/espaces/{slug}/reservation', [PublicVenueController::class, 'reservation'])->name('venues.reservation');
 Route::get('/espaces/{slug}', [PublicVenueController::class, 'show'])->name('venues.show');
+Route::get('/prestataires', [PublicServiceProviderProfileController::class, 'index'])->name('service-provider-profiles.index');
+Route::get('/prestataires/{serviceProviderProfile}', [PublicServiceProviderProfileController::class, 'show'])->name('service-provider-profiles.show');
 Route::get('/services-evenementiels', [EventComposerController::class, 'create'])->name('event-services.index');
 Route::get('/composer-mon-evenement', [EventComposerController::class, 'create'])->name('event-composer.create');
 Route::post('/espaces/{venue}/reservation', [BookingController::class, 'store'])

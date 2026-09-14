@@ -16,7 +16,7 @@
                     <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
                 </a>
 
-                <x-navigation.public-menu active="composer" />
+                <x-navigation.public-menu active="event-services" />
                 <x-navigation.account-menu />
             </div>
         </header>

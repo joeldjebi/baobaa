@@ -79,18 +79,18 @@
         ['title' => 'Politique musicale et sonore', 'summary' => 'Musique amplifiée autorisée', 'content' => 'Selon les horaires et restrictions du lieu'],
     ];
     $fallbackFaqs = [
-        ['question' => 'Les fournisseurs sont-ils vérifiés et assurés ?', 'answer' => 'Les espaces vérifiés passent par un contrôle BAOBAA avant publication.'],
-        ['question' => 'Que contient exactement ce forfait ?', 'answer' => 'Le forfait inclut les elements affiches dans la section inclusions.'],
+        ['question' => 'Les espaces sont-ils vérifiés ?', 'answer' => 'Les espaces vérifiés passent par un contrôle BAOBAA avant publication.'],
+        ['question' => 'Que contient exactement ce forfait ?', 'answer' => 'Le forfait inclut les éléments affichés dans la section inclusions.'],
         ['question' => 'Cet événement est-il privé ?', 'answer' => 'Oui, la privatisation dépend du créneau choisi et des conditions du propriétaire.'],
         ['question' => 'Y a-t-il des frais cachés ?', 'answer' => 'Les frais obligatoires sont affichés avant validation de la réservation.'],
     ];
     $tabs = [
         'apercu' => 'Aperçu',
         'inclusions' => 'Ce qui est inclus',
-        'commodites' => 'Espace et commodites',
-        'modules' => 'Modules complementaires',
+        'commodites' => 'Espace et commodités',
+        'modules' => 'Services additionnels',
         'lieu' => 'Lieu et horaires',
-        'conditions' => 'Choses a savoir',
+        'conditions' => 'À savoir',
         'avis' => 'Avis clients',
     ];
     $reservationAddOns = $addOns->isNotEmpty()
@@ -271,7 +271,7 @@
                                 Découvrir le partenaire
                                 <span class="text-base leading-none">→</span>
                             </a>
-                            <button class="rounded-full border border-[#cfdaf5] px-4 py-2 text-xs font-extrabold text-[#2f6bff]">Contacter le fournisseur</button>
+                            <button class="rounded-full border border-[#cfdaf5] px-4 py-2 text-xs font-extrabold text-[#2f6bff]">Poser une question</button>
                         </div>
                     </div>
                 </section>
@@ -337,7 +337,7 @@
                 </section>
 
                 <section id="modules" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
-                    <h2 class="text-xl font-extrabold text-[#151821]">Modules complémentaires du fournisseur</h2>
+                    <h2 class="text-xl font-extrabold text-[#151821]">Services additionnels</h2>
                     <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         @forelse ($addOns as $addOn)
                             <div class="rounded-2xl border border-[#dce6f7] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
@@ -365,7 +365,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="mt-3 text-sm font-semibold text-[#4d5872]">{{ $district }}, {{ $city }} · Contactez le fournisseur pour connaître les disponibilités.</p>
+                    <p class="mt-3 text-sm font-semibold text-[#4d5872]">{{ $district }}, {{ $city }} · Une fois votre demande envoyée, le partenaire confirme les disponibilités exactes.</p>
                 </section>
 
                 <section id="conditions" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
@@ -553,7 +553,7 @@
                             <ul class="mt-3 space-y-2 text-xs font-semibold leading-5 text-[#52617b]">
                                 <li>• date, heure et nombre d’invités</li>
                                 <li>• prix proposé et négociation</li>
-                                <li>• modules du partenaire et services événementiels</li>
+                                <li>• options du lieu et services événementiels</li>
                                 <li>• billetterie digitale BAOBAA</li>
                             </ul>
                         </div>
@@ -572,14 +572,14 @@
         <div id="addons-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/72 px-4 py-8 backdrop-blur-sm" aria-hidden="true">
             <div class="flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-black/10">
                 <div class="flex items-center justify-between border-b border-[#e6eaf2] px-6 py-5 sm:px-8">
-                    <h2 class="text-2xl font-extrabold tracking-[-0.035em] text-[#151821] sm:text-3xl">Modules complémentaires</h2>
-                    <button type="button" id="close-addons-modal" class="grid size-10 place-items-center rounded-full text-3xl font-light text-[#4d5872] transition hover:bg-[#f4f7ff]" aria-label="Fermer les modules">&times;</button>
+                    <h2 class="text-2xl font-extrabold tracking-[-0.035em] text-[#151821] sm:text-3xl">Services additionnels</h2>
+                    <button type="button" id="close-addons-modal" class="grid size-10 place-items-center rounded-full text-3xl font-light text-[#4d5872] transition hover:bg-[#f4f7ff]" aria-label="Fermer les services additionnels">&times;</button>
                 </div>
 
                 <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5 sm:px-8">
                     <label class="block">
-                        <span class="sr-only">Rechercher un module complémentaire</span>
-                        <input id="addons-search" type="search" placeholder="Rechercher un module complémentaire" class="w-full rounded-2xl border border-[#4d5872] px-5 py-4 text-xl font-semibold text-[#151821] outline-none ring-2 ring-[#151821]/20 transition placeholder:text-[#a6abb6] focus:border-[#2f6bff] focus:ring-[#2f6bff]/25">
+                        <span class="sr-only">Rechercher un service additionnel</span>
+                        <input id="addons-search" type="search" placeholder="Rechercher un service additionnel" class="w-full rounded-2xl border border-[#4d5872] px-5 py-4 text-xl font-semibold text-[#151821] outline-none ring-2 ring-[#151821]/20 transition placeholder:text-[#a6abb6] focus:border-[#2f6bff] focus:ring-[#2f6bff]/25">
                     </label>
 
                     <div id="addons-list" class="mt-5 divide-y divide-[#e6eaf2]">
@@ -628,7 +628,7 @@
                         <div>
                             <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Planification événementielle</p>
                             <h2 class="mt-5 max-w-3xl text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl lg:text-5xl">Composer mon événement</h2>
-                            <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#c7d4ec] sm:text-base">Choisissez les dates, vos services, la billetterie et les modules de votre espace pour centraliser la demande de réservation.</p>
+                            <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#c7d4ec] sm:text-base">Choisissez les dates, vos options, les services événementiels et la billetterie pour centraliser votre demande.</p>
                         </div>
                         <button type="button" id="close-reservation-modal" class="grid size-11 shrink-0 place-items-center rounded-full bg-white/8 text-2xl font-light text-white transition hover:bg-white/15" aria-label="Fermer le parcours de réservation">&times;</button>
                     </div>
@@ -640,7 +640,7 @@
                         </div>
                         <div class="rounded-[22px] bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
                             <p class="text-2xl font-extrabold text-white">{{ number_format(count($reservationAddOns), 0, ',', ' ') }}</p>
-                            <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#bfd2ff]">Modules</p>
+                            <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#bfd2ff]">Options</p>
                         </div>
                         <div class="rounded-[22px] bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
                             <p class="text-2xl font-extrabold text-white">Billets</p>
@@ -730,7 +730,7 @@
 
                         <div data-step-panel="4" class="hidden space-y-4">
                             <div class="rounded-[18px] border border-[#dce6f7] bg-[#fbfcff] p-4">
-                                <p class="text-sm font-extrabold text-[#151821]">Modules du partenaire</p>
+                                <p class="text-sm font-extrabold text-[#151821]">Options du lieu</p>
                                 <div class="mt-3 grid gap-3">
                                     @foreach ($reservationAddOns as $addOn)
                                         <label class="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[#e6edf9] bg-white p-3">
@@ -747,7 +747,7 @@
 
                         <div data-step-panel="5" class="hidden space-y-4">
                             <div class="rounded-[18px] border border-[#dce6f7] bg-[#fbfcff] p-4">
-                                <p class="text-sm font-extrabold text-[#151821]">Choisir un prestataire événementiel</p>
+                                <p class="text-sm font-extrabold text-[#151821]">Choisir des services événementiels</p>
                                 <div class="mt-3 grid gap-3 md:grid-cols-2">
                                     @forelse ($eventServiceProviderGroups as $providerGroup)
                                         @php $provider = $providerGroup['provider']; @endphp
@@ -762,12 +762,12 @@
                                             <span class="rounded-full bg-[#eef4ff] px-2 py-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $providerGroup['services']->count() }}</span>
                                         </button>
                                     @empty
-                                        <p class="text-sm font-semibold text-[#6f7890]">Aucun prestataire événementiel pour le moment.</p>
+                                        <p class="text-sm font-semibold text-[#6f7890]">Aucun service événementiel disponible pour le moment.</p>
                                     @endforelse
                                 </div>
 
                                 <div class="mt-5 rounded-[16px] border border-[#dce6f7] bg-white p-3">
-                                    <p class="text-xs font-extrabold uppercase text-[#8a94aa]">Services du prestataire</p>
+                                    <p class="text-xs font-extrabold uppercase text-[#8a94aa]">Prestations disponibles</p>
                                     <div class="mt-3 space-y-3">
                                         @forelse ($eventServiceProviderGroups as $providerGroup)
                                             @php $provider = $providerGroup['provider']; @endphp
@@ -1040,7 +1040,7 @@
 
                     selectedAddOnsSummary.classList.toggle('hidden', selected.length === 0);
                     selectedAddOnsSummary.textContent = selected.length > 0
-                        ? `${selected.length} module${selected.length > 1 ? 's' : ''} sélectionné${selected.length > 1 ? 's' : ''} : ${selected.join(', ')}`
+                        ? `${selected.length} option${selected.length > 1 ? 's' : ''} sélectionnée${selected.length > 1 ? 's' : ''} : ${selected.join(', ')}`
                         : '';
                 };
 

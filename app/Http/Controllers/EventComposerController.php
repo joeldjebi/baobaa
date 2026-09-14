@@ -7,6 +7,7 @@ use App\Enums\VenueStatus;
 use App\Models\ManagedLocation;
 use App\Models\PlatformSetting;
 use App\Models\ServiceProviderProfile;
+use App\Services\AvailabilityHoldService;
 use App\Services\EventProjectService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,10 @@ use Illuminate\View\View;
 
 class EventComposerController extends Controller
 {
-    public function __construct(private readonly EventProjectService $eventProjectService) {}
+    public function __construct(
+        private readonly EventProjectService $eventProjectService,
+        private readonly AvailabilityHoldService $availabilityHoldService,
+    ) {}
 
     public function create(Request $request): View
     {
@@ -100,11 +104,28 @@ class EventComposerController extends Controller
             'ticketing_requested' => ['nullable', 'boolean'],
         ]);
 
-        $project = $this->eventProjectService->createStandaloneProject(
+        $eventServiceIds = array_map('intval', $validated['event_service_ids'] ?? []);
+        [$slotStartsAt, $slotEndsAt] = filled($validated['event_date'] ?? null)
+            ? $this->availabilityHoldService->slotFromDateAndTimes(
+                $validated['event_date'],
+                $validated['event_date'],
+                $validated['starts_at'] ?? null,
+                $validated['ends_at'] ?? null,
+            )
+            : [null, null];
+
+        $project = $this->availabilityHoldService->reserveEventServiceSlots(
+            $eventServiceIds,
             $request->user(),
-            $validated,
-            array_map('intval', $validated['event_service_ids'] ?? []),
-            $request->boolean('ticketing_requested'),
+            $slotStartsAt,
+            $slotEndsAt,
+            $request->session()->getId(),
+            fn () => $this->eventProjectService->createStandaloneProject(
+                $request->user(),
+                $validated,
+                $eventServiceIds,
+                $request->boolean('ticketing_requested'),
+            ),
         );
 
         return redirect()

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AvailabilityHoldStatus;
 use App\Enums\BookingStatus;
 use App\Enums\VenueStatus;
 use App\Models\EventService;
 use App\Models\Venue;
 use App\Models\VenueCategory;
 use App\Services\BookingDepositService;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -39,28 +43,7 @@ class PublicVenueController extends Controller
             ->when($request->filled('capacity'), fn ($query) => $query->where('max_capacity', '>=', $request->integer('capacity')))
             ->when($request->filled('min_price'), fn ($query) => $query->where('starting_price', '>=', $request->integer('min_price')))
             ->when($request->filled('max_price'), fn ($query) => $query->where('starting_price', '<=', $request->integer('max_price')))
-            ->when($request->filled('start_date') || $request->filled('end_date'), function ($query) use ($request): void {
-                $query->whereHas('availabilities', function ($query) use ($request): void {
-                    $query->where('status', 'available');
-
-                    if ($request->filled('start_date') && $request->filled('end_date')) {
-                        $query->whereBetween('available_date', [
-                            $request->date('start_date')->toDateString(),
-                            $request->date('end_date')->toDateString(),
-                        ]);
-
-                        return;
-                    }
-
-                    if ($request->filled('start_date')) {
-                        $query->whereDate('available_date', '>=', $request->date('start_date')->toDateString());
-                    }
-
-                    if ($request->filled('end_date')) {
-                        $query->whereDate('available_date', '<=', $request->date('end_date')->toDateString());
-                    }
-                });
-            })
+            ->when($request->filled('start_date') || $request->filled('end_date'), fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, $request))
             ->orderByDesc('published_at')
             ->orderBy('name')
             ->paginate(12)
@@ -82,9 +65,11 @@ class PublicVenueController extends Controller
                 ->pluck('city'),
             'searchSuggestions' => Venue::query()
                 ->where('status', VenueStatus::Published)
+                ->when($request->filled('start_date') || $request->filled('end_date'), fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, $request))
                 ->orderBy('name')
                 ->limit(20)
                 ->get(['name'])
+                ->toBase()
                 ->map(fn (Venue $venue): array => ['label' => $venue->name, 'type' => 'Espace'])
                 ->merge(
                     VenueCategory::query()
@@ -92,6 +77,7 @@ class PublicVenueController extends Controller
                         ->whereHas('venues', fn ($query) => $query->where('status', VenueStatus::Published))
                         ->orderBy('name')
                         ->get(['name'])
+                        ->toBase()
                         ->map(fn (VenueCategory $category): array => ['label' => $category->name, 'type' => 'Catégorie'])
                 )
                 ->values(),
@@ -104,6 +90,80 @@ class PublicVenueController extends Controller
         }
 
         return view('venues.index', $viewData);
+    }
+
+    public function blockedDates(Request $request, string $slug): JsonResponse
+    {
+        $venue = Venue::query()
+            ->where('slug', $slug)
+            ->where('status', VenueStatus::Published)
+            ->firstOrFail();
+
+        $from = filled($request->input('from'))
+            ? CarbonImmutable::parse((string) $request->input('from'))->startOfDay()
+            : CarbonImmutable::today();
+        $to = filled($request->input('to'))
+            ? CarbonImmutable::parse((string) $request->input('to'))->endOfDay()
+            : $from->addMonths(6)->endOfDay();
+
+        if ($to->lessThan($from)) {
+            [$from, $to] = [$to->startOfDay(), $from->endOfDay()];
+        }
+
+        $slots = collect();
+
+        $venue->bookings()
+            ->whereIn('status', $this->blockingBookingStatuses())
+            ->where('event_date', '>=', $from->toDateString())
+            ->where('event_date', '<', $to->addDay()->toDateString())
+            ->where(function ($query): void {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now())
+                    ->orWhereNot('status', BookingStatus::PendingPayment->value);
+            })
+            ->get(['event_date', 'starts_at', 'ends_at', 'status', 'expires_at'])
+            ->each(function ($booking) use ($slots): void {
+                $slots->push([
+                    'date' => $booking->event_date->toDateString(),
+                    'starts_at' => substr((string) $booking->starts_at, 0, 5),
+                    'ends_at' => substr((string) $booking->ends_at, 0, 5),
+                    'source' => 'reservation',
+                ]);
+            });
+
+        $venue->availabilityHolds()
+            ->where('status', AvailabilityHoldStatus::Active->value)
+            ->where('expires_at', '>', now())
+            ->where('starts_at', '<', $to)
+            ->where('ends_at', '>', $from)
+            ->get(['starts_at', 'ends_at'])
+            ->each(function ($hold) use ($slots): void {
+                $slots->push([
+                    'date' => $hold->starts_at->toDateString(),
+                    'starts_at' => $hold->starts_at->format('H:i'),
+                    'ends_at' => $hold->ends_at->format('H:i'),
+                    'source' => 'temporaire',
+                ]);
+            });
+
+        $unavailableDates = $venue->availabilities()
+            ->where('status', '!=', 'available')
+            ->where('available_date', '>=', $from->toDateString())
+            ->where('available_date', '<', $to->addDay()->toDateString())
+            ->pluck('available_date')
+            ->map(fn ($date): string => CarbonImmutable::parse($date)->toDateString());
+
+        $blockedDates = $slots
+            ->pluck('date')
+            ->merge($unavailableDates)
+            ->unique()
+            ->sort()
+            ->values();
+
+        return response()->json([
+            'blocked_dates' => $blockedDates,
+            'blocked_slots' => $slots->sortBy(['date', 'starts_at'])->values(),
+        ]);
     }
 
     public function show(string $slug): View
@@ -173,6 +233,67 @@ class PublicVenueController extends Controller
             'canReview' => $venue && $eligibleBooking && ! $existingReview,
             'existingReview' => $existingReview,
         ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function blockingBookingStatuses(): array
+    {
+        return [
+            BookingStatus::Draft->value,
+            BookingStatus::PendingOwner->value,
+            BookingStatus::PendingPayment->value,
+            BookingStatus::Confirmed->value,
+            BookingStatus::Disputed->value,
+        ];
+    }
+
+    private function applyCalendarAvailabilityFilters(Builder $query, Request $request): void
+    {
+        [$rangeStartsAt, $rangeEndsAt] = $this->calendarRangeFromRequest($request);
+
+        $query->whereHas('availabilities', function (Builder $query) use ($rangeStartsAt, $rangeEndsAt): void {
+            $query
+                ->where('status', 'available')
+                ->where('available_date', '>=', $rangeStartsAt->toDateString())
+                ->where('available_date', '<', $rangeEndsAt->addDay()->toDateString());
+        })
+            ->whereDoesntHave('bookings', function (Builder $query) use ($rangeStartsAt, $rangeEndsAt): void {
+                $query->whereIn('status', $this->blockingBookingStatuses())
+                    ->where('event_date', '>=', $rangeStartsAt->toDateString())
+                    ->where('event_date', '<', $rangeEndsAt->addDay()->toDateString())
+                    ->where(function (Builder $query): void {
+                        $query->whereNull('expires_at')
+                            ->orWhere('expires_at', '>', now())
+                            ->orWhereNot('status', BookingStatus::PendingPayment->value);
+                    });
+            })
+            ->whereDoesntHave('availabilityHolds', function (Builder $query) use ($rangeStartsAt, $rangeEndsAt): void {
+                $query->where('status', AvailabilityHoldStatus::Active->value)
+                    ->where('expires_at', '>', now())
+                    ->where('starts_at', '<', $rangeEndsAt->endOfDay())
+                    ->where('ends_at', '>', $rangeStartsAt->startOfDay());
+            });
+    }
+
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    private function calendarRangeFromRequest(Request $request): array
+    {
+        $startsAt = $request->filled('start_date')
+            ? CarbonImmutable::parse((string) $request->input('start_date'))->startOfDay()
+            : CarbonImmutable::today();
+        $endsAt = $request->filled('end_date')
+            ? CarbonImmutable::parse((string) $request->input('end_date'))->endOfDay()
+            : $startsAt->endOfDay();
+
+        if ($endsAt->lessThan($startsAt)) {
+            return [$endsAt->startOfDay(), $startsAt->endOfDay()];
+        }
+
+        return [$startsAt, $endsAt];
     }
 
     public function reservation(string $slug): View

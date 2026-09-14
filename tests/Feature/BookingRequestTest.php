@@ -5,6 +5,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\ProformaInvoiceStatus;
 use App\Enums\UserRole;
 use App\Enums\VenueStatus;
+use App\Models\AvailabilityHold;
 use App\Models\Booking;
 use App\Models\BookingMessage;
 use App\Models\EventProject;
@@ -321,6 +322,49 @@ test('client can save a booking request and gets an initiated deposit payment', 
         ->and($booking->eventProjectItem->eventProject->client_id)->toBe($client->id)
         ->and($booking->eventProjectItem->quoted_amount)->toBe(450000)
         ->and($booking->eventProjectItem->deposit_amount)->toBe(135000);
+});
+
+test('venue booking blocks overlapping reservations for ten minutes', function () {
+    $firstClient = User::factory()->create([
+        'role' => UserRole::Client,
+    ]);
+    $secondClient = User::factory()->create([
+        'role' => UserRole::Client,
+    ]);
+    $venue = Venue::factory()->create([
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'starting_price' => 450000,
+        'max_capacity' => 250,
+        'payment_methods' => ['baobaa_checkout'],
+    ]);
+    $payload = [
+        'start_date' => now()->addDays(14)->toDateString(),
+        'end_date' => now()->addDays(14)->toDateString(),
+        'starts_at' => '09:00',
+        'ends_at' => '18:00',
+        'event_type' => 'conference',
+        'guests_count' => 120,
+        'payment_method' => 'baobaa_checkout',
+    ];
+
+    $this->actingAs($firstClient)
+        ->post(route('bookings.store', $venue), $payload)
+        ->assertRedirect();
+
+    $this->actingAs($secondClient)
+        ->from(route('venues.reservation', $venue))
+        ->post(route('bookings.store', $venue), [
+            ...$payload,
+            'starts_at' => '12:00',
+            'ends_at' => '20:00',
+        ])
+        ->assertRedirect(route('venues.reservation', $venue))
+        ->assertSessionHasErrors('start_date');
+
+    expect(Booking::query()->count())->toBe(1)
+        ->and(AvailabilityHold::query()->where('holdable_type', Venue::class)->where('holdable_id', $venue->id)->count())->toBe(1)
+        ->and(AvailabilityHold::query()->first()?->expires_at->diffInMinutes(now()))->toBeLessThanOrEqual(10);
 });
 
 test('client can include venue optional modules in a package reservation', function () {

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Venue extends Model
 {
@@ -135,5 +136,10 @@ class Venue extends Model
     public function sponsorshipCampaigns(): HasMany
     {
         return $this->hasMany(SponsorshipCampaign::class);
+    }
+
+    public function availabilityHolds(): MorphMany
+    {
+        return $this->morphMany(AvailabilityHold::class, 'holdable');
     }
 }

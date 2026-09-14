@@ -10,12 +10,12 @@ use App\Models\OwnerModuleTemplate;
 use App\Models\Payment;
 use App\Models\Venue;
 use App\Models\VenueAddOn;
+use App\Services\AvailabilityHoldService;
 use App\Services\BookingDepositService;
 use App\Services\BookingWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +24,7 @@ class BookingController extends Controller
     public function __construct(
         private readonly BookingDepositService $bookingDepositService,
         private readonly BookingWorkflowService $bookingWorkflowService,
+        private readonly AvailabilityHoldService $availabilityHoldService,
     ) {}
 
     public function store(Request $request, Venue $venue): RedirectResponse
@@ -77,8 +78,14 @@ class BookingController extends Controller
         $eventServiceIds = array_map('intval', $validated['event_service_ids'] ?? []);
         $ticketingRequested = $request->boolean('ticketing_requested');
         $selectedAddOnsPayload = $this->selectedAddOnsPayload($selectedAddOns);
+        [$slotStartsAt, $slotEndsAt] = $this->availabilityHoldService->slotFromDateAndTimes(
+            $validated['start_date'],
+            $validated['end_date'] ?? $validated['start_date'],
+            $validated['starts_at'],
+            $validated['ends_at'],
+        );
 
-        $booking = DB::transaction(function () use ($request, $venue, $validated, $baseAmount, $totalAmount, $reservationAmount, $paymentMethod, $wantsNegotiation, $eventServiceIds, $ticketingRequested, $selectedAddOnsPayload): Booking {
+        $createBooking = function () use ($request, $venue, $validated, $baseAmount, $totalAmount, $reservationAmount, $paymentMethod, $wantsNegotiation, $eventServiceIds, $ticketingRequested, $selectedAddOnsPayload): Booking {
             $booking = Booking::query()->create([
                 'client_id' => $request->user()->id,
                 'owner_profile_id' => $venue->owner_profile_id,
@@ -96,7 +103,7 @@ class BookingController extends Controller
                 'reservation_amount' => $reservationAmount,
                 'client_notes' => $validated['client_notes'] ?? null,
                 'selected_add_ons' => $selectedAddOnsPayload,
-                'expires_at' => now()->addMinutes(30),
+                'expires_at' => now()->addMinutes(10),
             ]);
 
             if ($wantsNegotiation || filled($validated['client_notes'] ?? null)) {
@@ -130,7 +137,23 @@ class BookingController extends Controller
             $this->bookingWorkflowService->syncRequestedAdditions($booking, $eventServiceIds, $ticketingRequested);
 
             return $booking;
-        });
+        };
+
+        $booking = $this->availabilityHoldService->reserveVenueSlot(
+            $venue,
+            $request->user(),
+            $slotStartsAt,
+            $slotEndsAt,
+            $request->session()->getId(),
+            fn (): Booking => $this->availabilityHoldService->reserveEventServiceSlots(
+                $eventServiceIds,
+                $request->user(),
+                $slotStartsAt,
+                $slotEndsAt,
+                $request->session()->getId(),
+                fn (): Booking => $createBooking(),
+            ),
+        );
 
         return redirect()
             ->route('client.reservations.show', $booking)

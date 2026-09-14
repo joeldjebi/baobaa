@@ -325,6 +325,24 @@ Champs principaux :
 - date d'expiration de demande ;
 - commentaires client.
 
+### Reservation composee / dossier evenement
+
+Une reservation composee represente un seul dossier client. Elle peut contenir plusieurs elements internes :
+
+- un espace evenementiel ;
+- des services additionnels proposes avec l'espace ;
+- un ou plusieurs services de prestataires evenementiels ;
+- une demande de billetterie BAOBAA ;
+- d'autres options ajoutees au parcours de composition.
+
+Regle importante :
+
+- l'interface ne doit pas afficher une ligne de reservation separee pour chaque article ou service ;
+- une reservation doit rester une seule ligne metier ;
+- les articles/services sont affiches a l'interieur de cette reservation ;
+- la negociation porte sur la reservation ou sur la partie d'un prestataire dans cette reservation, pas sur chaque ligne d'article de facon isolee ;
+- cote prestataire, si plusieurs services du meme prestataire sont choisis dans le meme dossier evenement, ils doivent etre regroupes dans une seule reservation avec un montant global propose.
+
 ### Paiement
 
 Champs principaux :
@@ -653,6 +671,13 @@ Deux modes doivent etre supportes :
 
 - **Reservation instantanee :** le client paie directement si le creneau est disponible.
 - **Reservation sur demande :** le proprietaire confirme avant paiement ou avant validation finale.
+
+Pour les reservations composees, le systeme doit conserver une experience simple :
+
+- le client voit un seul dossier de reservation ;
+- chaque partenaire ou prestataire voit uniquement la partie qui le concerne ;
+- chaque partie peut avoir son propre fil de discussion, sa validation et son montant global ;
+- les services ou options restent des lignes internes de calcul, pas des reservations publiques separees.
 
 ### Paiement
 

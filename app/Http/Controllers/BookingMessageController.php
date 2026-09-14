@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EventProjectItemStatus;
 use App\Models\Booking;
 use App\Services\BookingWorkflowService;
+use App\Services\EventProjectService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -91,10 +93,10 @@ class BookingMessageController extends Controller
                 'deposit_amount' => (int) round(max(0, $newAmount) * $depositRatio),
                 'client_confirmed_at' => null,
                 'provider_confirmed_at' => null,
-                'status' => \App\Enums\EventProjectItemStatus::Negotiating,
+                'status' => EventProjectItemStatus::Negotiating,
             ])->save();
         });
 
-        app(\App\Services\EventProjectService::class)->refreshTotals($eventProject);
+        app(EventProjectService::class)->refreshTotals($eventProject);
     }
 }

@@ -18,6 +18,7 @@
     <a href="{{ url('/') }}" class="{{ $active === 'explore' ? $activeClass : $linkBase }}">Explorer</a>
     <a href="{{ route('venues.index') }}" class="{{ $active === 'venues' ? $activeClass : $linkBase }}">Espaces</a>
     <a href="{{ route('owner-profiles.index') }}" class="{{ $active === 'partners' ? $activeClass : $linkBase }}">Partenaires</a>
+    <a href="{{ route('service-provider-profiles.index') }}" class="{{ $active === 'event-services' ? $activeClass : $linkBase }}">Prestataires</a>
 
     @if ($isClient)
         <a href="{{ route('client.reservations') }}" class="{{ $active === 'client-reservations' ? $activeClass : $linkBase }}">Mes réservations</a>

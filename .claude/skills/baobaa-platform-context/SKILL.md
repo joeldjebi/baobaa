@@ -38,6 +38,9 @@ Cette section distingue explicitement les éléments ajoutés pendant le travail
 
 - Le parcours de réservation public a été enrichi en direction d’une expérience “Composer mon événement” plus premium.
 - La logique de réservation, de devis et de négociation continue à passer par les modèles/services existants : `Booking`, `EventProject`, `EventProjectItem`, `EventProjectMessage`, `ProformaInvoice`, `BookingMessage`.
+- La disponibilité concurrente est protégée par `AvailabilityHold` et `AvailabilityHoldService` : les espaces et services sélectionnés sont verrouillés pendant 10 minutes maximum au moment de la création de réservation/demande.
+- Les verrous expirés ne bloquent plus les créneaux même s’ils restent en base ; les requêtes doivent toujours vérifier `expires_at > now()` pour les verrous `active`.
+- Les conflits de créneaux doivent être contrôlés côté backend dans les transactions, jamais uniquement par l’interface.
 - Règle métier essentielle : une réservation composée est une seule ligne métier au niveau `EventProject`; les `EventProjectItem` sont les éléments internes du dossier et ne doivent pas être présentés comme plusieurs réservations séparées.
 - La négociation prestataire porte sur la réservation/le dossier `EventProject` pour le prestataire concerné, pas sur une ligne `EventProjectItem` isolée.
 - Les travaux futurs doivent continuer à respecter la séparation actuelle entre public, client, propriétaire, PSE et SAP.
@@ -45,7 +48,7 @@ Cette section distingue explicitement les éléments ajoutés pendant le travail
 
 ### 6) État de la roadmap UX / priorités restantes
 
-- Les éléments encore à livrer sont clairement identifiés comme la suite de la négociation par `EventProjectItem`, la billetterie SAP, le catalogue public des PSE, les notifications et le paiement réel.
+- Les éléments encore à livrer sont clairement identifiés comme la suite de l'UX client pour les négociations groupées, la billetterie SAP, le catalogue public des PSE, les notifications et le paiement réel.
 - Les travaux de design et d’UX doivent rester concentrés sur les points à forte valeur réelle : home, reservation flow, catalog, dashboard logic, and trust-building UI.
 - Les tâches plus lourdes doivent être abordées par branches intermédiaires à partir de `develop`, après synchronisation avec `main`.
 
@@ -174,7 +177,7 @@ Responsive and accessibility:
 Design debt and missing UX:
 
 - reservation form still needs the premium modal/stepper redesign;
-- public PSE/service catalog and service detail pages are missing;
+- public PSE catalog and profile detail pages exist; individual service detail pages are still missing;
 - event project detail should show each provider/entity as its own negotiation/invoice lane, but each lane must remain grouped by reservation/project rather than split into one reservation row per selected service;
 - notification center is missing;
 - payment gateway UX is still test-only;
@@ -245,7 +248,9 @@ Public:
 - `/espaces/{slug}` venue detail.
 - `/partenaires` public PEE profiles.
 - `/partenaires/{ownerProfile}` public PEE detail/list of spaces.
-- `/services-evenementiels` dedicated PSE-only service booking page.
+- `/prestataires` public PSE profile catalog.
+- `/prestataires/{serviceProviderProfile}` public PSE profile detail with published services and reservation CTA.
+- `/services-evenementiels` dedicated PSE-only service booking/composition page.
 - `/composer-mon-evenement` legacy/compatible standalone event composer route for clients who may not want a venue first.
 
 Portal login routes:
@@ -297,6 +302,10 @@ PSE:
 - `/prestataire/services`
 - `/prestataire/services/nouveau`
 - `/prestataire/services/{eventService}/modifier`
+- `/prestataire/reservations`
+- `/prestataire/reservations/{eventProject}`
+- `/prestataire/reservations/{eventProject}/messages`
+- `/prestataire/reservations/{eventProject}/proforma/confirmer`
 - `/prestataire/parametres`
 
 SAP:
@@ -524,10 +533,10 @@ Created item types:
 
 Current limitation:
 
-- no dedicated public PSE/service catalog page yet;
-- PSE-side negotiation and provider-side proforma confirmation exist for service project items;
+- public PSE profile catalog/detail pages exist, but there is no individual public service detail page yet;
+- PSE-side negotiation and provider-side proforma confirmation exist at grouped `EventProject` level for the provider's services;
 - client-side service item detail/reply/confirmation still needs a dedicated UI;
-- independent payment per PSE item is not implemented yet.
+- independent payment per provider lane is not implemented yet.
 
 ## PSE Scope
 
@@ -668,6 +677,7 @@ Key file: `resources/views/venues/show.blade.php`.
 Important UX constraints from user:
 
 - public detail page inspired by Eventsinminutes;
+- public labels must use marketing language, not internal wording; prefer `Services additionnels`, `Options du lieu`, `Prestations disponibles`, `partenaire`, `équipe` or `expert`, and avoid visible labels such as `modules`, `fournisseur`, `PSE`, `PEE` or `SAP`;
 - tabs should be sticky and functional;
 - reservation CTA/form must stay visible, but not go under sticky tabs;
 - image gallery opens enlarged and scrolls/navigates through images;
@@ -691,6 +701,27 @@ Recommended next UI step:
 - open a polished modal stepper on `Demander une réservation`;
 - steps: event details, negotiation, PSE tabs/services, ticketing, summary.
 
+## Public PSE Profile Pages
+
+Routes:
+
+- `/prestataires`
+- `/prestataires/{serviceProviderProfile}`
+
+Implementation:
+
+- controller: `PublicServiceProviderProfileController`;
+- views: `resources/views/service-provider-profiles/index.blade.php` and `resources/views/service-provider-profiles/show.blade.php`;
+- menu label: `Prestataires`, never visible `PSE`;
+- list only verified profiles with at least one published service;
+- detail lists only published services for that provider;
+- reservation CTA links to `/services-evenementiels?prestataire={public_uuid}` so the booking/composer page opens with the selected provider.
+
+Public wording rule:
+
+- use `prestataires`, `équipes`, `experts`, `services événementiels` and `services disponibles`;
+- avoid public labels like `PSE`, `fournisseur`, `provider`, internal status names or database terms.
+
 ## Reservation Entry Modes
 
 The platform must support two public client entry modes.
@@ -703,10 +734,12 @@ Mode 1: venue-first event package:
 - saving creates a `Booking` for the venue and an `EventProject` containing related `EventProjectItem` rows.
 
 Mode 2: PSE-only service booking:
-- primary entry point: `/services-evenementiels`;
+- discovery entry point: `/prestataires`;
+- provider detail entry point: `/prestataires/{serviceProviderProfile}`;
+- booking/composition entry point: `/services-evenementiels`;
 - compatible legacy entry point: `/composer-mon-evenement`;
-- do not expose `/services-evenementiels` in the main public menu unless the user explicitly asks for it again;
-- future entry points can be a public PSE catalog or a PSE/service detail page;
+- main public menu should link to `/prestataires`, not directly to `/services-evenementiels`;
+- future entry points can include individual service detail pages;
 - client does not have to select or reserve a venue;
 - client can choose one or many PSE services, negotiate if needed, then get proforma/payment flow per provider in a later implementation;
 - saving creates an `EventProject` with `event_service` items and no required `venue_booking` item.
@@ -865,6 +898,8 @@ Public:
 - `resources/views/welcome.blade.php`
 - `resources/views/venues/index.blade.php`
 - `resources/views/venues/show.blade.php`
+- `resources/views/service-provider-profiles/index.blade.php`
+- `resources/views/service-provider-profiles/show.blade.php`
 - `resources/views/event-composer/create.blade.php`
 - `resources/views/components/navigation/public-menu.blade.php`
 - `resources/views/components/navigation/account-menu.blade.php`
@@ -901,6 +936,8 @@ SAP:
 Controllers:
 
 - `PublicVenueController`
+- `PublicOwnerProfileController`
+- `PublicServiceProviderProfileController`
 - `BookingController`
 - `BookingMessageController`
 - `ProformaInvoiceConfirmationController`
@@ -974,10 +1011,10 @@ If only editing Markdown, tests are not required, but still check for secrets be
 These are intentional unfinished areas, not bugs unless the user asks for them now:
 
 - reservation form should be moved to a modal/stepper for premium UX;
-- PSE services selected in event projects do not yet have independent negotiation/messages;
-- PSE services do not yet have independent proforma/payment records;
+- client-side UI for grouped PSE negotiation/confirmation still needs to be completed;
+- PSE services do not yet have independent proforma/payment records per provider lane;
 - SAP ticketing request is stored, but SAP does not yet manage ticketing packages/forms/proformas;
-- public PSE/service catalog page is not yet implemented;
+- individual public service detail pages are not yet implemented;
 - notifications are not yet fully implemented;
 - real payment gateway is not integrated; current payment is test flow.
 
@@ -986,10 +1023,10 @@ These are intentional unfinished areas, not bugs unless the user asks for them n
 Strongest next implementation path:
 
 1. Replace venue detail reservation sidebar form with compact CTA plus modal stepper.
-2. Add per-`EventProjectItem` negotiation thread so each PSE/PEE/SAP can manage its own invoice.
-3. Add per-`EventProjectItem` proforma/payment records or polymorphic invoice source.
+2. Complete client-side grouped PSE negotiation and confirmation UI using `EventProjectMessage`.
+3. Add proforma/payment records per provider lane or a polymorphic invoice source, while keeping `EventProjectItem` as internal line items.
 4. Build SAP ticketing management: ticket categories, fee rule, commission or fixed BAOBAA fee.
-5. Build public PSE service catalog and service detail pages.
+5. Build individual public service detail pages.
 6. Add notification events for booking/proforma/payment/portal validation.
 7. Harden availability checks to prevent double booking under concurrency.
 

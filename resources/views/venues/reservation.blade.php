@@ -32,8 +32,8 @@
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
                         <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Package événementiel</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Composez votre événement avec les bons prestataires.</h1>
-                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Choisissez les dates, les services, la billetterie et les modules de votre espace pour lancer votre demande de réservation premium.</p>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Composez votre événement avec les bons experts.</h1>
+                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Choisissez les dates, les options du lieu, les services événementiels et la billetterie pour lancer une demande claire et complète.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
                         <div class="grid grid-cols-3 gap-2 text-center">
@@ -43,7 +43,7 @@
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ count($reservationAddOns) }}</p>
-                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Modules</p>
+                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Options</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">Billets</p>
@@ -122,7 +122,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Ajouter les modules optionnels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Ajouter des services additionnels</h2>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]">{{ count($reservationAddOns) }} option(s)</p>
                         </div>
@@ -141,8 +141,8 @@
                             </div>
                         @else
                             <div class="mt-5 rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-8 text-center">
-                                <p class="text-lg font-extrabold text-[#07152f]">Aucun module optionnel n’est proposé pour cet espace.</p>
-                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Vous pouvez continuer avec la réservation de l’espace et les services complémentaires disponibles.</p>
+                                <p class="text-lg font-extrabold text-[#07152f]">Aucun service additionnel n’est proposé pour cet espace.</p>
+                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Vous pouvez continuer avec la réservation de l’espace et les services événementiels disponibles.</p>
                             </div>
                         @endif
                     </div>
@@ -151,9 +151,9 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir les prestataires événementiels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir vos services événementiels</h2>
                             </div>
-                            <p class="text-xs font-extrabold text-[#7d879d]">{{ count($publicEventProviders ?? []) }} prestataires disponibles</p>
+                            <p class="text-xs font-extrabold text-[#7d879d]">{{ count($publicEventProviders ?? []) }} équipes disponibles</p>
                         </div>
 
                         @if (($publicEventProviders ?? collect())->isNotEmpty())
@@ -216,7 +216,7 @@
                                 <span class="text-[#07152f]">{{ $deposit }}</span>
                             </div>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
-                                <span class="text-[#6f7890]">Modules sélectionnés</span>
+                                <span class="text-[#6f7890]">Options sélectionnées</span>
                                 <span id="composer-addons-count" class="text-[#07152f]">0</span>
                             </div>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">

@@ -1,11 +1,17 @@
 <?php
 
+use App\Enums\AvailabilityHoldStatus;
 use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Enums\VenueStatus;
+use App\Enums\VerificationStatus;
+use App\Models\AvailabilityHold;
 use App\Models\Booking;
+use App\Models\EventService;
+use App\Models\EventServiceType;
 use App\Models\OwnerProfile;
 use App\Models\PortalAccessRequest;
+use App\Models\ServiceProviderProfile;
 use App\Models\User;
 use App\Models\Venue;
 use App\Models\VenueCategory;
@@ -210,6 +216,79 @@ test('public venues index lists published spaces and supports filters', function
         ->assertDontSee(route('venues.show', 'jardin-prive-dakar'));
 });
 
+test('public venues search excludes booked and temporarily blocked dates', function () {
+    $client = User::factory()->create([
+        'role' => UserRole::Client,
+    ]);
+    $blockedDate = now()->addDays(18)->toDateString();
+    $availableVenue = Venue::factory()->create([
+        'name' => 'Salle libre Plateau',
+        'slug' => 'salle-libre-plateau',
+        'status' => VenueStatus::Published,
+        'city' => 'Abidjan',
+        'published_at' => now(),
+    ]);
+    $bookedVenue = Venue::factory()->create([
+        'name' => 'Salle déjà réservée',
+        'slug' => 'salle-deja-reservee',
+        'status' => VenueStatus::Published,
+        'city' => 'Abidjan',
+        'published_at' => now(),
+    ]);
+    $heldVenue = Venue::factory()->create([
+        'name' => 'Jardin temporairement bloqué',
+        'slug' => 'jardin-temporairement-bloque',
+        'status' => VenueStatus::Published,
+        'city' => 'Abidjan',
+        'published_at' => now(),
+    ]);
+
+    collect([$availableVenue, $bookedVenue, $heldVenue])->each(fn (Venue $venue) => $venue->availabilities()->create([
+        'available_date' => $blockedDate,
+        'starts_at' => '08:00:00',
+        'ends_at' => '22:00:00',
+        'status' => 'available',
+    ]));
+
+    Booking::factory()->create([
+        'client_id' => $client->id,
+        'owner_profile_id' => $bookedVenue->owner_profile_id,
+        'venue_id' => $bookedVenue->id,
+        'status' => BookingStatus::Confirmed,
+        'event_date' => $blockedDate,
+        'starts_at' => '09:00:00',
+        'ends_at' => '18:00:00',
+    ]);
+
+    AvailabilityHold::factory()->create([
+        'holdable_type' => Venue::class,
+        'holdable_id' => $heldVenue->id,
+        'client_id' => $client->id,
+        'status' => AvailabilityHoldStatus::Active,
+        'starts_at' => now()->addDays(18)->setTime(10, 0),
+        'ends_at' => now()->addDays(18)->setTime(16, 0),
+        'expires_at' => now()->addMinutes(10),
+    ]);
+
+    $this->get(route('venues.index', [
+        'start_date' => $blockedDate,
+        'end_date' => $blockedDate,
+    ]))
+        ->assertOk()
+        ->assertSeeText('Salle libre Plateau')
+        ->assertDontSeeText('Salle déjà réservée')
+        ->assertDontSeeText('Jardin temporairement bloqué');
+
+    $this->get(route('venues.blocked-dates', $bookedVenue->slug))
+        ->assertOk()
+        ->assertJsonFragment(['blocked_dates' => [$blockedDate]])
+        ->assertJsonFragment([
+            'date' => $blockedDate,
+            'starts_at' => '09:00',
+            'ends_at' => '18:00',
+        ]);
+});
+
 test('public venues index returns only results partial for ajax filtering', function () {
     Venue::factory()->create([
         'name' => 'Espace AJAX premium',
@@ -358,6 +437,85 @@ test('public owner profiles and profile detail pages are available', function ()
         ->assertSee('BAOBAA Signature Events')
         ->assertSee('Salle signature PEE')
         ->assertDontSee('payout_account_reference');
+});
+
+test('public service provider profiles and detail pages are available', function () {
+    $serviceType = EventServiceType::factory()->create([
+        'name' => 'Sonorisation premium',
+        'is_active' => true,
+    ]);
+    $profile = ServiceProviderProfile::factory()->create([
+        'business_name' => 'Studio Son Signature',
+        'verification_status' => VerificationStatus::Verified,
+        'city' => 'Abidjan',
+        'district' => 'Cocody',
+    ]);
+
+    EventService::factory()->create([
+        'service_provider_profile_id' => $profile->id,
+        'event_service_type_id' => $serviceType->id,
+        'name' => 'Pack audio corporate',
+        'status' => VenueStatus::Published,
+        'starting_price' => 250000,
+        'currency' => 'XOF',
+        'published_at' => now(),
+    ]);
+
+    EventService::factory()->create([
+        'service_provider_profile_id' => $profile->id,
+        'event_service_type_id' => $serviceType->id,
+        'name' => 'Service invisible',
+        'status' => VenueStatus::Draft,
+    ]);
+    $otherType = EventServiceType::factory()->create([
+        'name' => 'Photo événementielle',
+        'is_active' => true,
+    ]);
+    $otherProfile = ServiceProviderProfile::factory()->create([
+        'business_name' => 'Capture Émotion',
+        'verification_status' => VerificationStatus::Verified,
+        'city' => 'Dakar',
+    ]);
+
+    EventService::factory()->create([
+        'service_provider_profile_id' => $otherProfile->id,
+        'event_service_type_id' => $otherType->id,
+        'name' => 'Reportage photo premium',
+        'status' => VenueStatus::Published,
+        'starting_price' => 180000,
+        'published_at' => now(),
+    ]);
+
+    $this->get(route('service-provider-profiles.index'))
+        ->assertOk()
+        ->assertSeeText('Prestataires événementiels')
+        ->assertSeeText('Studio Son Signature')
+        ->assertSeeText('Capture Émotion')
+        ->assertSee($profile->public_uuid)
+        ->assertDontSee($profile->slug)
+        ->assertDontSeeText('Service invisible');
+
+    $this->get(route('service-provider-profiles.index', ['city' => 'Abidjan']))
+        ->assertOk()
+        ->assertSeeText('Studio Son Signature')
+        ->assertDontSeeText('Capture Émotion');
+
+    $this->get(route('service-provider-profiles.index', ['type_id' => $otherType->id]))
+        ->assertOk()
+        ->assertSeeText('Capture Émotion')
+        ->assertDontSeeText('Studio Son Signature');
+
+    $this->get(route('service-provider-profiles.show', $profile))
+        ->assertOk()
+        ->assertSeeText('Studio Son Signature')
+        ->assertSeeText('Pack audio corporate')
+        ->assertSee(route('event-services.index', ['prestataire' => $profile->public_uuid]))
+        ->assertDontSeeText('Service invisible')
+        ->assertDontSeeText('PSE');
+
+    $this->get(route('service-provider-profiles.show', [$profile, 'q' => 'introuvable']))
+        ->assertOk()
+        ->assertDontSeeText('Pack audio corporate');
 });
 
 test('each baobaa actor has a dedicated login route', function (string $portal, string $label) {
