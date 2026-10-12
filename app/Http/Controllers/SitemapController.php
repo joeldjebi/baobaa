@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\VenueStatus;
-use App\Enums\VerificationStatus;
 use App\Models\OwnerProfile;
 use App\Models\ServiceProviderProfile;
 use App\Models\Venue;
@@ -50,7 +49,7 @@ class SitemapController extends Controller
             ]));
 
         ServiceProviderProfile::query()
-            ->where('verification_status', VerificationStatus::Verified)
+            ->publiclyListed()
             ->whereHas('services', fn (Builder $query) => $query->where('status', VenueStatus::Published))
             ->select(['id', 'public_uuid', 'updated_at'])
             ->each(fn (ServiceProviderProfile $profile) => $urls->push([

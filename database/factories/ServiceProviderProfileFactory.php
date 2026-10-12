@@ -39,4 +39,15 @@ class ServiceProviderProfileFactory extends Factory
             'billing_preference' => 'commission',
         ];
     }
+
+    /**
+     * Provider approved by the SAP, as every provider with dashboard access is.
+     */
+    public function verified(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'verification_status' => VerificationStatus::Verified,
+            'verified_at' => now(),
+        ]);
+    }
 }

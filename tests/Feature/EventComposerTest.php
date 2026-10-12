@@ -20,7 +20,7 @@ test('event composer page displays PSE providers and SAP ticketing', function ()
         'role' => UserRole::ServiceProvider,
         'portal_roles' => [UserRole::ServiceProvider->value],
     ]);
-    $profile = ServiceProviderProfile::factory()->create([
+    $profile = ServiceProviderProfile::factory()->verified()->create([
         'user_id' => $pse->id,
         'business_name' => 'Studio Son Signature',
     ]);
@@ -79,7 +79,7 @@ test('client creates a standalone event project with PSE services and ticketing'
         'role' => UserRole::ServiceProvider,
         'portal_roles' => [UserRole::ServiceProvider->value],
     ]);
-    $profile = ServiceProviderProfile::factory()->create([
+    $profile = ServiceProviderProfile::factory()->verified()->create([
         'user_id' => $pse->id,
         'business_name' => 'Studio Lumière Signature',
     ]);
@@ -147,7 +147,7 @@ test('client can reserve only PSE services without a venue booking item', functi
         'role' => UserRole::ServiceProvider,
         'portal_roles' => [UserRole::ServiceProvider->value],
     ]);
-    $profile = ServiceProviderProfile::factory()->create([
+    $profile = ServiceProviderProfile::factory()->verified()->create([
         'user_id' => $pse->id,
         'business_name' => 'Maison Podium Pro',
     ]);
@@ -195,7 +195,7 @@ test('service booking blocks overlapping reservations for ten minutes', function
         'role' => UserRole::Client,
         'portal_roles' => [UserRole::Client->value],
     ]);
-    $profile = ServiceProviderProfile::factory()->create();
+    $profile = ServiceProviderProfile::factory()->verified()->create();
     $type = EventServiceType::factory()->create([
         'name' => 'Sonorisation',
     ]);

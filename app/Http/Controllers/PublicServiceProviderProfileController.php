@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\VenueStatus;
-use App\Enums\VerificationStatus;
 use App\Models\EventService;
 use App\Models\EventServiceType;
 use App\Models\ServiceProviderProfile;
@@ -22,7 +21,7 @@ class PublicServiceProviderProfileController extends Controller
         ];
 
         $publicProfilesQuery = ServiceProviderProfile::query()
-            ->where('verification_status', VerificationStatus::Verified)
+            ->publiclyListed()
             ->whereHas('services', fn (Builder $query) => $query->where('status', VenueStatus::Published));
 
         $profilesQuery = ServiceProviderProfile::query()
@@ -37,7 +36,7 @@ class PublicServiceProviderProfileController extends Controller
             ->withCount([
                 'services as published_services_count' => fn (Builder $query) => $query->where('status', VenueStatus::Published),
             ])
-            ->where('verification_status', VerificationStatus::Verified)
+            ->publiclyListed()
             ->whereHas('services', fn (Builder $query) => $query
                 ->where('status', VenueStatus::Published)
                 ->when($filters['type_id'], fn (Builder $query) => $query->where('event_service_type_id', $filters['type_id'])))
@@ -71,7 +70,7 @@ class PublicServiceProviderProfileController extends Controller
             'providersCount' => (clone $publicProfilesQuery)->count(),
             'publishedServicesCount' => EventService::query()
                 ->where('status', VenueStatus::Published)
-                ->whereHas('serviceProviderProfile', fn (Builder $query) => $query->where('verification_status', VerificationStatus::Verified))
+                ->whereHas('serviceProviderProfile', fn (Builder $query) => $query->publiclyListed())
                 ->count(),
             'filters' => $filters,
             'serviceTypes' => EventServiceType::query()
@@ -98,7 +97,7 @@ class PublicServiceProviderProfileController extends Controller
             'type_id' => $request->integer('type_id') ?: null,
         ];
         $profile = ServiceProviderProfile::query()
-            ->where('verification_status', VerificationStatus::Verified)
+            ->publiclyListed()
             ->where(fn (Builder $query) => $query
                 ->where('public_uuid', $serviceProviderProfile)
                 ->orWhere('slug', $serviceProviderProfile))

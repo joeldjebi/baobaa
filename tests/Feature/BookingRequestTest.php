@@ -104,7 +104,7 @@ test('venue package page lets client select published event services outside ven
         'role' => UserRole::Client,
         'portal_roles' => [UserRole::Client->value],
     ]);
-    $provider = ServiceProviderProfile::factory()->create([
+    $provider = ServiceProviderProfile::factory()->verified()->create([
         'business_name' => 'Studio Son Signature',
         'city' => 'Dakar',
     ]);
@@ -235,7 +235,7 @@ test('public venue flow lets clients choose a service provider before its servic
         'portal_roles' => [UserRole::ServiceProvider->value],
     ]);
 
-    $profile = ServiceProviderProfile::factory()->create([
+    $profile = ServiceProviderProfile::factory()->verified()->create([
         'user_id' => $pse->id,
         'business_name' => 'Studio Lumière Signature',
         'city' => 'Abidjan',
@@ -556,7 +556,7 @@ test('client can update package modules and services before deposit payment', fu
         'is_available' => true,
         'sort_order' => 2,
     ]);
-    $provider = ServiceProviderProfile::factory()->create([
+    $provider = ServiceProviderProfile::factory()->verified()->create([
         'business_name' => 'Studio Lumière Signature',
         'city' => $venue->city,
     ]);
@@ -724,7 +724,7 @@ test('client can attach PSE services and SAP ticketing to a venue booking projec
     $ownerProfile = OwnerProfile::factory()->create([
         'user_id' => $owner->id,
     ]);
-    $serviceProviderProfile = ServiceProviderProfile::factory()->create([
+    $serviceProviderProfile = ServiceProviderProfile::factory()->verified()->create([
         'user_id' => $pse->id,
         'business_name' => 'Studio Lumière Signature',
         'city' => 'Abidjan',

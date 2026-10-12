@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\UserStatus;
 use App\Enums\VerificationStatus;
 use App\Services\PartnerLogoService;
 use Database\Factories\ServiceProviderProfileFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -70,6 +72,15 @@ class ServiceProviderProfile extends Model
     protected function logoUrl(): Attribute
     {
         return Attribute::get(fn (): ?string => app(PartnerLogoService::class)->temporaryUrl($this));
+    }
+
+    /**
+     * Providers validated by the SAP whose account is still active.
+     */
+    public function scopePubliclyListed(Builder $query): void
+    {
+        $query->where('verification_status', VerificationStatus::Verified)
+            ->whereHas('user', fn (Builder $query) => $query->where('status', UserStatus::Active));
     }
 
     protected static function booted(): void

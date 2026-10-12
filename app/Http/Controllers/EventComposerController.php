@@ -32,6 +32,7 @@ class EventComposerController extends Controller
         $districtOptions = $this->locationOptionsService->districts();
 
         $providers = ServiceProviderProfile::query()
+            ->publiclyListed()
             ->with(['services' => fn ($query) => $query
                 ->with('type')
                 ->where('status', VenueStatus::Published)
@@ -102,7 +103,9 @@ class EventComposerController extends Controller
             'event_service_ids' => ['required_without:ticketing_requested', 'array', 'max:12'],
             'event_service_ids.*' => [
                 'integer',
-                Rule::exists('event_services', 'id')->where('status', VenueStatus::Published->value),
+                Rule::exists('event_services', 'id')
+                    ->where('status', VenueStatus::Published->value)
+                    ->whereIn('service_provider_profile_id', ServiceProviderProfile::query()->publiclyListed()->pluck('id')->all()),
             ],
             'ticketing_requested' => ['nullable', 'boolean'],
         ]);

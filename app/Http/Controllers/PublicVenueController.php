@@ -251,7 +251,7 @@ class PublicVenueController extends Controller
 
         $publicEventServices = EventService::query()
             ->with(['type', 'serviceProviderProfile'])
-            ->where('status', VenueStatus::Published)
+            ->publiclyAvailable()
             ->when($venue->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
             ->orderBy('starting_price')
             ->limit(24)

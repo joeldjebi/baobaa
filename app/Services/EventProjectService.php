@@ -6,7 +6,6 @@ use App\Enums\BookingStatus;
 use App\Enums\EventProjectItemStatus;
 use App\Enums\EventProjectStatus;
 use App\Enums\PaymentStatus;
-use App\Enums\VenueStatus;
 use App\Models\Booking;
 use App\Models\EventProject;
 use App\Models\EventProjectItem;
@@ -139,7 +138,7 @@ class EventProjectService
         EventService::query()
             ->with(['serviceProviderProfile', 'type'])
             ->whereIn('id', $eventServiceIds)
-            ->where('status', VenueStatus::Published)
+            ->publiclyAvailable()
             ->get()
             ->each(function (EventService $service) use ($project, $quantitiesByServiceId): void {
                 $quantity = max(1, (int) ($quantitiesByServiceId[$service->id] ?? 1));

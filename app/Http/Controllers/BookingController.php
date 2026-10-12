@@ -8,6 +8,7 @@ use App\Enums\VenueStatus;
 use App\Models\Booking;
 use App\Models\OwnerModuleTemplate;
 use App\Models\Payment;
+use App\Models\ServiceProviderProfile;
 use App\Models\Venue;
 use App\Models\VenueAddOn;
 use App\Services\AvailabilityHoldService;
@@ -60,7 +61,9 @@ class BookingController extends Controller
             'event_service_ids' => ['nullable', 'array', 'max:6'],
             'event_service_ids.*' => [
                 'integer',
-                Rule::exists('event_services', 'id')->where('status', VenueStatus::Published->value),
+                Rule::exists('event_services', 'id')
+                    ->where('status', VenueStatus::Published->value)
+                    ->whereIn('service_provider_profile_id', ServiceProviderProfile::query()->publiclyListed()->pluck('id')->all()),
             ],
             'ticketing_requested' => ['nullable', 'boolean'],
             'accept_terms' => ['accepted'],

@@ -166,7 +166,7 @@ class DashboardController extends Controller
         $publicEventServices = EventService::query()
             ->with(['type', 'serviceProviderProfile'])
             ->where(function (Builder $query) use ($selectedEventServiceIds): void {
-                $query->where('status', VenueStatus::Published)
+                $query->where(fn (Builder $query) => $query->publiclyAvailable())
                     ->when($selectedEventServiceIds !== [], fn (Builder $query) => $query->orWhereIn('id', $selectedEventServiceIds));
             })
             ->when($booking->venue?->city, fn (Builder $query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$booking->venue->city]))

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\VenueStatus;
 use Database\Factories\EventServiceFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,6 +60,15 @@ class EventService extends Model
     public function availabilityHolds(): MorphMany
     {
         return $this->morphMany(AvailabilityHold::class, 'holdable');
+    }
+
+    /**
+     * Published services from a verified and active provider: the only ones clients may see or book.
+     */
+    public function scopePubliclyAvailable(Builder $query): void
+    {
+        $query->where('status', VenueStatus::Published)
+            ->whereHas('serviceProviderProfile', fn (Builder $query) => $query->publiclyListed());
     }
 
     protected static function booted(): void
