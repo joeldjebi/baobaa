@@ -11,6 +11,7 @@ use App\Models\ServiceProviderProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class ServiceProviderSeeder extends Seeder
 {
@@ -30,9 +31,13 @@ class ServiceProviderSeeder extends Seeder
             'password' => Hash::make('12345678'),
         ]);
 
-        $profile = ServiceProviderProfile::query()->updateOrCreate([
+        $profile = ServiceProviderProfile::query()->firstOrNew([
             'user_id' => $user->id,
-        ], [
+        ]);
+
+        $profile->public_uuid ??= (string) Str::uuid();
+        $profile->slug ??= 'baobaa-event-services';
+        $profile->fill([
             'business_name' => 'BAOBAA Event Services',
             'legal_name' => 'BAOBAA Event Services SARL',
             'tax_identifier' => 'RCCM-CI-PSE-DEMO',
@@ -45,7 +50,7 @@ class ServiceProviderSeeder extends Seeder
             'description' => 'Prestataire événementiel vérifié spécialisé en sonorisation, lumière, scène et captation.',
             'billing_preference' => 'commission',
             'verified_at' => now(),
-        ]);
+        ])->save();
 
         $services = [
             [
@@ -80,6 +85,7 @@ class ServiceProviderSeeder extends Seeder
             $profile->services()->updateOrCreate([
                 'name' => $service['name'],
             ], [
+                'slug' => Str::slug($service['name']),
                 'event_service_type_id' => $type->id,
                 'short_description' => $service['short_description'],
                 'description' => $service['description'],

@@ -20,7 +20,7 @@
                     <div class="max-w-2xl py-14">
                         <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Candidature partenaire</p>
                         <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.05em] sm:text-6xl">Faites découvrir vos lieux aux bons organisateurs.</h1>
-                        <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">Le SAP vérifie chaque profil avant d’ouvrir le portail propriétaire afin de protéger les clients, les paiements et la qualité du catalogue BAOBAA.</p>
+                        <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">L’équipe BAOBAA vérifie chaque profil avant d’ouvrir le portail propriétaire afin de protéger les clients, les paiements et la qualité du catalogue BAOBAA.</p>
                     </div>
 
                     <div class="grid gap-3 sm:grid-cols-3">
@@ -36,18 +36,19 @@
                     @if ($pendingRequest)
                         <div class="mb-5 rounded-[22px] border border-[#b9d3ff] bg-white p-5 shadow-xl shadow-[#173e7a]/8">
                             <p class="text-sm font-extrabold text-[#2f6bff]">Votre demande est déjà en cours de validation.</p>
-                            <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Le SAP analysera vos informations avant d’activer votre espace propriétaire.</p>
+                            <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">L’équipe BAOBAA analysera vos informations avant d’activer votre espace propriétaire.</p>
                         </div>
                     @endif
 
                     <div class="mb-7">
                         <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">{{ $isAuthenticatedMode ? 'Compte connecté' : 'Nouveau partenaire' }}</p>
-                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demande d’accès PEE</h2>
-                        <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Renseignez des informations exactes. Elles seront utilisées par le SAP pour valider votre profil partenaire.</p>
+                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demande d’accès partenaire</h2>
+                        <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Renseignez des informations exactes. Elles seront utilisées par l’équipe BAOBAA pour valider votre profil partenaire.</p>
                     </div>
 
                     <form method="POST" action="{{ $action }}" class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">
                         @csrf
+                        <x-forms.validation-errors class="mb-5" />
 
                         @unless ($isAuthenticatedMode)
                             <div class="grid gap-4 sm:grid-cols-2">
@@ -131,7 +132,8 @@
                             <textarea name="motivation" rows="4" class="w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('motivation') }}</textarea>
                         </label>
 
-                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer au SAP</button>
+                        <x-forms.terms-acceptance class="mt-5" />
+                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer ma demande</button>
                     </form>
                 </div>
             </div>

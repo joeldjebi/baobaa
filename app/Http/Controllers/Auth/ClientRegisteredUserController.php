@@ -26,6 +26,7 @@ class ClientRegisteredUserController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:32'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'accept_terms' => ['accepted'],
         ]);
 
         $user = User::query()->create([
@@ -36,6 +37,7 @@ class ClientRegisteredUserController extends Controller
             'portal_roles' => [UserRole::Client->value],
             'status' => UserStatus::Active,
             'password' => $validated['password'],
+            'terms_accepted_at' => now(),
         ]);
 
         Auth::login($user);

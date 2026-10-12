@@ -14,7 +14,10 @@
 
                 <x-navigation.public-menu active="event-services" />
 
-                <x-navigation.account-menu />
+                <div class="flex items-center gap-2">
+                    <x-navigation.account-menu />
+                    <x-navigation.mobile-menu active="event-services" />
+                </div>
             </div>
         </header>
 
@@ -43,7 +46,7 @@
                                         <h1 class="text-3xl font-extrabold tracking-[-0.055em] text-[#151821] sm:text-5xl">{{ $publicName }}</h1>
                                         <span class="rounded-full {{ $isVerified ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fff7ed] text-[#c2410c]' }} px-3 py-1 text-xs font-extrabold">{{ $isVerified ? 'Équipe vérifiée' : 'Vérification en cours' }}</span>
                                     </div>
-                                    <p class="mt-2 text-sm font-bold text-[#6f7890]">{{ $serviceProviderProfile->district ? $serviceProviderProfile->district.', ' : '' }}{{ $serviceProviderProfile->city }}, {{ $serviceProviderProfile->country_code }} · {{ $serviceProviderProfile->published_services_count }} services disponibles</p>
+                                    <p class="mt-2 text-sm font-bold text-[#6f7890]">{{ $serviceProviderProfile->district ? $serviceProviderProfile->district.', ' : '' }}{{ $serviceProviderProfile->city }}, {{ $serviceProviderProfile->country_code }} · {{ $serviceProviderProfile->published_services_count }} service{{ $serviceProviderProfile->published_services_count > 1 ? 's' : '' }} disponible{{ $serviceProviderProfile->published_services_count > 1 ? 's' : '' }}</p>
                                     <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#52617b]">{{ $serviceProviderProfile->description ?: 'Une équipe événementielle disponible pour accompagner votre projet.' }}</p>
                                 </div>
                             </div>
@@ -136,6 +139,7 @@
                 </div>
             </div>
         </section>
+        <x-navigation.public-footer />
     </main>
 
     <script>

@@ -38,10 +38,18 @@ class DatabaseSeeder extends Seeder
             VenueCategorySeeder::class,
             AmenitySeeder::class,
             EventServiceTypeSeeder::class,
-            OwnerProfileSeeder::class,
-            VenueSeeder::class,
-            ServiceProviderSeeder::class,
-            ClientSeeder::class,
+        ]);
+
+        if ($this->shouldSeedDemonstrationData()) {
+            $this->call([
+                OwnerProfileSeeder::class,
+                VenueSeeder::class,
+                ServiceProviderSeeder::class,
+                ClientSeeder::class,
+            ]);
+        }
+
+        $this->call([
             SubscriptionPlanSeeder::class,
             SponsorshipPlanSeeder::class,
             CommissionRuleSeeder::class,
@@ -49,5 +57,13 @@ class DatabaseSeeder extends Seeder
             PlatformSettingSeeder::class,
             ManagedLocationSeeder::class,
         ]);
+    }
+
+    /**
+     * Demonstration accounts, venues and reviews are never seeded outside local and testing environments.
+     */
+    private function shouldSeedDemonstrationData(): bool
+    {
+        return app()->environment(['local', 'testing']);
     }
 }

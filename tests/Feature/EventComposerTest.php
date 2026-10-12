@@ -60,6 +60,7 @@ test('guest cannot save an event composer project', function () {
     createActiveComposerLocations();
 
     $this->post(route('event-composer.store'), [
+        'accept_terms' => '1',
         'name' => 'Gala visiteur',
         'country_code' => 'CI',
         'ticketing_requested' => true,
@@ -96,6 +97,7 @@ test('client creates a standalone event project with PSE services and ticketing'
 
     $this->actingAs($client)
         ->post(route('event-composer.store'), [
+            'accept_terms' => '1',
             'name' => 'Gala annuel BAOBAA',
             'event_type' => 'gala',
             'event_date' => now()->addMonth()->toDateString(),
@@ -162,6 +164,7 @@ test('client can reserve only PSE services without a venue booking item', functi
 
     $this->actingAs($client)
         ->post(route('event-composer.store'), [
+            'accept_terms' => '1',
             'name' => 'Installation scène sans espace',
             'event_type' => 'concert',
             'event_date' => now()->addWeeks(3)->toDateString(),
@@ -207,6 +210,7 @@ test('service booking blocks overlapping reservations for ten minutes', function
 
     $this->actingAs($firstClient)
         ->post(route('event-composer.store'), [
+            'accept_terms' => '1',
             'name' => 'Conférence matin',
             'event_type' => 'conference',
             'event_date' => $eventDate,
@@ -221,6 +225,7 @@ test('service booking blocks overlapping reservations for ten minutes', function
     $this->actingAs($secondClient)
         ->from(route('event-services.index'))
         ->post(route('event-composer.store'), [
+            'accept_terms' => '1',
             'name' => 'Séminaire midi',
             'event_type' => 'conference',
             'event_date' => $eventDate,
@@ -267,6 +272,7 @@ test('event composer only exposes and accepts SAP active locations', function ()
     $this->actingAs($client)
         ->from(route('event-services.index'))
         ->post(route('event-composer.store'), [
+            'accept_terms' => '1',
             'name' => 'Service dans une ville masquée',
             'country_code' => 'CI',
             'city' => 'Ville masquée',

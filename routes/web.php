@@ -45,6 +45,8 @@ Route::get('/', function () {
 
     return view('welcome', [
         'categories' => $categories,
+        'publishedVenuesCount' => Venue::query()->published()->count(),
+        'publishedCitiesCount' => Venue::query()->published()->distinct()->count('city'),
         'featuredVenues' => Venue::query()
             ->with(['category', 'media'])
             ->withCount(['bookings', 'reviews'])
@@ -109,6 +111,11 @@ Route::get('/', function () {
 });
 
 Route::redirect('/login', '/client/login')->name('login');
+
+Route::view('/contact', 'pages.contact')->name('pages.contact');
+Route::view('/conditions-generales', 'pages.terms')->name('pages.terms');
+Route::view('/confidentialite', 'pages.privacy')->name('pages.privacy');
+Route::view('/mentions-legales', 'pages.legal-notice')->name('pages.legal-notice');
 
 Route::get('/lister-un-espace', function () {
     $user = auth()->user();

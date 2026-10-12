@@ -37,7 +37,7 @@ test('guest sees a premium reservation CTA and login requirement on the venue pa
 
     $this->get(route('venues.show', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Composer le package de mon événement')
+        ->assertSeeText('Réserver cet espace')
         ->assertSeeText('Réserver uniquement un service événementiel')
         ->assertSee(route('venues.reservation', $venue->slug))
         ->assertSee(route('event-services.index'))
@@ -158,7 +158,7 @@ test('venue package page recovers active owner modules when venue modules were n
 
     $this->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Ajouter les modules optionnels')
+        ->assertSeeText('Ajouter des services additionnels')
         ->assertSeeText('Sonorisation premium')
         ->assertSee('selected_module_template_ids[]', false);
 });
@@ -249,9 +249,9 @@ test('public venue flow lets clients choose a service provider before its servic
         'starting_price' => 120000,
     ]);
 
-    $this->get(route('venues.show', $venue->slug))
+    $this->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Choisir un prestataire événementiel')
+        ->assertSeeText('Choisir les prestataires événementiels')
         ->assertSeeText('Studio Lumière Signature')
         ->assertSeeText('Services du prestataire');
 });
@@ -279,6 +279,7 @@ test('client can save a booking request and gets an initiated deposit payment', 
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(14)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
             'starts_at' => '09:00',
@@ -346,6 +347,7 @@ test('venue booking blocks overlapping reservations for ten minutes', function (
         'event_type' => 'conference',
         'guests_count' => 120,
         'payment_method' => 'baobaa_checkout',
+        'accept_terms' => '1',
     ];
 
     $this->actingAs($firstClient)
@@ -418,6 +420,7 @@ test('client can include venue optional modules in a package reservation', funct
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(14)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
             'starts_at' => '09:00',
@@ -492,6 +495,7 @@ test('client can include recovered owner module templates in a package reservati
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(14)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
             'starts_at' => '09:00',
@@ -576,6 +580,7 @@ test('client can update package modules and services before deposit payment', fu
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(14)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
             'starts_at' => '09:00',
@@ -670,6 +675,7 @@ test('client can start a booking with a negotiated amount and initial message', 
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(10)->toDateString(),
             'end_date' => now()->addDays(10)->toDateString(),
             'starts_at' => '10:00',
@@ -749,6 +755,7 @@ test('client can attach PSE services and SAP ticketing to a venue booking projec
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(10)->toDateString(),
             'end_date' => now()->addDays(10)->toDateString(),
             'starts_at' => '10:00',
@@ -797,6 +804,7 @@ test('booking deposit falls back to venue reservation amount when sap rule is mi
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(14)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
             'starts_at' => '09:00',
@@ -829,6 +837,7 @@ test('client cannot choose a payment method disabled for the venue', function ()
 
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
             'start_date' => now()->addDays(14)->toDateString(),
             'end_date' => now()->addDays(14)->toDateString(),
             'starts_at' => '09:00',

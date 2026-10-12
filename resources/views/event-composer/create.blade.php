@@ -17,7 +17,10 @@
                 </a>
 
                 <x-navigation.public-menu active="event-services" />
-                <x-navigation.account-menu />
+                <div class="flex items-center gap-2">
+                    <x-navigation.account-menu />
+                    <x-navigation.mobile-menu active="event-services" />
+                </div>
             </div>
         </header>
 
@@ -53,6 +56,8 @@
                     {{ session('project_status') }}
                 </div>
             @endif
+
+            <x-forms.validation-errors class="mt-6" />
 
             <form method="POST" action="{{ route('event-composer.store') }}" class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
                 @csrf
@@ -223,7 +228,8 @@
                             <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Connexion client obligatoire avant d’envoyer la demande aux prestataires.</p>
                         @else
                             @if (auth()->user()?->hasPortal(\App\Enums\UserRole::Client))
-                                <button class="mt-5 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande de services</button>
+                                <x-forms.terms-acceptance class="mt-5" />
+                                <button class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande de services</button>
                             @else
                                 <p class="mt-5 rounded-2xl bg-[#fff8e8] p-4 text-sm font-bold leading-6 text-[#8a5b00]">Vous devez disposer du portail client pour composer un événement.</p>
                             @endif
@@ -232,6 +238,7 @@
                 </aside>
             </form>
         </section>
+        <x-navigation.public-footer />
     </main>
 
     <script>

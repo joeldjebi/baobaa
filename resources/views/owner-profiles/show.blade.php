@@ -13,7 +13,10 @@
 
                 <x-navigation.public-menu active="partners" />
 
-                <x-navigation.account-menu />
+                <div class="flex items-center gap-2">
+                    <x-navigation.account-menu />
+                    <x-navigation.mobile-menu active="partners" />
+                </div>
             </div>
         </header>
 
@@ -81,17 +84,16 @@
                     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @forelse ($venues as $venue)
                             @php
-                                $image = $venue->media->sortBy('sort_order')->first()?->signed_url
-                                    ?? 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85';
+                                $image = $venue->cover_image_url;
                             @endphp
                             <a href="{{ route('venues.show', $venue->slug) }}" class="group overflow-hidden rounded-[22px] border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#173e7a]/12">
                                 <div class="relative">
-                                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-52 w-full object-cover transition duration-500 group-hover:scale-[1.03]">
+                                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-52 w-full object-cover transition duration-500 group-hover:scale-[1.03]">
                                     <span class="absolute left-3 top-3 rounded-full bg-white/94 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">{{ $venue->category?->name ?? 'Espace événementiel' }}</span>
                                 </div>
                                 <div class="p-4">
                                     <h3 class="line-clamp-2 text-lg font-extrabold tracking-[-0.025em] text-[#151821]">{{ $venue->name }}</h3>
-                                <p class="mt-2 text-xs font-bold text-[#6f7890]">{{ $venue->district }}, {{ $venue->city }} · jusqu'à {{ $venue->max_capacity }} invités</p>
+                                <p class="mt-2 text-xs font-bold text-[#6f7890]">{{ collect([$venue->district, $venue->city])->filter()->implode(', ') }} · jusqu’à {{ $venue->max_capacity }} invités</p>
                                     <div class="mt-4 flex items-center justify-between border-t border-[#edf2fb] pt-4">
                                         <p class="text-sm font-extrabold text-[#151821]">{{ number_format($venue->starting_price, 0, ',', ' ') }} {{ $venue->currency }}</p>
                                         <span class="text-sm font-extrabold text-[#2f6bff] transition group-hover:translate-x-1">Voir →</span>
@@ -113,6 +115,8 @@
                 </div>
             </div>
         </section>
+
+        <x-navigation.public-footer />
     </main>
 
     <script>

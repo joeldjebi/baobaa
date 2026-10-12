@@ -13,7 +13,10 @@
 
                 <x-navigation.public-menu active="venues" />
 
-                <x-navigation.account-menu />
+                <div class="flex items-center gap-2">
+                    <x-navigation.account-menu />
+                    <x-navigation.mobile-menu active="venues" />
+                </div>
             </div>
         </header>
 
@@ -31,7 +34,7 @@
 
                 <div class="grid gap-3 sm:grid-cols-3">
                     <div class="rounded-3xl border border-white bg-white/86 p-4 shadow-lg shadow-[#173e7a]/8">
-                        <p class="text-2xl font-extrabold tracking-[-0.04em] text-[#151821]">{{ $venues->total() }}</p>
+                        <p class="text-2xl font-extrabold tracking-[-0.04em] text-[#151821]">{{ number_format($publishedVenuesCount, 0, ',', ' ') }}</p>
                         <p class="mt-1 text-xs font-bold text-[#6f7890]">espaces publiés</p>
                     </div>
                     <div class="rounded-3xl border border-white bg-white/86 p-4 shadow-lg shadow-[#173e7a]/8">
@@ -111,11 +114,11 @@
                             <div class="grid gap-2">
                                 <label>
                                     <span class="block text-[11px] font-bold text-[#6f7890]">Date de début</span>
-                                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="mt-1 w-full rounded-lg border border-[#dce6f7] bg-white px-2.5 py-1.5 text-[13px] font-extrabold text-[#151821] outline-none transition focus:border-[#2f6bff]">
+                                    <input type="date" name="start_date" value="{{ request('start_date') }}" min="{{ now()->toDateString() }}" data-filter-start-date class="mt-1 w-full rounded-lg border border-[#dce6f7] bg-white px-2.5 py-1.5 text-[13px] font-extrabold text-[#151821] outline-none transition focus:border-[#2f6bff]">
                                 </label>
                                 <label>
                                     <span class="block text-[11px] font-bold text-[#6f7890]">Date de fin</span>
-                                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="mt-1 w-full rounded-lg border border-[#dce6f7] bg-white px-2.5 py-1.5 text-[13px] font-extrabold text-[#151821] outline-none transition focus:border-[#2f6bff]">
+                                    <input type="date" name="end_date" value="{{ request('end_date') }}" min="{{ request('start_date') ?: now()->toDateString() }}" data-filter-end-date class="mt-1 w-full rounded-lg border border-[#dce6f7] bg-white px-2.5 py-1.5 text-[13px] font-extrabold text-[#151821] outline-none transition focus:border-[#2f6bff]">
                                 </label>
                             </div>
                         </div>
@@ -132,6 +135,8 @@
                 @include('venues.partials.results', ['venues' => $venues])
             </div>
         </section>
+
+        <x-navigation.public-footer />
     </main>
 
     <script>
@@ -149,6 +154,20 @@
 
             const input = root.querySelector('[data-autocomplete-input]');
             const list = root.querySelector('[data-autocomplete-list]');
+            const filterStartDate = form.querySelector('[data-filter-start-date]');
+            const filterEndDate = form.querySelector('[data-filter-end-date]');
+
+            filterStartDate?.addEventListener('change', () => {
+                if (!filterEndDate) {
+                    return;
+                }
+
+                filterEndDate.min = filterStartDate.value || filterStartDate.min;
+
+                if (filterEndDate.value && filterStartDate.value && filterEndDate.value < filterStartDate.value) {
+                    filterEndDate.value = filterStartDate.value;
+                }
+            });
 
             const buildUrl = () => {
                 const formData = new FormData(form);

@@ -102,6 +102,7 @@ test('client can register himself', function () {
         'phone' => '+2250102030405',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'accept_terms' => '1',
     ])
         ->assertRedirect(route('client.dashboard'));
 
@@ -109,13 +110,45 @@ test('client can register himself', function () {
 
     expect($user)
         ->not->toBeNull()
-        ->and($user->hasPortal(UserRole::Client))->toBeTrue();
+        ->and($user->hasPortal(UserRole::Client))->toBeTrue()
+        ->and($user->terms_accepted_at)->not->toBeNull();
 });
+
+test('client registration requires accepting the terms of use', function () {
+    $this->get(route('client.register'))
+        ->assertOk()
+        ->assertSee(route('pages.terms'), false);
+
+    $this->from(route('client.register'))
+        ->post(route('client.register.store'), [
+            'name' => 'Client Sans CGU',
+            'email' => 'sans.cgu@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])
+        ->assertRedirect(route('client.register'))
+        ->assertSessionHasErrors('accept_terms');
+
+    expect(User::query()->where('email', 'sans.cgu@example.com')->exists())->toBeFalse();
+});
+
+test('legal and contact pages are publicly available', function (string $routeName, string $heading) {
+    $this->get(route($routeName))
+        ->assertOk()
+        ->assertSeeText($heading)
+        ->assertSee(route('pages.legal-notice'), false);
+})->with([
+    ['pages.terms', 'Conditions générales d’utilisation'],
+    ['pages.privacy', 'Politique de confidentialité'],
+    ['pages.legal-notice', 'Mentions légales'],
+    ['pages.contact', 'Contactez l’équipe BAOBAA'],
+]);
 
 test('owner can register himself but waits for SAP approval', function () {
     $this->get(route('owner.register'))
         ->assertOk()
-        ->assertSeeText('Demande d’accès PEE');
+        ->assertSeeText('Demande d’accès partenaire')
+        ->assertDontSeeText('Envoyer au SAP');
 
     $this->post(route('owner.register.store'), [
         'name' => 'Responsable Partenaire',
@@ -123,6 +156,7 @@ test('owner can register himself but waits for SAP approval', function () {
         'phone' => '+2250707070707',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'accept_terms' => '1',
         'applicant_type' => 'company',
         'business_name' => 'Blue Event House',
         'legal_name' => 'Blue Event House SARL',
@@ -307,10 +341,33 @@ test('public venues index returns only results partial for ajax filtering', func
 });
 
 test('public venue detail page is available', function () {
-    $this->get(route('venues.show', ['slug' => 'auditorium-premium-avec-scene-et-regie']))
+    $venue = Venue::factory()->create([
+        'name' => 'Auditorium premium Plateau',
+        'slug' => 'auditorium-premium-plateau',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+
+    $this->get(route('venues.show', $venue->slug))
         ->assertOk()
-        ->assertSee('Auditorium premium avec scene et regie')
-        ->assertSeeText('Me connecter pour démarrer');
+        ->assertSee('Auditorium premium Plateau')
+        ->assertSeeText('Réserver cet espace')
+        ->assertSee('data-mobile-booking-bar', false)
+        ->assertSee('property="og:title"', false);
+});
+
+test('unknown or unpublished venues return a not found page instead of demonstration content', function () {
+    Venue::factory()->create([
+        'name' => 'Salle encore en brouillon',
+        'slug' => 'salle-encore-en-brouillon',
+        'status' => VenueStatus::Draft,
+    ]);
+
+    $this->get(route('venues.show', ['slug' => 'auditorium-premium-avec-scene-et-regie']))
+        ->assertNotFound();
+
+    $this->get(route('venues.show', ['slug' => 'salle-encore-en-brouillon']))
+        ->assertNotFound();
 });
 
 test('client can review a venue only after a confirmed booking', function () {
@@ -396,22 +453,43 @@ test('venue detail displays approved reviews', function () {
 });
 
 test('similar venues on detail page link to their own detail pages', function () {
-    $this->get(route('venues.show', ['slug' => 'auditorium-premium-avec-scene-et-regie']))
-        ->assertOk()
-        ->assertSee(route('venues.show', 'conference-room-equipee-avec-terrasse'))
-        ->assertSee('Conference room equipee avec terrasse');
+    $category = VenueCategory::factory()->create();
+    $venue = Venue::factory()->create([
+        'venue_category_id' => $category->id,
+        'slug' => 'auditorium-premium-plateau',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+    Venue::factory()->create([
+        'venue_category_id' => $category->id,
+        'name' => 'Salle de conférence avec terrasse',
+        'slug' => 'salle-de-conference-avec-terrasse',
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+    ]);
+    Venue::factory()->create([
+        'venue_category_id' => $category->id,
+        'name' => 'Salle similaire non publiée',
+        'status' => VenueStatus::Draft,
+    ]);
 
-    $this->get(route('venues.show', ['slug' => 'conference-room-equipee-avec-terrasse']))
+    $this->get(route('venues.show', $venue->slug))
         ->assertOk()
-        ->assertSee('Conference room equipee avec terrasse');
+        ->assertSee(route('venues.show', 'salle-de-conference-avec-terrasse'))
+        ->assertSee('Salle de conférence avec terrasse')
+        ->assertDontSee('Salle similaire non publiée');
 });
 
-test('public owner profiles page returns partner data without an empty state', function () {
+test('public owner profiles page never shows demonstration partners', function () {
     $this->get(route('owner-profiles.index'))
         ->assertOk()
         ->assertSee('Partenaires événementiels')
-        ->assertSee('BAOBAA Signature Events')
+        ->assertSeeText('Aucun partenaire ne correspond à votre recherche.')
+        ->assertDontSee('BAOBAA Signature Events')
         ->assertDontSee('Profils PEE');
+
+    $this->get(route('owner-profiles.show', '2d08df2a-8d0f-42a5-a22e-47a617a7b101'))
+        ->assertNotFound();
 });
 
 test('public owner profiles and profile detail pages are available', function () {
@@ -523,9 +601,9 @@ test('each baobaa actor has a dedicated login route', function (string $portal, 
         ->assertOk()
         ->assertSee($label);
 })->with([
-    ['sap', 'Portail SAP'],
-    ['proprietaire', 'Portail proprietaire'],
-    ['client', 'Portail client'],
+    ['sap', 'Administration BAOBAA'],
+    ['proprietaire', 'Espace propriétaire'],
+    ['client', 'Espace client'],
 ]);
 
 test('users are redirected to the dashboard matching their portal', function (UserRole $role, string $portal, string $dashboardRoute) {

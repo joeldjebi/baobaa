@@ -77,6 +77,7 @@ class EventComposerController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'accept_terms' => ['accepted'],
             'event_type' => ['nullable', 'string', 'max:80', Rule::in(array_keys($this->eventTypeOptions()))],
             'event_date' => ['nullable', 'date', 'after_or_equal:today'],
             'starts_at' => ['nullable', 'date_format:H:i'],

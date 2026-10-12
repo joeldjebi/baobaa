@@ -48,6 +48,7 @@
 
                     <form method="POST" action="{{ $action }}" class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">
                         @csrf
+                        <x-forms.validation-errors class="mb-5" />
 
                         @unless ($isAuthenticatedMode)
                             <div class="grid gap-4 sm:grid-cols-2">
@@ -139,7 +140,8 @@
                             <textarea name="motivation" rows="3" class="w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('motivation') }}</textarea>
                         </label>
 
-                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer à BAOBAA</button>
+                        <x-forms.terms-acceptance class="mt-5" />
+                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer ma demande</button>
                     </form>
                 </div>
             </div>

@@ -32,6 +32,7 @@ class ServiceProviderRegisteredUserController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:32'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'accept_terms' => ['accepted'],
             'business_name' => ['required', 'string', 'max:255'],
             'legal_name' => ['nullable', 'string', 'max:255'],
             'tax_identifier' => ['nullable', 'string', 'max:120'],
@@ -51,6 +52,7 @@ class ServiceProviderRegisteredUserController extends Controller
             'portal_roles' => [UserRole::Client->value],
             'status' => UserStatus::Active,
             'password' => $validated['password'],
+            'terms_accepted_at' => now(),
         ]);
 
         ServiceProviderProfile::query()->create([

@@ -12,6 +12,7 @@
     $selectedEventServiceIds = collect(old('event_service_ids', []))->map(fn ($id) => (int) $id)->all();
     $selectedAddOnIds = collect(old('selected_add_on_ids', []))->map(fn ($id) => (int) $id)->all();
     $selectedModuleTemplateIds = collect(old('selected_module_template_ids', []))->map(fn ($id) => (int) $id)->all();
+    $maxEventServices = 6;
 @endphp
 
 <x-layouts.baobaa :title="$title.' - BAOBAA'">
@@ -23,7 +24,10 @@
                 </a>
 
                 <x-navigation.public-menu active="venues" />
-                <x-navigation.account-menu />
+                <div class="flex items-center gap-2">
+                    <x-navigation.account-menu />
+                    <x-navigation.mobile-menu active="venues" />
+                </div>
             </div>
         </header>
 
@@ -32,7 +36,7 @@
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
                         <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Package événementiel</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Composez votre événement avec les bons experts.</h1>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Composez votre événement avec les bons prestataires.</h1>
                         <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Choisissez les dates, les options du lieu, les services événementiels et la billetterie pour lancer une demande claire et complète.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
@@ -60,7 +64,9 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('bookings.store', $venue) }}" class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <x-forms.validation-errors class="mt-6" />
+
+            <form method="POST" action="{{ route('bookings.store', $venue) }}" class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]" data-reservation-form>
                 @csrf
 
                 <section class="space-y-6">
@@ -76,7 +82,7 @@
                         <div class="mt-5 grid gap-4 md:grid-cols-2">
                             <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Date de début</span>
-                                <input type="date" name="start_date" value="{{ old('start_date') }}" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
+                                <input type="date" name="start_date" value="{{ old('start_date', request('start_date')) }}" min="{{ now()->toDateString() }}" data-start-date class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
                             </label>
                             <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure</span>
@@ -84,7 +90,7 @@
                             </label>
                             <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Date de fin</span>
-                                <input type="date" name="end_date" value="{{ old('end_date') }}" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none">
+                                <input type="date" name="end_date" value="{{ old('end_date', request('end_date')) }}" min="{{ now()->toDateString() }}" data-end-date class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none">
                             </label>
                             <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure de fin</span>
@@ -134,6 +140,9 @@
                                         <input type="checkbox" name="{{ ($addOn['source'] ?? 'venue_add_on') === 'owner_module_template' ? 'selected_module_template_ids[]' : 'selected_add_on_ids[]' }}" value="{{ $addOn['id'] }}" data-addon-checkbox data-addon-name="{{ $addOn['name'] }}" data-addon-price="{{ $addOn['amount'] }}" class="mt-1 size-5 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(($addOn['source'] ?? 'venue_add_on') === 'owner_module_template' ? in_array((int) $addOn['id'], $selectedModuleTemplateIds, true) : in_array((int) $addOn['id'], $selectedAddOnIds, true))>
                                         <span class="min-w-0">
                                             <span class="block text-sm font-extrabold text-[#07152f]">{{ $addOn['name'] }}</span>
+                                            @if (filled($addOn['description'] ?? null))
+                                                <span class="mt-1 block text-xs font-semibold leading-5 text-[#6f7890]">{{ $addOn['description'] }}</span>
+                                            @endif
                                             <span class="mt-2 inline-flex rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $addOn['price'] }}</span>
                                         </span>
                                     </label>
@@ -151,9 +160,9 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir vos services événementiels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir les prestataires événementiels</h2>
                             </div>
-                            <p class="text-xs font-extrabold text-[#7d879d]">{{ count($publicEventProviders ?? []) }} équipes disponibles</p>
+                            <p class="text-xs font-extrabold text-[#7d879d]"><span data-services-selected-count>0</span> / {{ $maxEventServices }} services sélectionnés</p>
                         </div>
 
                         @if (($publicEventProviders ?? collect())->isNotEmpty())
@@ -178,6 +187,7 @@
                                             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">{{ $providerGroup['services']->count() }} service(s)</span>
                                         </div>
 
+                                        <p class="mb-3 text-xs font-extrabold uppercase tracking-[0.12em] text-[#7d879d]">Services du prestataire</p>
                                         <div class="grid gap-3 md:grid-cols-2">
                                             @foreach ($providerGroup['services'] as $service)
                                                 <label class="group flex cursor-pointer gap-3 rounded-[22px] border border-[#e2eaf8] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:shadow-xl hover:shadow-[#173e7a]/8">
@@ -215,6 +225,7 @@
                                 <span class="text-[#6f7890]">Acompte estimé</span>
                                 <span class="text-[#07152f]">{{ $deposit }}</span>
                             </div>
+                            <p class="mt-1 text-[11px] font-semibold leading-4 text-[#8a94aa]">L’acompte final est recalculé sur la proforma avec les options choisies.</p>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
                                 <span class="text-[#6f7890]">Options sélectionnées</span>
                                 <span id="composer-addons-count" class="text-[#07152f]">0</span>
@@ -225,7 +236,7 @@
                             </div>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
                                 <span class="text-[#6f7890]">Total estimé</span>
-                                <span id="composer-total" class="text-[#07152f]">0 XOF</span>
+                                <span id="composer-total" class="text-[#07152f]">0 {{ $venue->currency }}</span>
                             </div>
                             <div id="composer-selection" class="mt-4 space-y-2 text-xs font-bold text-[#52617b]"></div>
                         </div>
@@ -242,12 +253,14 @@
                             <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => route('venues.reservation', $venue->slug)]) }}" class="mt-5 flex w-full justify-center rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Me connecter pour lancer la demande</a>
                             <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Connexion client obligatoire avant la proforma et le paiement de l’acompte.</p>
                         @else
-                            <button type="submit" class="mt-5 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Valider la demande</button>
+                            <x-forms.terms-acceptance class="mt-5" />
+                            <button type="submit" class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Valider la demande</button>
                         @endguest
                     </div>
                 </aside>
             </form>
         </section>
+        <x-navigation.public-footer />
     </main>
 
     <script>
@@ -262,6 +275,25 @@
             const total = document.getElementById('composer-total');
             const selection = document.getElementById('composer-selection');
             const formatter = new Intl.NumberFormat('fr-FR');
+            const servicesSelectedCount = document.querySelectorAll('[data-services-selected-count]');
+            const maxEventServices = @json($maxEventServices);
+            const startDate = document.querySelector('[data-start-date]');
+            const endDate = document.querySelector('[data-end-date]');
+
+            const syncEndDateMinimum = () => {
+                if (! startDate || ! endDate) {
+                    return;
+                }
+
+                endDate.min = startDate.value || startDate.min;
+
+                if (endDate.value && startDate.value && endDate.value < startDate.value) {
+                    endDate.value = startDate.value;
+                }
+            };
+
+            startDate?.addEventListener('change', syncEndDateMinimum);
+            syncEndDateMinimum();
 
             const updateSummary = () => {
                 const selected = [...serviceCheckboxes].filter((checkbox) => checkbox.checked);
@@ -273,7 +305,14 @@
 
                 addOnsCount.textContent = selectedAddOns.length.toString();
                 count.textContent = selected.length.toString();
-                total.textContent = `${formatter.format(amount)} XOF`;
+                total.textContent = `${formatter.format(amount)} ${@json($venue->currency)}`;
+                servicesSelectedCount.forEach((element) => {
+                    element.textContent = selected.length.toString();
+                });
+                serviceCheckboxes.forEach((checkbox) => {
+                    checkbox.disabled = ! checkbox.checked && selected.length >= maxEventServices;
+                    checkbox.closest('label')?.classList.toggle('opacity-50', checkbox.disabled);
+                });
                 selection.innerHTML = '';
 
                 selectedAddOns.slice(0, 5).forEach((checkbox) => {

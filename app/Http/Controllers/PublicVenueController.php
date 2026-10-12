@@ -13,8 +13,10 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Throwable;
 
 class PublicVenueController extends Controller
 {
@@ -22,11 +24,14 @@ class PublicVenueController extends Controller
 
     public function index(Request $request): View
     {
+        $calendarRange = $this->calendarRangeFromRequest($request);
+
         $venues = Venue::query()
             ->with(['category', 'media', 'ownerProfile'])
-            ->where('status', VenueStatus::Published)
+            ->withPublicRating()
+            ->published()
             ->when($request->filled('q'), function ($query) use ($request): void {
-                $search = $request->string('q')->toString();
+                $search = $request->string('q')->trim()->toString();
 
                 $query->where(function ($query) use ($search): void {
                     $query
@@ -36,21 +41,34 @@ class PublicVenueController extends Controller
                         ->orWhereHas('category', fn ($query) => $query->where('name', 'like', "%{$search}%"));
                 });
             })
-            ->when($request->filled('city'), fn ($query) => $query->where('city', $request->string('city')->toString()))
+            ->when($request->filled('city'), function ($query) use ($request): void {
+                $city = $request->string('city')->trim()->toString();
+
+                $query->where(fn ($query) => $query
+                    ->where('city', 'like', "%{$city}%")
+                    ->orWhere('district', 'like', "%{$city}%"));
+            })
             ->when($request->filled('category'), function ($query) use ($request): void {
                 $query->whereHas('category', fn ($query) => $query->where('slug', $request->string('category')->toString()));
             })
             ->when($request->filled('capacity'), fn ($query) => $query->where('max_capacity', '>=', $request->integer('capacity')))
             ->when($request->filled('min_price'), fn ($query) => $query->where('starting_price', '>=', $request->integer('min_price')))
             ->when($request->filled('max_price'), fn ($query) => $query->where('starting_price', '<=', $request->integer('max_price')))
-            ->when($request->filled('start_date') || $request->filled('end_date'), fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, $request))
+            ->when($calendarRange !== null, fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, ...$calendarRange))
             ->orderByDesc('published_at')
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
 
-        $viewData = [
+        if ($request->ajax()) {
+            return view('venues.partials.results', [
+                'venues' => $venues,
+            ]);
+        }
+
+        return view('venues.index', [
             'venues' => $venues,
+            'publishedVenuesCount' => Venue::query()->published()->count(),
             'categories' => VenueCategory::query()
                 ->where('is_active', true)
                 ->whereHas('venues', fn ($query) => $query->where('status', VenueStatus::Published))
@@ -58,14 +76,14 @@ class PublicVenueController extends Controller
                 ->orderBy('name')
                 ->get(['name', 'slug']),
             'cities' => Venue::query()
-                ->where('status', VenueStatus::Published)
+                ->published()
                 ->select('city')
                 ->distinct()
                 ->orderBy('city')
                 ->pluck('city'),
             'searchSuggestions' => Venue::query()
-                ->where('status', VenueStatus::Published)
-                ->when($request->filled('start_date') || $request->filled('end_date'), fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, $request))
+                ->published()
+                ->when($calendarRange !== null, fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, ...$calendarRange))
                 ->orderBy('name')
                 ->limit(20)
                 ->get(['name'])
@@ -81,30 +99,18 @@ class PublicVenueController extends Controller
                         ->map(fn (VenueCategory $category): array => ['label' => $category->name, 'type' => 'Catégorie'])
                 )
                 ->values(),
-        ];
-
-        if ($request->ajax()) {
-            return view('venues.partials.results', [
-                'venues' => $venues,
-            ]);
-        }
-
-        return view('venues.index', $viewData);
+        ]);
     }
 
     public function blockedDates(Request $request, string $slug): JsonResponse
     {
         $venue = Venue::query()
             ->where('slug', $slug)
-            ->where('status', VenueStatus::Published)
+            ->published()
             ->firstOrFail();
 
-        $from = filled($request->input('from'))
-            ? CarbonImmutable::parse((string) $request->input('from'))->startOfDay()
-            : CarbonImmutable::today();
-        $to = filled($request->input('to'))
-            ? CarbonImmutable::parse((string) $request->input('to'))->endOfDay()
-            : $from->addMonths(6)->endOfDay();
+        $from = $this->parseDate($request->input('from'))?->startOfDay() ?? CarbonImmutable::today();
+        $to = $this->parseDate($request->input('to'))?->endOfDay() ?? $from->addMonths(6)->endOfDay();
 
         if ($to->lessThan($from)) {
             [$from, $to] = [$to->startOfDay(), $from->endOfDay()];
@@ -174,20 +180,21 @@ class PublicVenueController extends Controller
                 'ownerProfile.depositRules',
                 'amenities',
                 'media',
-                'rates',
                 'configurations',
                 'addOns',
                 'policies',
                 'faqs',
-                'reviews.client',
+                'approvedReviews.client',
             ])
+            ->withPublicRating()
             ->where('slug', $slug)
-            ->first();
+            ->published()
+            ->firstOrFail();
 
         $eligibleBooking = null;
         $existingReview = null;
 
-        if ($venue && Auth::check()) {
+        if (Auth::check()) {
             $eligibleBooking = Auth::user()->bookings()
                 ->where('venue_id', $venue->id)
                 ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed])
@@ -199,40 +206,115 @@ class PublicVenueController extends Controller
                 ->first();
         }
 
+        return view('venues.show', [
+            'venue' => $venue,
+            'depositAmount' => $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price),
+            'reservationAddOns' => $this->reservationAddOnsFor($venue),
+            'similarVenues' => $this->similarVenuesFor($venue),
+            'approvedReviews' => $venue->approvedReviews
+                ->sortByDesc('approved_at')
+                ->values(),
+            'canReview' => $eligibleBooking && ! $existingReview,
+            'existingReview' => $existingReview,
+        ]);
+    }
+
+    public function reservation(string $slug): View
+    {
+        $venue = Venue::query()
+            ->with([
+                'category',
+                'ownerProfile.depositRules',
+                'media',
+            ])
+            ->where('slug', $slug)
+            ->published()
+            ->firstOrFail();
+
         $publicEventServices = EventService::query()
             ->with(['type', 'serviceProviderProfile'])
             ->where('status', VenueStatus::Published)
-            ->when($venue?->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
+            ->when($venue->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
             ->orderBy('starting_price')
             ->limit(24)
             ->get();
 
         $publicEventProviders = $publicEventServices
+            ->filter(fn (EventService $service): bool => $service->serviceProviderProfile !== null)
             ->groupBy(fn (EventService $service) => $service->service_provider_profile_id)
-            ->map(function ($services) {
-                $provider = $services->first()->serviceProviderProfile;
-
-                return [
-                    'provider' => $provider,
-                    'services' => $services,
-                ];
-            })
+            ->map(fn (Collection $services): array => [
+                'provider' => $services->first()->serviceProviderProfile,
+                'services' => $services,
+            ])
             ->values();
 
-        return view('venues.show', [
+        return view('venues.reservation', [
             'venue' => $venue,
-            'fallback' => $this->fallbackVenue($slug),
-            'depositAmount' => $venue ? $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price) : null,
-            'suggestedEventServices' => $publicEventServices,
+            'depositAmount' => $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price),
             'publicEventProviders' => $publicEventProviders,
-            'similarVenues' => $this->fallbackSimilarVenues($slug),
-            'approvedReviews' => $venue?->reviews
-                ?->where('status', 'approved')
-                ->sortByDesc('approved_at')
-                ->values() ?? collect(),
-            'canReview' => $venue && $eligibleBooking && ! $existingReview,
-            'existingReview' => $existingReview,
+            'reservationAddOns' => $this->reservationAddOnsFor($venue),
         ]);
+    }
+
+    /**
+     * Additional services the client can select for this venue, using the venue options first and the owner modules otherwise.
+     *
+     * @return array<int, array{id: int, source: string, name: string, description: ?string, amount: int, currency: string, price: string}>
+     */
+    private function reservationAddOnsFor(Venue $venue): array
+    {
+        $addOns = $venue->addOns()
+            ->where('is_available', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($addOn): array => $this->reservationAddOnPayload($addOn, 'venue_add_on'));
+
+        if ($addOns->isEmpty() && $venue->ownerProfile) {
+            $addOns = $venue->ownerProfile
+                ->moduleTemplates()
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($module): array => $this->reservationAddOnPayload($module, 'owner_module_template'));
+        }
+
+        return $addOns->values()->all();
+    }
+
+    /**
+     * @return array{id: int, source: string, name: string, description: ?string, amount: int, currency: string, price: string}
+     */
+    private function reservationAddOnPayload(object $addOn, string $source): array
+    {
+        return [
+            'id' => (int) $addOn->id,
+            'source' => $source,
+            'name' => $addOn->name,
+            'description' => $addOn->description,
+            'amount' => (int) $addOn->price,
+            'currency' => $addOn->currency,
+            'price' => number_format((int) $addOn->price, 0, ',', ' ').' '.$addOn->currency,
+        ];
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<int, Venue>
+     */
+    private function similarVenuesFor(Venue $venue): \Illuminate\Database\Eloquent\Collection
+    {
+        return Venue::query()
+            ->with(['category', 'media'])
+            ->published()
+            ->whereKeyNot($venue->id)
+            ->where(fn (Builder $query) => $query
+                ->where('venue_category_id', $venue->venue_category_id)
+                ->orWhere('city', $venue->city))
+            ->orderByRaw('CASE WHEN venue_category_id = ? THEN 0 ELSE 1 END', [$venue->venue_category_id])
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get();
     }
 
     /**
@@ -249,16 +331,21 @@ class PublicVenueController extends Controller
         ];
     }
 
-    private function applyCalendarAvailabilityFilters(Builder $query, Request $request): void
+    /**
+     * Exclude venues that are blocked, booked or temporarily locked on the requested dates.
+     *
+     * A venue without explicit calendar entries is considered available: only dates marked
+     * as unavailable by the owner, active bookings and active holds remove it from results.
+     */
+    private function applyCalendarAvailabilityFilters(Builder $query, CarbonImmutable $rangeStartsAt, CarbonImmutable $rangeEndsAt): void
     {
-        [$rangeStartsAt, $rangeEndsAt] = $this->calendarRangeFromRequest($request);
-
-        $query->whereHas('availabilities', function (Builder $query) use ($rangeStartsAt, $rangeEndsAt): void {
-            $query
-                ->where('status', 'available')
-                ->where('available_date', '>=', $rangeStartsAt->toDateString())
-                ->where('available_date', '<', $rangeEndsAt->addDay()->toDateString());
-        })
+        $query
+            ->whereDoesntHave('availabilities', function (Builder $query) use ($rangeStartsAt, $rangeEndsAt): void {
+                $query
+                    ->where('status', '!=', 'available')
+                    ->where('available_date', '>=', $rangeStartsAt->toDateString())
+                    ->where('available_date', '<', $rangeEndsAt->addDay()->toDateString());
+            })
             ->whereDoesntHave('bookings', function (Builder $query) use ($rangeStartsAt, $rangeEndsAt): void {
                 $query->whereIn('status', $this->blockingBookingStatuses())
                     ->where('event_date', '>=', $rangeStartsAt->toDateString())
@@ -278,227 +365,45 @@ class PublicVenueController extends Controller
     }
 
     /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     * Build the searched date range, ignoring invalid dates and dates in the past.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}|null
      */
-    private function calendarRangeFromRequest(Request $request): array
+    private function calendarRangeFromRequest(Request $request): ?array
     {
-        $startsAt = $request->filled('start_date')
-            ? CarbonImmutable::parse((string) $request->input('start_date'))->startOfDay()
-            : CarbonImmutable::today();
-        $endsAt = $request->filled('end_date')
-            ? CarbonImmutable::parse((string) $request->input('end_date'))->endOfDay()
-            : $startsAt->endOfDay();
+        $startsAt = $this->parseDate($request->input('start_date'));
+        $endsAt = $this->parseDate($request->input('end_date'));
 
-        if ($endsAt->lessThan($startsAt)) {
-            return [$endsAt->startOfDay(), $startsAt->endOfDay()];
+        if ($startsAt === null && $endsAt === null) {
+            return null;
         }
 
-        return [$startsAt, $endsAt];
+        $startsAt ??= $endsAt;
+        $endsAt ??= $startsAt;
+
+        if ($endsAt->lessThan($startsAt)) {
+            [$startsAt, $endsAt] = [$endsAt, $startsAt];
+        }
+
+        $today = CarbonImmutable::today();
+
+        if ($endsAt->lessThan($today)) {
+            return null;
+        }
+
+        return [$startsAt->max($today)->startOfDay(), $endsAt->endOfDay()];
     }
 
-    public function reservation(string $slug): View
+    private function parseDate(mixed $value): ?CarbonImmutable
     {
-        $venue = Venue::query()
-            ->with([
-                'category',
-                'ownerProfile.depositRules',
-                'amenities',
-                'media',
-                'rates',
-                'configurations',
-                'addOns',
-                'policies',
-                'faqs',
-                'reviews.client',
-            ])
-            ->where('slug', $slug)
-            ->where('status', VenueStatus::Published)
-            ->firstOrFail();
+        if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
 
-        $publicEventServices = EventService::query()
-            ->with(['type', 'serviceProviderProfile'])
-            ->where('status', VenueStatus::Published)
-            ->when($venue->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
-            ->orderBy('starting_price')
-            ->limit(24)
-            ->get();
-
-        $publicEventProviders = $publicEventServices
-            ->groupBy(fn (EventService $service) => $service->service_provider_profile_id)
-            ->map(function ($services) {
-                $provider = $services->first()->serviceProviderProfile;
-
-                return [
-                    'provider' => $provider,
-                    'services' => $services,
-                ];
-            })
-            ->values();
-
-        $addOns = $venue->addOns()
-            ->where('is_available', true)
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get();
-
-        $reservationAddOns = $addOns->isNotEmpty()
-            ? $addOns->map(fn ($addOn) => [
-                'id' => $addOn->id,
-                'source' => 'venue_add_on',
-                'name' => $addOn->name,
-                'amount' => (int) $addOn->price,
-                'currency' => $addOn->currency,
-                'price' => number_format($addOn->price, 0, ',', ' ').' '.$addOn->currency,
-            ])
-            : $venue->ownerProfile
-                ?->moduleTemplates()
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($module) => [
-                    'id' => $module->id,
-                    'source' => 'owner_module_template',
-                    'name' => $module->name,
-                    'amount' => (int) $module->price,
-                    'currency' => $module->currency,
-                    'price' => number_format($module->price, 0, ',', ' ').' '.$module->currency,
-                ]);
-
-        return view('venues.reservation', [
-            'venue' => $venue,
-            'depositAmount' => $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price),
-            'publicEventProviders' => $publicEventProviders,
-            'suggestedEventServices' => $publicEventServices,
-            'reservationAddOns' => ($reservationAddOns ?? collect())->values()->all(),
-        ]);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function fallbackVenue(string $slug): array
-    {
-        $venues = [
-            'auditorium-premium-avec-scene-et-regie' => [
-                'title' => 'Auditorium premium avec scene et regie',
-                'category' => 'Salle de spectacle',
-                'city' => 'Abidjan',
-                'district' => 'Plateau',
-                'capacity' => '80-450 invites',
-                'surface' => '650 m2',
-                'price' => '350 000 XOF',
-                'reservation' => '100 000 XOF',
-                'rating' => '4.9',
-                'reviews' => 38,
-                'description' => 'Un auditorium central pense pour conferences, lancements de produits, concerts intimistes et ceremonies premium.',
-                'images' => [
-                    'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1400&q=85',
-                    'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=85',
-                    'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=85',
-                ],
-            ],
-            'salle-de-reception-lumineuse-pour-mariage' => [
-                'title' => 'Salle de reception lumineuse pour mariage',
-                'category' => 'Salle de mariage',
-                'city' => 'Abidjan',
-                'district' => 'Cocody',
-                'capacity' => '120-700 invites',
-                'surface' => '1 100 m2',
-                'price' => '500 000 XOF',
-                'reservation' => '150 000 XOF',
-                'rating' => '5.0',
-                'reviews' => 52,
-                'description' => 'Une grande salle lumineuse avec terrasse, parking et espace traiteur pour receptions, mariages et grands diners.',
-                'images' => [
-                    'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1400&q=85',
-                    'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=900&q=85',
-                    'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=900&q=85',
-                ],
-            ],
-            'conference-room-equipee-avec-terrasse' => [
-                'title' => 'Conference room equipee avec terrasse',
-                'category' => 'Salle de conference',
-                'city' => 'Dakar',
-                'district' => 'Almadies',
-                'capacity' => '12-90 invites',
-                'surface' => '240 m2',
-                'price' => '85 000 XOF',
-                'reservation' => '35 000 XOF',
-                'rating' => '4.8',
-                'reviews' => 24,
-                'description' => 'Un espace professionnel lumineux avec terrasse, Wi-Fi haut debit, mobilier modulable et equipements de presentation.',
-                'images' => [
-                    'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=85',
-                    'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=900&q=85',
-                    'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=85',
-                ],
-            ],
-            'jardin-evenementiel-privatisable' => [
-                'title' => 'Jardin evenementiel privatisable',
-                'category' => 'Jardin evenementiel',
-                'city' => 'Cotonou',
-                'district' => 'Fidjrosse',
-                'capacity' => '60-400 invites',
-                'surface' => '1 500 m2',
-                'price' => '220 000 XOF',
-                'reservation' => '80 000 XOF',
-                'rating' => '4.9',
-                'reviews' => 31,
-                'description' => 'Un jardin privatisable pour receptions, cocktails, ceremonies en plein air et evenements de marque.',
-                'images' => [
-                    'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1400&q=85',
-                    'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=900&q=85',
-                    'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85',
-                ],
-            ],
-        ];
-
-        return $venues[$slug] ?? $venues['auditorium-premium-avec-scene-et-regie'];
-    }
-
-    /**
-     * @return array<int, array<string, string>>
-     */
-    private function fallbackSimilarVenues(string $currentSlug): array
-    {
-        return collect([
-            [
-                'title' => 'Auditorium premium avec scene et regie',
-                'slug' => 'auditorium-premium-avec-scene-et-regie',
-                'city' => 'Abidjan, Plateau',
-                'capacity' => '80-450 invites',
-                'price' => 'A partir de 350 000 XOF',
-                'image' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=900&q=85',
-            ],
-            [
-                'title' => 'Salle de reception lumineuse pour mariage',
-                'slug' => 'salle-de-reception-lumineuse-pour-mariage',
-                'city' => 'Abidjan, Cocody',
-                'capacity' => '120-700 invites',
-                'price' => 'A partir de 500 000 XOF',
-                'image' => 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85',
-            ],
-            [
-                'title' => 'Conference room equipee avec terrasse',
-                'slug' => 'conference-room-equipee-avec-terrasse',
-                'city' => 'Dakar, Almadies',
-                'capacity' => '12-90 invites',
-                'price' => 'A partir de 85 000 XOF',
-                'image' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=85',
-            ],
-            [
-                'title' => 'Jardin evenementiel privatisable',
-                'slug' => 'jardin-evenementiel-privatisable',
-                'city' => 'Cotonou, Fidjrosse',
-                'capacity' => '60-400 invites',
-                'price' => 'A partir de 220 000 XOF',
-                'image' => 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=900&q=85',
-            ],
-        ])
-            ->reject(fn (array $venue): bool => $venue['slug'] === $currentSlug)
-            ->take(3)
-            ->values()
-            ->all();
+        try {
+            return CarbonImmutable::createFromFormat('!Y-m-d', $value) ?: null;
+        } catch (Throwable) {
+            return null;
+        }
     }
 }

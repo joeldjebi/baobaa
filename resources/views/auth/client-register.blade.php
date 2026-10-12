@@ -52,6 +52,7 @@
                         <span class="mb-2 block text-sm font-semibold text-[#17233f]">Confirmer le mot de passe</span>
                         <input name="password_confirmation" type="password" required autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
                     </label>
+                    <x-forms.terms-acceptance />
                     <button class="h-12 w-full rounded-xl bg-[#0d47a1] px-5 text-sm font-semibold text-white shadow-lg shadow-[#0d47a1]/24 transition hover:-translate-y-0.5 hover:bg-[#0b3b86]">Créer mon compte client</button>
                     <p class="text-center text-sm font-semibold text-[#5d6d89]">Déjà inscrit ? <a href="{{ route('portal.login', ['portal' => 'client']) }}" class="font-extrabold text-[#0d47a1] hover:underline">Se connecter</a></p>
                 </form>

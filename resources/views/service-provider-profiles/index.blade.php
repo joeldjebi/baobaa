@@ -1,35 +1,19 @@
 @php
-    $providerCards = $profiles->isNotEmpty()
-        ? $profiles->map(fn ($profile) => [
-            'name' => $profile->business_name,
-            'public_uuid' => $profile->public_uuid,
-            'logo_url' => $profile->logo_url,
-            'logo_alt_text' => $profile->logo_alt_text,
-            'city' => $profile->city,
-            'district' => $profile->district,
-            'country' => $profile->country_code,
-            'service_area' => $profile->service_area,
-            'description' => $profile->description,
-            'services_count' => $profile->published_services_count,
-            'starting_price' => $profile->services->min('starting_price'),
-            'currency' => $profile->services->first()?->currency ?? 'XOF',
-            'services' => $profile->services,
-        ])->values()
-        : collect($fallbackProfiles)->map(fn ($profile) => [
-            'name' => $profile['name'],
-            'public_uuid' => $profile['public_uuid'],
-            'logo_url' => null,
-            'logo_alt_text' => $profile['name'],
-            'city' => $profile['city'],
-            'district' => $profile['district'],
-            'country' => $profile['country'],
-            'service_area' => $profile['city'].' et communes proches',
-            'description' => $profile['description'],
-            'services_count' => $profile['services_count'],
-            'starting_price' => $profile['starting_price'],
-            'currency' => 'XOF',
-            'services' => collect(),
-        ]);
+    $providerCards = $profiles->map(fn ($profile) => [
+        'name' => $profile->business_name,
+        'public_uuid' => $profile->public_uuid,
+        'logo_url' => $profile->logo_url,
+        'logo_alt_text' => $profile->logo_alt_text,
+        'city' => $profile->city,
+        'district' => $profile->district,
+        'country' => $profile->country_code,
+        'service_area' => $profile->service_area,
+        'description' => $profile->description,
+        'services_count' => $profile->published_services_count,
+        'starting_price' => $profile->services->min('starting_price'),
+        'currency' => $profile->services->first()?->currency ?? 'XOF',
+        'services' => $profile->services,
+    ])->values();
     $hasFilters = filled($filters['q'] ?? null) || filled($filters['city'] ?? null) || filled($filters['type_id'] ?? null);
 @endphp
 
@@ -48,6 +32,7 @@
                         <a href="{{ route('service-provider.register') }}" class="hidden rounded-full bg-[#151821] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#151821]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] lg:inline-flex">Rejoindre BAOBAA</a>
                     @endguest
                     <x-navigation.account-menu />
+                    <x-navigation.mobile-menu active="event-services" />
                 </div>
             </div>
         </header>
@@ -66,12 +51,12 @@
 
                             <div class="mt-7 grid gap-3 sm:grid-cols-3">
                                 <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
-                                    <p class="text-2xl font-extrabold text-[#151821]">{{ $providerCards->count() }}+</p>
-                                    <p class="mt-1 text-xs font-bold text-[#6f7890]">équipes actives</p>
+                                    <p class="text-2xl font-extrabold text-[#151821]">{{ number_format($providersCount, 0, ',', ' ') }}</p>
+                                    <p class="mt-1 text-xs font-bold text-[#6f7890]">prestataire{{ $providersCount > 1 ? 's' : '' }} vérifié{{ $providersCount > 1 ? 's' : '' }}</p>
                                 </div>
                                 <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
-                                    <p class="text-2xl font-extrabold text-[#151821]">{{ $providerCards->sum('services_count') }}+</p>
-                                    <p class="mt-1 text-xs font-bold text-[#6f7890]">services disponibles</p>
+                                    <p class="text-2xl font-extrabold text-[#151821]">{{ number_format($publishedServicesCount, 0, ',', ' ') }}</p>
+                                    <p class="mt-1 text-xs font-bold text-[#6f7890]">service{{ $publishedServicesCount > 1 ? 's' : '' }} disponible{{ $publishedServicesCount > 1 ? 's' : '' }}</p>
                                 </div>
                                 <div class="rounded-2xl bg-[#07162f] p-4 shadow-lg shadow-[#07162f]/14">
                                     <p class="text-2xl font-extrabold text-white">Sur mesure</p>
@@ -135,7 +120,7 @@
 
                 <div class="mt-8 flex flex-col gap-3 rounded-[24px] border border-white bg-white/70 p-4 shadow-sm ring-1 ring-[#dce6f7] backdrop-blur md:flex-row md:items-center md:justify-between">
                     <div>
-                        <p class="text-sm font-extrabold text-[#151821]">{{ method_exists($profiles, 'total') ? number_format($profiles->total(), 0, ',', ' ') : $providerCards->count() }} prestataire(s) disponible(s)</p>
+                        <p class="text-sm font-extrabold text-[#151821]">{{ number_format($profiles->total(), 0, ',', ' ') }} prestataire{{ $profiles->total() > 1 ? 's' : '' }} {{ $hasFilters ? 'correspondant'.($profiles->total() > 1 ? 's' : '').' à votre recherche' : 'disponible'.($profiles->total() > 1 ? 's' : '') }}</p>
                         <p class="mt-1 text-xs font-bold text-[#6f7890]">Une sélection organisée pour comparer vite les équipes et leurs prestations.</p>
                     </div>
                     @if ($hasFilters)
@@ -145,6 +130,9 @@
                             @endif
                             @if (filled($filters['city'] ?? null))
                                 <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">Ville : {{ $filters['city'] }}</span>
+                            @endif
+                            @if (filled($filters['type_id'] ?? null) && ($selectedServiceType = $serviceTypes->firstWhere('id', $filters['type_id'])))
+                                <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">Service : {{ $selectedServiceType->name }}</span>
                             @endif
                         </div>
                     @endif
@@ -166,13 +154,13 @@
                                     <span class="mb-2 rounded-full bg-[#ecfdf5] px-3 py-1 text-xs font-extrabold text-[#047857]">Vérifié</span>
                                 </div>
                                 <h2 class="mt-4 line-clamp-1 text-xl font-extrabold tracking-[-0.035em] text-[#151821]">{{ $profile['name'] }}</h2>
-                                <p class="mt-1 text-sm font-bold text-[#6f7890]">{{ $profile['district'] ? $profile['district'].', ' : '' }}{{ $profile['city'] }} · {{ $profile['country'] }}</p>
+                                <p class="mt-1 text-sm font-bold text-[#6f7890]">{{ collect([$profile['district'], $profile['city'], $profile['country']])->filter()->implode(', ') }}</p>
                                 <p class="mt-3 line-clamp-2 text-sm font-semibold leading-6 text-[#52617b]">{{ $profile['description'] ?: 'Une équipe événementielle disponible pour accompagner votre projet.' }}</p>
                                 <div class="mt-4 flex flex-wrap gap-2">
                                     @forelse ($profile['services']->take(2) as $service)
                                         <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $service->type?->name ?? $service->name }}</span>
                                     @empty
-                                        <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $profile['services_count'] }} services</span>
+                                        <span class="rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $profile['services_count'] }} service{{ $profile['services_count'] > 1 ? 's' : '' }}</span>
                                     @endforelse
                                 </div>
                                 <div class="mt-5 flex items-center justify-between border-t border-[#edf2fb] pt-4">
@@ -192,13 +180,15 @@
                     </div>
                 @endif
 
-                @if (method_exists($profiles, 'links') && $profiles->isNotEmpty())
+                @if ($profiles->hasPages())
                     <div class="mt-8">
                         {{ $profiles->links() }}
                     </div>
                 @endif
             </div>
         </section>
+
+        <x-navigation.public-footer />
 
         <script>
             (() => {

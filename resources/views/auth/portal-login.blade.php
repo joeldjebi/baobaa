@@ -14,23 +14,23 @@
             </div>
 
             <div class="relative z-10 max-w-2xl py-14 lg:py-0">
-                <p class="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-[#7dd3fc]">Acces securise</p>
+                <p class="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-[#7dd3fc]">Accès sécurisé</p>
                 <h1 class="max-w-xl text-4xl font-semibold leading-tight sm:text-6xl">{{ $meta['title'] }}</h1>
                 <p class="mt-5 max-w-lg text-base leading-7 text-white/72">{{ $meta['subtitle'] }}</p>
             </div>
 
             <div class="relative z-10 grid max-w-xl gap-3 sm:grid-cols-3">
                 <div class="border border-white/12 bg-white/8 p-4 backdrop-blur">
-                    <p class="text-sm font-semibold">Session protegee</p>
-                    <p class="mt-1 text-xs text-white/58">CSRF et regeneration</p>
+                    <p class="text-sm font-semibold">Connexion protégée</p>
+                    <p class="mt-1 text-xs text-white/58">Vos données restent privées</p>
                 </div>
                 <div class="border border-white/12 bg-white/8 p-4 backdrop-blur">
-                    <p class="text-sm font-semibold">Role dedie</p>
-                    <p class="mt-1 text-xs text-white/58">Portail isole</p>
+                    <p class="text-sm font-semibold">Espace dédié</p>
+                    <p class="mt-1 text-xs text-white/58">Selon votre profil</p>
                 </div>
                 <div class="border border-white/12 bg-white/8 p-4 backdrop-blur">
-                    <p class="text-sm font-semibold">Limite active</p>
-                    <p class="mt-1 text-xs text-white/58">Anti brute-force</p>
+                    <p class="text-sm font-semibold">Compte surveillé</p>
+                    <p class="mt-1 text-xs text-white/58">Protection contre les abus</p>
                 </div>
             </div>
         </section>
@@ -40,7 +40,7 @@
                 <div class="mb-8">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#0d47a1]">{{ $meta['label'] }}</p>
                     <h2 class="mt-3 text-4xl font-semibold text-[#081225]">Connexion</h2>
-                    <p class="mt-3 text-sm leading-6 text-[#5d6d89]">Utilise uniquement le compte associe a ce portail BAOBAA.</p>
+                    <p class="mt-3 text-sm leading-6 text-[#5d6d89]">Utilisez le compte associé à cet espace BAOBAA.</p>
                 </div>
 
                 <form method="POST" action="{{ route('portal.login.store', ['portal' => $portal]) }}" class="space-y-5 rounded-2xl bg-white p-6 shadow-xl shadow-[#0d47a1]/8 ring-1 ring-[#dce6f7]">

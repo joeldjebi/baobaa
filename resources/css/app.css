@@ -143,3 +143,50 @@
         }
     }
 }
+
+@layer components {
+    .baobaa-prose {
+        color: #4d5872;
+        font-size: 0.95rem;
+        font-weight: 500;
+        line-height: 1.8;
+    }
+
+    .baobaa-prose h2 {
+        margin-top: 2rem;
+        color: #151821;
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .baobaa-prose h2:first-child {
+        margin-top: 0;
+    }
+
+    .baobaa-prose p,
+    .baobaa-prose ul {
+        margin-top: 0.75rem;
+    }
+
+    .baobaa-prose ul {
+        list-style: disc;
+        padding-left: 1.25rem;
+    }
+
+    .baobaa-prose li + li {
+        margin-top: 0.35rem;
+    }
+
+    .baobaa-prose a {
+        color: #2f6bff;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .baobaa-prose strong {
+        color: #151821;
+        font-weight: 800;
+    }
+}

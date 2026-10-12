@@ -55,7 +55,7 @@ class PortalAuthenticatedSessionController extends Controller
             $request->hitRateLimiter();
 
             throw ValidationException::withMessages([
-                'email' => 'Ce compte ne correspond pas a ce portail BAOBAA.',
+                'email' => 'Ce compte ne correspond pas à cet espace BAOBAA.',
             ]);
         }
 
@@ -126,29 +126,29 @@ class PortalAuthenticatedSessionController extends Controller
     {
         return match ($role) {
             UserRole::Sap => [
-                'label' => 'Portail SAP',
-                'title' => 'Pilote la plateforme BAOBAA',
-                'subtitle' => 'Commissions, validations, abonnements et securite depuis un espace central.',
+                'label' => 'Administration BAOBAA',
+                'title' => 'Pilotez la plateforme BAOBAA',
+                'subtitle' => 'Commissions, validations, abonnements et sécurité depuis un espace central.',
             ],
             UserRole::Owner => [
-                'label' => 'Portail proprietaire',
-                'title' => 'Publie et gere tes espaces',
-                'subtitle' => 'Suis tes salles, disponibilites, demandes, paiements et reversements.',
+                'label' => 'Espace propriétaire',
+                'title' => 'Publiez et gérez vos espaces',
+                'subtitle' => 'Suivez vos salles, disponibilités, demandes, paiements et reversements.',
             ],
             UserRole::ServiceProvider => [
-                'label' => 'Portail prestataire',
-                'title' => 'Pilote tes services événementiels',
-                'subtitle' => 'Publie tes offres, gere les demandes et développe ta visibilité sur BAOBAA.',
+                'label' => 'Espace prestataire',
+                'title' => 'Gérez vos services événementiels',
+                'subtitle' => 'Publiez vos offres, gérez les demandes et développez votre visibilité sur BAOBAA.',
             ],
             UserRole::Client => [
-                'label' => 'Portail client',
-                'title' => 'Reserve le bon espace',
-                'subtitle' => 'Retrouve tes reservations, paiements, favoris et evenements a venir.',
+                'label' => 'Espace client',
+                'title' => 'Réservez le bon espace',
+                'subtitle' => 'Retrouvez vos réservations, paiements et événements à venir.',
             ],
             UserRole::Admin => [
-                'label' => 'Portail admin',
-                'title' => 'Administre BAOBAA',
-                'subtitle' => 'Valide, modere et accompagne les utilisateurs de la plateforme.',
+                'label' => 'Administration',
+                'title' => 'Administrez BAOBAA',
+                'subtitle' => 'Validez, modérez et accompagnez les utilisateurs de la plateforme.',
             ],
         };
     }

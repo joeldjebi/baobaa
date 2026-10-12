@@ -63,6 +63,7 @@ class BookingController extends Controller
                 Rule::exists('event_services', 'id')->where('status', VenueStatus::Published->value),
             ],
             'ticketing_requested' => ['nullable', 'boolean'],
+            'accept_terms' => ['accepted'],
         ]);
 
         $venue->loadMissing('ownerProfile.depositRules');

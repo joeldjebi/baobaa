@@ -5,6 +5,9 @@ namespace App\Models;
 use App\Enums\VenueStatus;
 use App\Enums\VerificationStatus;
 use Database\Factories\VenueFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -133,9 +136,70 @@ class Venue extends Model
         return $this->hasMany(VenueReview::class);
     }
 
+    public function approvedReviews(): HasMany
+    {
+        return $this->hasMany(VenueReview::class)->where('status', 'approved');
+    }
+
     public function sponsorshipCampaigns(): HasMany
     {
         return $this->hasMany(SponsorshipCampaign::class);
+    }
+
+    /**
+     * Limit the query to venues visible on the public catalog.
+     */
+    public function scopePublished(Builder $query): void
+    {
+        $query->where('status', VenueStatus::Published);
+    }
+
+    /**
+     * Load the public rating computed only from approved client reviews.
+     */
+    public function scopeWithPublicRating(Builder $query): void
+    {
+        $query->withCount(['approvedReviews as public_reviews_count'])
+            ->withAvg('approvedReviews as public_rating', 'rating');
+    }
+
+    /**
+     * Public images ordered with the primary image first, excluding videos and rejected media.
+     *
+     * @return Collection<int, VenueMedia>
+     */
+    public function publicImages(): Collection
+    {
+        return $this->media
+            ->where('type', 'image')
+            ->reject(fn (VenueMedia $media): bool => $media->moderation_status === 'rejected')
+            ->sortBy([
+                fn (VenueMedia $first, VenueMedia $second): int => (int) $second->is_primary <=> (int) $first->is_primary,
+                fn (VenueMedia $first, VenueMedia $second): int => $first->sort_order <=> $second->sort_order,
+            ])
+            ->values();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function publicImageUrls(): array
+    {
+        return $this->publicImages()
+            ->map(fn (VenueMedia $media): string => $media->signed_url)
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    protected function coverImageUrl(): Attribute
+    {
+        return Attribute::get(fn (): string => $this->publicImages()->first()?->signed_url ?? self::placeholderImageUrl());
+    }
+
+    public static function placeholderImageUrl(): string
+    {
+        return asset('images/venue-placeholder.svg');
     }
 
     public function availabilityHolds(): MorphMany

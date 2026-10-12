@@ -26,8 +26,8 @@
         'district' => $venue->district,
         'guests' => $venue->min_capacity.'-'.$venue->max_capacity.' invités',
         'price' => 'dès '.number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency,
-        'image' => $venue->media->sortBy('sort_order')->first()?->signed_url
-            ?? 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=80',
+        'image' => $venue->cover_image_url,
+        'verified' => $venue->verification_status === \App\Enums\VerificationStatus::Verified,
     ])->values();
 
     $popularListings = $mapVenueCards($featuredVenues);
@@ -74,12 +74,10 @@
 
                 <div class="flex items-center gap-2">
                     @guest
-                        <a href="{{ route('owner.register') }}" class="hidden rounded-full bg-[#17191f] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#17191f]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] md:inline-flex">Devenir partenaire</a>
+                        <a href="{{ route('venues.list-venue') }}" class="hidden rounded-full bg-[#17191f] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#17191f]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] md:inline-flex">Devenir partenaire</a>
                     @endguest
                     <x-navigation.account-menu class="bg-white/82 text-[#17191f] ring-white/80 backdrop-blur" />
-                    <a href="#" aria-label="Panier" class="grid size-11 place-items-center rounded-full bg-white/82 text-[#17191f] shadow-sm ring-1 ring-white/80 backdrop-blur transition hover:bg-white">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-2 9H8L6 3H3"/><circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
-                    </a>
+                    <x-navigation.mobile-menu active="explore" />
                 </div>
             </header>
 
@@ -111,11 +109,11 @@
                 <div class="animate-baobaa-fade-up relative inline-flex max-w-full items-center gap-2 overflow-hidden rounded-full border border-white/80 bg-white/86 px-4 py-2 text-xs font-extrabold text-[#2f6bff] shadow-[0_10px_30px_rgba(25,64,150,.12)] ring-1 ring-[#cfdaf5] backdrop-blur sm:text-sm">
                     <span class="animate-baobaa-shimmer absolute inset-y-0 w-16 -skew-x-12 bg-white/70"></span>
                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                    <span>2 000+ espaces vérifiés</span>
+                    <span>{{ number_format($publishedVenuesCount, 0, ',', ' ') }} espace{{ $publishedVenuesCount > 1 ? 's' : '' }} disponible{{ $publishedVenuesCount > 1 ? 's' : '' }}</span>
                     <span class="text-[#9eb4ed]">&middot;</span>
-                    <span>40+ villes servies</span>
+                    <span>{{ $publishedCitiesCount }} ville{{ $publishedCitiesCount > 1 ? 's' : '' }}</span>
                     <span class="text-[#9eb4ed]">&middot;</span>
-                    <span>5.0 ★</span>
+                    <span>Partenaires vérifiés</span>
                 </div>
 
                 <h1 class="animate-baobaa-fade-up mt-5 max-w-[920px] text-[36px] font-extrabold leading-[1.02] tracking-[-0.05em] text-[#202027] sm:text-[58px] lg:text-[72px]" style="animation-delay: .08s">
@@ -132,8 +130,8 @@
                 </p>
 
                 <div class="animate-baobaa-fade-up mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-extrabold text-[#506079]" style="animation-delay: .2s">
-                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Devis instantané</span>
-                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Acompte protégé</span>
+                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Proforma claire</span>
+                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Acompte sécurisé</span>
                     <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Partenaires vérifiés</span>
                 </div>
 
@@ -155,11 +153,11 @@
                                 <div class="grid gap-3 sm:grid-cols-2">
                                     <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
                                         <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date début</span>
-                                        <input type="date" name="start_date" data-start-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
+                                        <input type="date" name="start_date" min="{{ now()->toDateString() }}" data-start-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
                                     </label>
                                     <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
                                         <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date fin</span>
-                                        <input type="date" name="end_date" data-end-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
+                                        <input type="date" name="end_date" min="{{ now()->toDateString() }}" data-end-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
                                     </label>
                                 </div>
                                 <button type="button" data-date-apply class="mt-3 w-full rounded-full bg-[#2f6bff] px-4 py-2.5 text-sm font-extrabold text-white">Valider les dates</button>
@@ -322,39 +320,7 @@
             @endforeach
         </section>
 
-        <footer class="border-t border-white/80 bg-[#07152f] px-5 py-10 text-white sm:px-8">
-            <div class="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_auto_auto]">
-                <div>
-                    <a href="{{ url('/') }}" class="inline-flex items-center gap-3 text-white">
-                        <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
-                    </a>
-                    <p class="mt-5 max-w-xl text-sm font-semibold leading-7 text-white/62">Réservez des salles, jardins, rooftops, auditoriums et espaces professionnels vérifiés en Afrique francophone.</p>
-                </div>
-
-                <div>
-                    <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#8dc1ff]">Explorer</p>
-                    <div class="mt-4 grid gap-2 text-sm font-bold text-white/70">
-                        <a href="{{ route('venues.index') }}" class="hover:text-white">Espaces</a>
-                        <a href="{{ route('owner-profiles.index') }}" class="hover:text-white">Partenaires</a>
-                        <a href="{{ route('owner.register') }}" class="hover:text-white">Devenir partenaire</a>
-                    </div>
-                </div>
-
-                <div>
-                    <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#8dc1ff]">Accès</p>
-                    <div class="mt-4 grid gap-2 text-sm font-bold text-white/70">
-                        <a href="{{ route('portal.login', ['portal' => 'client']) }}" class="hover:text-white">Connexion client</a>
-                        <a href="{{ route('client.register') }}" class="hover:text-white">Créer un compte</a>
-                        <a href="{{ route('owner.register') }}" class="hover:text-white">Publier un espace</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mx-auto mt-8 flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5 text-xs font-semibold text-white/45">
-                <p>© {{ now()->year }} BAOBAA. Tous droits réservés.</p>
-                <p>Réservation sécurisée · Partenaires vérifiés · Expérience premium</p>
-            </div>
-        </footer>
+        <x-navigation.public-footer />
     </main>
 
     <script>
@@ -511,20 +477,31 @@
                 cityList.classList.remove('hidden');
             };
 
+            const formatDate = (value) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                .format(new Date(`${value}T00:00:00`));
+
             const updateDateLabel = () => {
                 if (!dateToggle) {
                     return;
                 }
 
+                if (endDate && startDate?.value) {
+                    endDate.min = startDate.value;
+
+                    if (endDate.value && endDate.value < startDate.value) {
+                        endDate.value = startDate.value;
+                    }
+                }
+
                 if (startDate?.value && endDate?.value) {
-                    dateToggle.textContent = `${startDate.value} - ${endDate.value}`;
+                    dateToggle.textContent = `${formatDate(startDate.value)} - ${formatDate(endDate.value)}`;
                     dateToggle.classList.remove('text-[#8a8c93]');
                     dateToggle.classList.add('text-[#25262b]');
                     return;
                 }
 
                 if (startDate?.value) {
-                    dateToggle.textContent = `Dès ${startDate.value}`;
+                    dateToggle.textContent = `Le ${formatDate(startDate.value)}`;
                     dateToggle.classList.remove('text-[#8a8c93]');
                     dateToggle.classList.add('text-[#25262b]');
                     return;

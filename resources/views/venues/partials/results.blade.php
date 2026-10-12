@@ -10,17 +10,19 @@
     <div class="space-y-4">
         @forelse ($venues as $venue)
             @php
-                $image = $venue->media->sortBy('sort_order')->first()?->signed_url
-                    ?? 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85';
+                $image = $venue->cover_image_url;
+                $publicReviewsCount = (int) $venue->public_reviews_count;
             @endphp
             <a href="{{ route('venues.show', $venue->slug) }}" class="group grid overflow-hidden rounded-[1.5rem] bg-white shadow-sm ring-1 ring-[#dce6f7] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12 md:grid-cols-[220px_1fr] xl:grid-cols-[250px_1fr_190px]">
                 <div class="relative min-h-52 overflow-hidden md:min-h-full">
-                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/baobaa.jpg') }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
-                    <span class="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">Vérifié</span>
+                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                    @if ($venue->verification_status === \App\Enums\VerificationStatus::Verified)
+                        <span class="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">Vérifié</span>
+                    @endif
                     <span class="absolute bottom-4 left-4 rounded-full bg-[#151821]/78 px-3 py-1 text-xs font-extrabold text-white shadow-sm">{{ $venue->category?->name ?? 'Espace événementiel' }}</span>
                 </div>
                 <div class="p-5">
-                    <p class="text-sm font-semibold text-[#6b7b99]">{{ $venue->district }}, {{ $venue->city }}</p>
+                    <p class="text-sm font-semibold text-[#6b7b99]">{{ collect([$venue->district, $venue->city])->filter()->implode(', ') }}</p>
                     <h2 class="mt-2 text-xl font-extrabold leading-7 tracking-[-0.025em] text-[#081225]">{{ $venue->name }}</h2>
                     <p class="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[#6b7b99]">{{ $venue->short_description ?: $venue->description }}</p>
                     <div class="mt-4 flex flex-wrap gap-2">
@@ -28,7 +30,9 @@
                         @if ($venue->surface_area)
                             <span class="rounded-full bg-[#f4f7ff] px-3 py-1 text-xs font-extrabold text-[#4d5872]">{{ $venue->surface_area }} m²</span>
                         @endif
-                        <span class="rounded-full bg-[#edf4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ number_format((float) $venue->average_rating, 1, ',', ' ') }} ★</span>
+                        @if ($publicReviewsCount > 0)
+                            <span class="rounded-full bg-[#edf4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ number_format((float) $venue->public_rating, 1, ',', ' ') }} ★ ({{ $publicReviewsCount }} avis)</span>
+                        @endif
                     </div>
                 </div>
                 <div class="flex border-t border-[#edf2fb] p-5 md:col-span-2 xl:col-span-1 xl:border-l xl:border-t-0">
