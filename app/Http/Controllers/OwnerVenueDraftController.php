@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentMethod;
+use App\Enums\PriceUnit;
 use App\Enums\VenueStatus;
 use App\Models\OwnerProfile;
 use App\Models\Venue;
 use App\Models\VenueCategory;
+use App\Services\LocationOptionsService;
+use App\Services\MediaEmbedService;
 use App\Services\VenueImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +20,11 @@ use Illuminate\Validation\Rule;
 
 class OwnerVenueDraftController extends Controller
 {
-    public function __construct(private readonly VenueImageService $venueImageService) {}
+    public function __construct(
+        private readonly VenueImageService $venueImageService,
+        private readonly MediaEmbedService $mediaEmbedService,
+        private readonly LocationOptionsService $locationOptionsService,
+    ) {}
 
     public function store(Request $request): JsonResponse|RedirectResponse
     {
@@ -98,17 +106,23 @@ class OwnerVenueDraftController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'venue_category_id' => ['required', Rule::exists('venue_categories', 'id')],
+            'country_code' => ['nullable', 'string', 'size:2', ...$this->countryRules()],
             'city' => ['required', 'string', 'max:255'],
             'district' => ['nullable', 'string', 'max:255'],
             'min_capacity' => ['required', 'integer', 'min:1'],
             'max_capacity' => ['required', 'integer', 'gte:min_capacity'],
             'surface_area' => ['nullable', 'integer', 'min:1'],
             'starting_price' => ['required', 'integer', 'min:0'],
+            'price_unit' => ['nullable', Rule::enum(PriceUnit::class)],
+            'minimum_duration_hours' => ['nullable', 'integer', 'min:1', 'max:720'],
             'reservation_amount' => ['nullable', 'integer', 'min:0'],
             'booking_mode' => ['required', Rule::in(['request', 'instant'])],
             'payment_methods' => ['nullable', 'array'],
-            'payment_methods.*' => ['string', Rule::in(['baobaa_checkout', 'wave', 'orange_money', 'mtn_money', 'moov_money', 'bank_transfer'])],
+            'payment_methods.*' => ['string', Rule::enum(PaymentMethod::class)],
         ]);
+
+        $validated['country_code'] = strtoupper($validated['country_code'] ?? $venue->country_code);
+        $validated['price_unit'] = $validated['price_unit'] ?? PriceUnit::Event->value;
 
         $venue->update(Arr::except($validated, ['payment_methods']) + [
             'payment_methods' => array_values(array_unique($validated['payment_methods'] ?? ['baobaa_checkout'])),
@@ -131,12 +145,25 @@ class OwnerVenueDraftController extends Controller
             'media_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
             'media_videos' => ['nullable', 'array', 'max:4'],
             'media_videos.*' => ['file', 'mimes:mp4,mov,webm', 'max:102400'],
+            'video_urls' => ['nullable', 'array', 'max:3'],
+            'video_urls.*' => ['nullable', 'url:https', 'max:500', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (filled($value) && ! $this->mediaEmbedService->videoEmbedUrl($value)) {
+                    $fail('Utilisez un lien YouTube ou Vimeo valide.');
+                }
+            }],
+            'virtual_tour_url' => ['nullable', 'url:https', 'max:500', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (filled($value) && ! $this->mediaEmbedService->virtualTourEmbedUrl($value)) {
+                    $fail('Utilisez un lien de visite 360° Matterport, Kuula, Momento360, CloudPano, Roundme ou Google Maps (lien d’intégration).');
+                }
+            }],
         ]);
 
         $venue->update([
             'short_description' => $validated['short_description'],
             'description' => $validated['description'],
             'highlights' => $this->lines($validated['highlights'] ?? ''),
+            'video_urls' => $this->values($validated['video_urls'] ?? []),
+            'virtual_tour_url' => $validated['virtual_tour_url'] ?? null,
         ]);
 
         $venue->configurations()->delete();
@@ -225,6 +252,10 @@ class OwnerVenueDraftController extends Controller
         $validated = $request->validate([
             'address' => ['nullable', 'string', 'max:255'],
             'location_details' => ['nullable', 'string', 'max:1200'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
+            'opens_at' => ['nullable', 'date_format:H:i', 'required_with:closes_at'],
+            'closes_at' => ['nullable', 'date_format:H:i', 'required_with:opens_at', 'different:opens_at'],
             'available_date' => ['nullable', 'date'],
             'starts_at' => ['nullable', 'date_format:H:i'],
             'ends_at' => ['nullable', 'date_format:H:i'],
@@ -233,6 +264,10 @@ class OwnerVenueDraftController extends Controller
         $venue->update([
             'address' => $validated['address'] ?? null,
             'location_details' => ['public_note' => $validated['location_details'] ?? ''],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'opens_at' => $validated['opens_at'] ?? null,
+            'closes_at' => $validated['closes_at'] ?? null,
         ]);
 
         if (filled($validated['available_date'] ?? null) && filled($validated['starts_at'] ?? null) && filled($validated['ends_at'] ?? null)) {
@@ -293,6 +328,18 @@ class OwnerVenueDraftController extends Controller
                 'sort_order' => $index + 1,
             ]);
         }
+    }
+
+    /**
+     * Restrict countries to the list managed by the SAP when it exists.
+     *
+     * @return array<int, mixed>
+     */
+    private function countryRules(): array
+    {
+        $countryCodes = array_keys($this->locationOptionsService->countries());
+
+        return $countryCodes === [] ? [] : [Rule::in([...$countryCodes, ...array_map('strtolower', $countryCodes)])];
     }
 
     /**

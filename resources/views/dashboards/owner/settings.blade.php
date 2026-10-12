@@ -3,6 +3,46 @@
         <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('settings_status') }}</div>
     @endif
 
+    <section class="mb-6 rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
+        <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Vos conditions BAOBAA</h2>
+        <p class="mt-1 text-sm font-semibold text-[#6f7890]">Commission, acompte et formule appliqués à vos réservations.</p>
+        <div class="mt-4 grid gap-3 md:grid-cols-3">
+            <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Commission</p>
+                <p class="mt-2 text-sm font-extrabold leading-6 text-[#151821]">{{ $partnerConditions['commission'] ?? 'Aucune commission active pour le moment.' }}</p>
+                @if ($activeSubscription?->subscriptionPlan?->reduced_commission_rate)
+                    <p class="mt-1 text-xs font-bold text-[#047857]">Réduite à {{ rtrim(rtrim(number_format((float) $activeSubscription->subscriptionPlan->reduced_commission_rate, 2, ',', ''), '0'), ',') }} % avec votre formule {{ $activeSubscription->subscriptionPlan->name }}.</p>
+                @endif
+            </div>
+            <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Acompte client</p>
+                <p class="mt-2 text-sm font-extrabold leading-6 text-[#151821]">{{ $depositRuleDescription ?? 'Défini par BAOBAA dès la publication de votre premier espace.' }}</p>
+            </div>
+            <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Mode de facturation</p>
+                <p class="mt-2 text-sm font-extrabold leading-6 text-[#151821]">{{ $billingPreferenceLabel }}</p>
+                <p class="mt-1 text-xs font-bold text-[#6f7890]">Formule : {{ $activeSubscription?->subscriptionPlan?->name ?? 'aucune formule active' }}</p>
+            </div>
+        </div>
+        @if (count($partnerConditions['plans']) > 0)
+            <div class="mt-4 overflow-x-auto rounded-2xl border border-[#edf2fb]">
+                <table class="w-full min-w-[560px] text-left text-sm">
+                    <thead class="bg-[#f7faff] text-xs font-extrabold uppercase text-[#7d8aa7]"><tr><th class="px-4 py-3">Formule</th><th class="px-4 py-3">Prix</th><th class="px-4 py-3">Espaces</th><th class="px-4 py-3">Commission</th></tr></thead>
+                    <tbody class="divide-y divide-[#edf2fb]">
+                        @foreach ($partnerConditions['plans'] as $plan)
+                            <tr>
+                                <td class="px-4 py-3 font-extrabold text-[#07152f]">{{ $plan['name'] }}</td>
+                                <td class="px-4 py-3 font-bold text-[#52617b]">{{ $plan['price'] }}</td>
+                                <td class="px-4 py-3 font-bold text-[#52617b]">{{ $plan['venues'] }}</td>
+                                <td class="px-4 py-3 font-bold text-[#52617b]">{{ $plan['commission'] ?? 'Commission standard' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </section>
+
     <form method="POST" action="{{ route('owner.settings.update') }}" enctype="multipart/form-data" class="grid gap-6 xl:grid-cols-[1fr_380px]">
         @csrf
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">

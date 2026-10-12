@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ClientType;
 use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -26,7 +28,17 @@ class ClientProfileController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:32'],
+            'client_type' => ['nullable', Rule::enum(ClientType::class)],
+            'organization_name' => ['nullable', 'string', 'max:255', Rule::requiredIf(fn (): bool => ClientType::tryFrom((string) $request->input('client_type'))?->requiresOrganizationName() ?? false)],
         ]);
+
+        $clientType = ClientType::tryFrom((string) ($validated['client_type'] ?? ''));
+
+        if ($clientType === null) {
+            unset($validated['client_type'], $validated['organization_name']);
+        } elseif (! $clientType->requiresOrganizationName()) {
+            $validated['organization_name'] = null;
+        }
 
         $request->user()->update($validated);
 

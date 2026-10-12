@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\PriceUnit;
 use App\Enums\VenueStatus;
 use App\Enums\VerificationStatus;
+use App\Services\MediaEmbedService;
 use Database\Factories\VenueFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -46,9 +48,15 @@ class Venue extends Model
         'surface_area',
         'currency',
         'starting_price',
+        'price_unit',
+        'minimum_duration_hours',
         'reservation_amount',
         'payment_methods',
         'availability_notes',
+        'opens_at',
+        'closes_at',
+        'video_urls',
+        'virtual_tour_url',
         'average_rating',
         'reviews_count',
         'published_at',
@@ -68,6 +76,8 @@ class Venue extends Model
             'location_details' => 'array',
             'payment_methods' => 'array',
             'availability_notes' => 'array',
+            'price_unit' => PriceUnit::class,
+            'video_urls' => 'array',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'average_rating' => 'decimal:2',
@@ -195,6 +205,74 @@ class Venue extends Model
     protected function coverImageUrl(): Attribute
     {
         return Attribute::get(fn (): string => $this->publicImages()->first()?->signed_url ?? self::placeholderImageUrl());
+    }
+
+    /**
+     * Public starting price with its billing unit, e.g. "350 000 XOF par journée".
+     */
+    public function priceLabel(): string
+    {
+        if (! $this->starting_price) {
+            return 'Prix sur demande';
+        }
+
+        return number_format((int) $this->starting_price, 0, ',', ' ').' '.$this->currency.' '.($this->price_unit ?? PriceUnit::Event)->label();
+    }
+
+    public function minimumDurationLabel(): ?string
+    {
+        if (! $this->minimum_duration_hours) {
+            return null;
+        }
+
+        return 'Location minimum : '.$this->minimum_duration_hours.' h';
+    }
+
+    public function openingHoursLabel(): ?string
+    {
+        if (! $this->opens_at || ! $this->closes_at) {
+            return null;
+        }
+
+        return str_replace(':', ' h ', substr((string) $this->opens_at, 0, 5)).' – '.str_replace(':', ' h ', substr((string) $this->closes_at, 0, 5));
+    }
+
+    /**
+     * OpenStreetMap embed centred on a rounded position (about 1 km) so the exact address stays private.
+     */
+    public function approximateMapEmbedUrl(): ?string
+    {
+        if ($this->latitude === null || $this->longitude === null) {
+            return null;
+        }
+
+        $latitude = round((float) $this->latitude, 2);
+        $longitude = round((float) $this->longitude, 2);
+        $delta = 0.012;
+
+        return 'https://www.openstreetmap.org/export/embed.html?'.http_build_query([
+            'bbox' => implode(',', [$longitude - $delta, $latitude - $delta, $longitude + $delta, $latitude + $delta]),
+            'layer' => 'mapnik',
+        ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function videoEmbedUrls(): array
+    {
+        $mediaEmbedService = app(MediaEmbedService::class);
+
+        return collect($this->video_urls ?? [])
+            ->map(fn (?string $url): ?string => $mediaEmbedService->videoEmbedUrl($url))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function virtualTourEmbedUrl(): ?string
+    {
+        return app(MediaEmbedService::class)->virtualTourEmbedUrl($this->virtual_tour_url);
     }
 
     public static function placeholderImageUrl(): string

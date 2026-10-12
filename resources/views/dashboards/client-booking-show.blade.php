@@ -9,14 +9,7 @@
         'completed' => 'Terminée',
         'disputed' => 'En litige',
     ];
-    $paymentMethods = [
-        'baobaa_checkout' => 'Paiement sécurisé BAOBAA',
-        'wave' => 'Wave',
-        'orange_money' => 'Orange Money',
-        'mtn_money' => 'MTN Money',
-        'bank_transfer' => 'Virement bancaire',
-        'cash' => 'Paiement sur place',
-    ];
+    $paymentMethods = \App\Enums\PaymentMethod::options() + ['cash' => 'Paiement sur place'];
     $canPay = $booking->proformaInvoice?->status?->value === 'confirmed'
         && $booking->payments->contains(fn ($payment) => in_array($payment->status->value, ['initiated', 'pending'], true));
     $selectedPackageAddOns = collect($booking->selected_add_ons ?: []);

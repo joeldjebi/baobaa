@@ -19,7 +19,10 @@ use App\Models\Venue;
 use App\Models\VenueAvailability;
 use App\Models\VenueCategory;
 use App\Models\VenueReview;
+use App\Services\BookingDepositService;
 use App\Services\BookingWorkflowService;
+use App\Services\LocationOptionsService;
+use App\Services\PartnerConditionsService;
 use App\Services\PartnerLogoService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -281,6 +284,9 @@ class DashboardController extends Controller
             'moduleTemplates' => $ownerProfile->moduleTemplates()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(),
             'currentVenue' => $venue,
             'currentStep' => $request->string('step')->toString() ?: 'base',
+            'countryOptions' => app(LocationOptionsService::class)->countries(),
+            'cityOptions' => app(LocationOptionsService::class)->cities(),
+            'districtOptions' => app(LocationOptionsService::class)->districts(),
         ]);
     }
 
@@ -495,7 +501,19 @@ class DashboardController extends Controller
             ...$this->ownerMetrics($ownerProfile),
             'ownerProfile' => $ownerProfile,
             'plans' => SubscriptionPlan::query()->where('is_active', true)->orderBy('sort_order')->get(),
+            'partnerConditions' => app(PartnerConditionsService::class)->summary($ownerProfile),
+            'depositRuleDescription' => $this->depositRuleDescription($ownerProfile),
         ]);
+    }
+
+    /**
+     * Describe the deposit rule applied to the owner's venues, using the first published venue as reference.
+     */
+    private function depositRuleDescription(OwnerProfile $ownerProfile): ?string
+    {
+        $venue = $ownerProfile->venues()->with('ownerProfile.depositRules')->first();
+
+        return $venue ? app(BookingDepositService::class)->describe($venue) : null;
     }
 
     public function updateOwnerSettings(Request $request): RedirectResponse
@@ -555,7 +573,7 @@ class DashboardController extends Controller
             'pendingBookingsCount' => (clone $bookingQuery)->whereIn('status', [BookingStatus::PendingOwner, BookingStatus::PendingPayment])->count(),
             'confirmedBookingsCount' => (clone $bookingQuery)->where('status', BookingStatus::Confirmed)->count(),
             'grossRevenue' => (int) (clone $paidPaymentQuery)->sum('amount'),
-            'averageRating' => (float) Venue::query()->whereIn('id', $venueIds)->avg('average_rating'),
+            'averageRating' => (float) VenueReview::query()->whereIn('venue_id', $venueIds)->where('status', 'approved')->avg('rating'),
             'reviewsCount' => VenueReview::query()->whereIn('venue_id', $venueIds)->count(),
             'activeSubscription' => $ownerProfile->subscriptions()
                 ->with('subscriptionPlan')

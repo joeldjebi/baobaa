@@ -6,10 +6,51 @@
                 <p class="mt-2 text-3xl font-extrabold text-[#07152f]">{{ $availabilities->total() }}</p>
             </div>
             <div class="min-w-0 rounded-2xl bg-[#f7faff] p-4 md:col-span-2">
-                <p class="text-sm font-extrabold text-[#151821]">Gestion avancée</p>
-                <p class="mt-2 text-sm font-semibold leading-6 text-[#6f7890]">La prochaine étape sera d’ajouter les formulaires de création de créneaux, blocages privés et règles récurrentes par espace.</p>
+                <p class="text-sm font-extrabold text-[#151821]">Comment ça marche ?</p>
+                <p class="mt-2 text-sm font-semibold leading-6 text-[#6f7890]">Vos espaces sont réservables par défaut. Bloquez les jours où ils ne sont pas disponibles : ils disparaissent des recherches par date et apparaissent en gris dans le calendrier public. Les réservations confirmées bloquent automatiquement leur date.</p>
             </div>
         </div>
+
+        @if (session('calendar_status'))
+            <div class="mt-5 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('calendar_status') }}</div>
+        @endif
+
+        <x-forms.validation-errors class="mt-5" />
+
+        <form method="POST" action="{{ route('owner.calendar.store') }}" class="mt-5 grid min-w-0 gap-3 rounded-[22px] border border-[#dce6f7] bg-white p-4 md:grid-cols-2 xl:grid-cols-3">
+            @csrf
+            <p class="text-sm font-extrabold text-[#151821] md:col-span-2 xl:col-span-3">Bloquer ou ouvrir une période</p>
+            <label class="min-w-0">
+                <span class="text-xs font-extrabold uppercase text-[#7d8aa7]">Espace</span>
+                <select name="venue_id" required class="mt-1 w-full min-w-0 rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                    @foreach ($calendarVenues as $venue)
+                        <option value="{{ $venue->id }}" @selected((int) old('venue_id', request('venue_id')) === $venue->id)>{{ $venue->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="min-w-0">
+                <span class="text-xs font-extrabold uppercase text-[#7d8aa7]">Action</span>
+                <select name="status" class="mt-1 w-full min-w-0 rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                    <option value="blocked" @selected(old('status', 'blocked') === 'blocked')>Bloquer (indisponible)</option>
+                    <option value="available" @selected(old('status') === 'available')>Ouvrir (disponible)</option>
+                </select>
+            </label>
+            <label class="min-w-0">
+                <span class="text-xs font-extrabold uppercase text-[#7d8aa7]">Motif (privé)</span>
+                <input name="block_reason" value="{{ old('block_reason') }}" placeholder="Travaux, événement privé..." class="mt-1 w-full min-w-0 rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+            </label>
+            <label class="min-w-0">
+                <span class="text-xs font-extrabold uppercase text-[#7d8aa7]">Du</span>
+                <input type="date" name="start_date" required min="{{ now()->toDateString() }}" value="{{ old('start_date') }}" class="mt-1 w-full min-w-0 rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+            </label>
+            <label class="min-w-0">
+                <span class="text-xs font-extrabold uppercase text-[#7d8aa7]">Au (inclus)</span>
+                <input type="date" name="end_date" min="{{ now()->toDateString() }}" value="{{ old('end_date') }}" class="mt-1 w-full min-w-0 rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+            </label>
+            <div class="flex items-end">
+                <button class="w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Enregistrer</button>
+            </div>
+        </form>
 
         <form method="GET" class="mt-5 grid min-w-0 gap-3 rounded-[22px] bg-[#f7faff] p-3 ring-1 ring-[#dce6f7] sm:p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_150px_160px_160px_auto]">
             <select name="venue_id" class="min-w-0 rounded-2xl border border-[#dce6f7] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
@@ -35,7 +76,18 @@
                         <p class="break-words font-extrabold text-[#151821]">{{ $availability->venue?->name }}</p>
                         <p class="mt-1 text-sm font-semibold text-[#6f7890]">{{ $availability->available_date?->format('d/m/Y') }} · {{ substr($availability->starts_at, 0, 5) }} - {{ substr($availability->ends_at, 0, 5) }}</p>
                     </div>
-                    <span class="w-max rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $availability->status === 'available' ? 'Disponible' : 'Bloqué' }}</span>
+                    <div class="flex items-center gap-2">
+                        <span @class([
+                            'w-max rounded-full px-3 py-1 text-xs font-extrabold',
+                            'bg-[#ecfdf5] text-[#047857]' => $availability->status === 'available',
+                            'bg-[#fff6f6] text-[#b42318]' => $availability->status !== 'available',
+                        ])>{{ $availability->status === 'available' ? 'Disponible' : 'Bloqué' }}{{ $availability->block_reason ? ' · '.$availability->block_reason : '' }}</span>
+                        <form method="POST" action="{{ route('owner.calendar.destroy', $availability) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button class="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[#52617b] ring-1 ring-[#dce6f7] hover:text-[#b42318]">Retirer</button>
+                        </form>
+                    </div>
                 </article>
             @empty
                 <p class="rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-5 text-sm font-semibold text-[#6f7890]">Aucune disponibilité à venir.</p>

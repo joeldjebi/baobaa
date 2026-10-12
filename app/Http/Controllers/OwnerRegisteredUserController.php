@@ -8,6 +8,7 @@ use App\Enums\VerificationStatus;
 use App\Models\OwnerProfile;
 use App\Models\PortalAccessRequest;
 use App\Models\User;
+use App\Services\PartnerConditionsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,7 @@ class OwnerRegisteredUserController extends Controller
             'mode' => 'guest',
             'ownerProfile' => null,
             'pendingRequest' => null,
+            'partnerConditions' => app(PartnerConditionsService::class)->summary(),
         ]);
     }
 

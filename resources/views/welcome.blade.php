@@ -25,7 +25,7 @@
         'city' => trim(($venue->district ? $venue->district.', ' : '').$venue->city, ', '),
         'district' => $venue->district,
         'guests' => $venue->min_capacity.'-'.$venue->max_capacity.' invités',
-        'price' => 'dès '.number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency,
+        'price' => 'dès '.number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency.' '.($venue->price_unit ?? \App\Enums\PriceUnit::Event)->label(),
         'image' => $venue->cover_image_url,
         'verified' => $venue->verification_status === \App\Enums\VerificationStatus::Verified,
     ])->values();
@@ -36,7 +36,7 @@
     $districtListings = $mapVenueCards($districtCarouselVenues);
 @endphp
 
-<x-layouts.baobaa title="BAOBAA - Réservez un espace événementiel">
+<x-layouts.baobaa title="BAOBAA - Réservez une salle ou un espace pour votre événement" description="Trouvez et réservez la salle idéale pour votre mariage, séminaire, conférence ou soirée en Afrique francophone. Espaces vérifiés, prix clairs et paiement sécurisé.">
     <style>
         .baobaa-venue-carousel-grid {
             grid-auto-flow: column;

@@ -100,6 +100,7 @@ test('client can register himself', function () {
         'name' => 'Nouveau Client',
         'email' => 'nouveau.client@baobaa.local',
         'phone' => '+2250102030405',
+        'client_type' => 'individual',
         'password' => 'password',
         'password_confirmation' => 'password',
         'accept_terms' => '1',

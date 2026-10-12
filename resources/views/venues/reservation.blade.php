@@ -1,14 +1,7 @@
 @php
     $title = $venue->name;
     $deposit = number_format($depositAmount, 0, ',', ' ').' '.$venue->currency;
-    $paymentMethodLabels = [
-        'baobaa_checkout' => 'Paiement sécurisé BAOBAA',
-        'wave' => 'Wave',
-        'orange_money' => 'Orange Money',
-        'mtn_money' => 'MTN Money',
-        'moov_money' => 'Moov Money',
-        'bank_transfer' => 'Virement bancaire',
-    ];
+    $acceptedPaymentMethods = collect($venue->payment_methods ?: ['baobaa_checkout']);
     $selectedEventServiceIds = collect(old('event_service_ids', []))->map(fn ($id) => (int) $id)->all();
     $selectedAddOnIds = collect(old('selected_add_on_ids', []))->map(fn ($id) => (int) $id)->all();
     $selectedModuleTemplateIds = collect(old('selected_module_template_ids', []))->map(fn ($id) => (int) $id)->all();
@@ -96,6 +89,9 @@
                                 <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure de fin</span>
                                 <input type="time" name="ends_at" value="{{ old('ends_at') }}" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
                             </label>
+                            @if ($venue->openingHoursLabel())
+                                <p class="text-xs font-semibold text-[#6f7890] md:col-span-2">Cet espace accueille les événements de {{ $venue->openingHoursLabel() }}.</p>
+                            @endif
                             <label class="block md:col-span-2">
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Type d’événement</span>
                                 <select name="event_type" class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
@@ -112,8 +108,8 @@
                             <label>
                                 <span class="text-xs font-extrabold uppercase text-[#7d879d]">Paiement de l’acompte</span>
                                 <select name="payment_method" class="mt-2 h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]" required>
-                                    @foreach (($venue->payment_methods ?: ['baobaa_checkout']) as $method)
-                                        <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ $paymentMethodLabels[$method] ?? $method }}</option>
+                                    @foreach ($acceptedPaymentMethods as $method)
+                                        <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ \App\Enums\PaymentMethod::labelFor($method) }}</option>
                                     @endforeach
                                 </select>
                             </label>
@@ -219,13 +215,16 @@
                         <div class="mt-5 rounded-[20px] bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                             <div class="flex justify-between gap-3 text-sm font-extrabold">
                                 <span class="text-[#6f7890]">Prix de base</span>
-                                <span class="text-[#07152f]">{{ number_format($venue->starting_price, 0, ',', ' ') }} {{ $venue->currency }}</span>
+                                <span class="text-right text-[#07152f]">{{ number_format($venue->starting_price, 0, ',', ' ') }} {{ $venue->currency }}<span class="block text-[11px] font-bold text-[#6f7890]">{{ ($venue->price_unit ?? \App\Enums\PriceUnit::Event)->label() }}</span></span>
                             </div>
+                            @if ($venue->minimumDurationLabel())
+                                <p class="mt-1 text-[11px] font-semibold text-[#8a94aa]">{{ $venue->minimumDurationLabel() }}</p>
+                            @endif
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
                                 <span class="text-[#6f7890]">Acompte estimé</span>
                                 <span class="text-[#07152f]">{{ $deposit }}</span>
                             </div>
-                            <p class="mt-1 text-[11px] font-semibold leading-4 text-[#8a94aa]">L’acompte final est recalculé sur la proforma avec les options choisies.</p>
+                            <p class="mt-1 text-[11px] font-semibold leading-4 text-[#8a94aa]">{{ $depositDescription }} Il est recalculé sur la proforma avec les options choisies.</p>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
                                 <span class="text-[#6f7890]">Options sélectionnées</span>
                                 <span id="composer-addons-count" class="text-[#07152f]">0</span>
@@ -239,6 +238,15 @@
                                 <span id="composer-total" class="text-[#07152f]">0 {{ $venue->currency }}</span>
                             </div>
                             <div id="composer-selection" class="mt-4 space-y-2 text-xs font-bold text-[#52617b]"></div>
+                        </div>
+
+                        <div class="mt-4 rounded-[18px] bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                            <p class="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#2f6bff]">Moyens de paiement acceptés</p>
+                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                @foreach ($acceptedPaymentMethods as $method)
+                                    <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-extrabold text-[#52617b] ring-1 ring-[#dce6f7]">{{ \App\Enums\PaymentMethod::labelFor($method) }}</span>
+                                @endforeach
+                            </div>
                         </div>
 
                         <label class="mt-5 flex cursor-pointer items-start gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f4f8ff] p-4 transition hover:border-[#2f6bff]">

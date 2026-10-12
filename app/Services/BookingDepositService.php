@@ -31,6 +31,35 @@ class BookingDepositService
         return min($amount, $totalAmount);
     }
 
+    /**
+     * Plain-language explanation of how the deposit is computed for this venue.
+     */
+    public function describe(Venue $venue): string
+    {
+        $rule = $this->activeRuleFor($venue->ownerProfile);
+        $format = fn (int $amount): string => number_format($amount, 0, ',', ' ').' '.$venue->currency;
+
+        if (! $rule) {
+            return $venue->reservation_amount
+                ? 'Acompte fixe de '.$format((int) $venue->reservation_amount).' pour bloquer la date.'
+                : 'Le montant total est demandé pour bloquer la date.';
+        }
+
+        $description = $rule->deposit_type === 'fixed'
+            ? 'Acompte fixe de '.$format((int) $rule->fixed_amount)
+            : 'Acompte de '.rtrim(rtrim(number_format((float) $rule->percentage_rate, 2, ',', ''), '0'), ',').' % du montant total';
+
+        if ((int) $rule->minimum_amount > 0) {
+            $description .= ', minimum '.$format((int) $rule->minimum_amount);
+        }
+
+        if ($rule->maximum_amount) {
+            $description .= ', plafonné à '.$format((int) $rule->maximum_amount);
+        }
+
+        return $description.'. Le solde est réglé selon la proforma validée.';
+    }
+
     public function activeRuleFor(?OwnerProfile $ownerProfile): ?OwnerDepositRule
     {
         if (! $ownerProfile) {

@@ -7,6 +7,7 @@ use App\Enums\VerificationStatus;
 use App\Models\OwnerProfile;
 use App\Models\PortalAccessRequest;
 use App\Models\ServiceProviderProfile;
+use App\Services\PartnerConditionsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -56,6 +57,7 @@ class PortalAccessController extends Controller
                 ->where('status', 'pending')
                 ->latest()
                 ->first(),
+            'partnerConditions' => app(PartnerConditionsService::class)->summary($request->user()->ownerProfile),
         ]);
     }
 

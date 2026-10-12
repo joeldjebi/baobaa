@@ -9,6 +9,7 @@ use App\Models\PlatformSetting;
 use App\Models\ServiceProviderProfile;
 use App\Services\AvailabilityHoldService;
 use App\Services\EventProjectService;
+use App\Services\LocationOptionsService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,14 +21,15 @@ class EventComposerController extends Controller
     public function __construct(
         private readonly EventProjectService $eventProjectService,
         private readonly AvailabilityHoldService $availabilityHoldService,
+        private readonly LocationOptionsService $locationOptionsService,
     ) {}
 
     public function create(Request $request): View
     {
         $eventTypeOptions = $this->eventTypeOptions();
-        $countryOptions = $this->countryOptions();
-        $cityOptions = $this->cityOptions();
-        $districtOptions = $this->districtOptions();
+        $countryOptions = $this->locationOptionsService->countries();
+        $cityOptions = $this->locationOptionsService->cities();
+        $districtOptions = $this->locationOptionsService->districts();
 
         $providers = ServiceProviderProfile::query()
             ->with(['services' => fn ($query) => $query
@@ -83,7 +85,7 @@ class EventComposerController extends Controller
             'starts_at' => ['nullable', 'date_format:H:i'],
             'ends_at' => ['nullable', 'date_format:H:i'],
             'guests_count' => ['nullable', 'integer', 'min:1', 'max:100000'],
-            'country_code' => ['required', 'string', 'size:2', Rule::in(array_keys($this->countryOptions()))],
+            'country_code' => ['required', 'string', 'size:2', Rule::in(array_keys($this->locationOptionsService->countries()))],
             'city' => [
                 'nullable',
                 'string',
@@ -149,65 +151,6 @@ class EventComposerController extends Controller
             'formation' => 'Formation / Atelier',
             'salon' => 'Salon / Exposition',
         ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function countryOptions(): array
-    {
-        return ManagedLocation::query()
-            ->active()
-            ->countries()
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['name', 'code'])
-            ->filter(fn (ManagedLocation $country): bool => filled($country->code))
-            ->mapWithKeys(fn (ManagedLocation $country): array => [$country->code => $country->name])
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{name: string, country_code: string}>
-     */
-    private function cityOptions(): array
-    {
-        return ManagedLocation::query()
-            ->active()
-            ->cities()
-            ->whereHas('parent', fn (Builder $query) => $query->active()->countries())
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['name', 'country_code'])
-            ->map(fn (ManagedLocation $city): array => [
-                'name' => $city->name,
-                'country_code' => (string) $city->country_code,
-            ])
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{name: string, city: string, country_code: string}>
-     */
-    private function districtOptions(): array
-    {
-        return ManagedLocation::query()
-            ->active()
-            ->districts()
-            ->with('parent:id,name,country_code')
-            ->whereHas('parent', fn (Builder $query) => $query
-                ->active()
-                ->cities()
-                ->whereHas('parent', fn (Builder $query) => $query->active()->countries()))
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['parent_id', 'name', 'country_code'])
-            ->map(fn (ManagedLocation $district): array => [
-                'name' => $district->name,
-                'city' => (string) $district->parent?->name,
-                'country_code' => (string) $district->country_code,
-            ])
-            ->all();
     }
 
     /**

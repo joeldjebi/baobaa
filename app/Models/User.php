@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ClientType;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'phone', 'role', 'portal_roles', 'status', 'email_verified_at', 'password', 'last_login_at', 'terms_accepted_at'])]
+#[Fillable(['name', 'email', 'phone', 'role', 'portal_roles', 'status', 'email_verified_at', 'password', 'last_login_at', 'terms_accepted_at', 'client_type', 'organization_name'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -32,6 +33,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
+            'client_type' => ClientType::class,
             'role' => UserRole::class,
             'portal_roles' => 'array',
             'status' => UserStatus::class,

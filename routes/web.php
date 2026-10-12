@@ -15,6 +15,7 @@ use App\Http\Controllers\OwnerBookingStatusController;
 use App\Http\Controllers\OwnerPayoutController;
 use App\Http\Controllers\OwnerRegisteredUserController;
 use App\Http\Controllers\OwnerSponsorshipController;
+use App\Http\Controllers\OwnerVenueAvailabilityController;
 use App\Http\Controllers\OwnerVenueDraftController;
 use App\Http\Controllers\OwnerVenueMediaController;
 use App\Http\Controllers\OwnerVenueStatusController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\SapPortalRequestController;
 use App\Http\Controllers\ServiceProviderDashboardController;
 use App\Http\Controllers\ServiceProviderRegisteredUserController;
 use App\Http\Controllers\ServiceProviderReservationController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestPaymentController;
 use App\Http\Controllers\VenueReviewController;
 use App\Models\Venue;
@@ -111,6 +113,20 @@ Route::get('/', function () {
 });
 
 Route::redirect('/login', '/client/login')->name('login');
+
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', fn () => response(implode("\n", [
+    'User-agent: *',
+    'Disallow: /client/',
+    'Disallow: /proprietaire/',
+    'Disallow: /prestataire/',
+    'Disallow: /sap/',
+    'Disallow: /portails/',
+    'Allow: /proprietaire/inscription',
+    'Allow: /prestataire/inscription',
+    '',
+    'Sitemap: '.route('sitemap'),
+]), 200, ['Content-Type' => 'text/plain; charset=UTF-8']))->name('robots');
 
 Route::view('/contact', 'pages.contact')->name('pages.contact');
 Route::view('/conditions-generales', 'pages.terms')->name('pages.terms');
@@ -250,6 +266,8 @@ Route::middleware(['auth', 'role:owner'])->group(function (): void {
     Route::post('/proprietaire/sponsorings/{sponsorshipCampaign}/statut', [OwnerSponsorshipController::class, 'updateStatus'])->name('owner.sponsorships.status');
     Route::post('/proprietaire/reservations/{booking}/reversement', [OwnerPayoutController::class, 'store'])->name('owner.payouts.store');
     Route::get('/proprietaire/disponibilites', [DashboardController::class, 'ownerCalendar'])->name('owner.calendar');
+    Route::post('/proprietaire/disponibilites', [OwnerVenueAvailabilityController::class, 'store'])->name('owner.calendar.store');
+    Route::delete('/proprietaire/disponibilites/{venueAvailability}', [OwnerVenueAvailabilityController::class, 'destroy'])->name('owner.calendar.destroy');
     Route::get('/proprietaire/modules', [DashboardController::class, 'ownerAddOns'])->name('owner.addons');
     Route::post('/proprietaire/modules', [DashboardController::class, 'storeOwnerAddOn'])->name('owner.addons.store');
     Route::patch('/proprietaire/modules/{module}', [DashboardController::class, 'updateOwnerModule'])->name('owner.addons.update');

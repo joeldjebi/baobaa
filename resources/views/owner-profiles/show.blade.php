@@ -3,7 +3,7 @@
     $isVerified = $ownerProfile->verification_status->value === 'verified';
 @endphp
 
-<x-layouts.baobaa :title="$publicName.' - BAOBAA'">
+<x-layouts.baobaa :title="$publicName.' - BAOBAA'" :description="'Découvrez les espaces événementiels proposés par '.$publicName.' sur BAOBAA'.($ownerProfile->city ? ' à '.$ownerProfile->city : '').' et réservez en ligne.'" :image="$ownerProfile->logo_url">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
             <div class="mx-auto flex max-w-7xl items-center justify-between">

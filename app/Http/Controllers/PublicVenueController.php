@@ -9,6 +9,7 @@ use App\Models\EventService;
 use App\Models\Venue;
 use App\Models\VenueCategory;
 use App\Services\BookingDepositService;
+use App\Services\LocationOptionsService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -20,11 +21,15 @@ use Throwable;
 
 class PublicVenueController extends Controller
 {
-    public function __construct(private readonly BookingDepositService $bookingDepositService) {}
+    public function __construct(
+        private readonly BookingDepositService $bookingDepositService,
+        private readonly LocationOptionsService $locationOptionsService,
+    ) {}
 
     public function index(Request $request): View
     {
         $calendarRange = $this->calendarRangeFromRequest($request);
+        $requestedHours = $this->requestedHoursFromRequest($request);
 
         $venues = Venue::query()
             ->with(['category', 'media', 'ownerProfile'])
@@ -41,6 +46,7 @@ class PublicVenueController extends Controller
                         ->orWhereHas('category', fn ($query) => $query->where('name', 'like', "%{$search}%"));
                 });
             })
+            ->when($request->filled('country'), fn ($query) => $query->where('country_code', strtoupper($request->string('country')->toString())))
             ->when($request->filled('city'), function ($query) use ($request): void {
                 $city = $request->string('city')->trim()->toString();
 
@@ -55,6 +61,7 @@ class PublicVenueController extends Controller
             ->when($request->filled('min_price'), fn ($query) => $query->where('starting_price', '>=', $request->integer('min_price')))
             ->when($request->filled('max_price'), fn ($query) => $query->where('starting_price', '<=', $request->integer('max_price')))
             ->when($calendarRange !== null, fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, ...$calendarRange))
+            ->when($requestedHours !== null, fn (Builder $query) => $this->applyOpeningHoursFilter($query, ...$requestedHours))
             ->orderByDesc('published_at')
             ->orderBy('name')
             ->paginate(12)
@@ -75,12 +82,22 @@ class PublicVenueController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get(['name', 'slug']),
+            'countries' => $this->publishedCountries(),
             'cities' => Venue::query()
                 ->published()
+                ->when($request->filled('country'), fn ($query) => $query->where('country_code', strtoupper($request->string('country')->toString())))
                 ->select('city')
                 ->distinct()
                 ->orderBy('city')
                 ->pluck('city'),
+            'citiesByCountry' => Venue::query()
+                ->published()
+                ->select(['country_code', 'city'])
+                ->distinct()
+                ->orderBy('city')
+                ->get()
+                ->groupBy('country_code')
+                ->map(fn ($venues) => $venues->pluck('city')->values()),
             'searchSuggestions' => Venue::query()
                 ->published()
                 ->when($calendarRange !== null, fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, ...$calendarRange))
@@ -209,6 +226,7 @@ class PublicVenueController extends Controller
         return view('venues.show', [
             'venue' => $venue,
             'depositAmount' => $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price),
+            'depositDescription' => $this->bookingDepositService->describe($venue),
             'reservationAddOns' => $this->reservationAddOnsFor($venue),
             'similarVenues' => $this->similarVenuesFor($venue),
             'approvedReviews' => $venue->approvedReviews
@@ -251,6 +269,7 @@ class PublicVenueController extends Controller
         return view('venues.reservation', [
             'venue' => $venue,
             'depositAmount' => $this->bookingDepositService->amountFor($venue, (int) $venue->starting_price),
+            'depositDescription' => $this->bookingDepositService->describe($venue),
             'publicEventProviders' => $publicEventProviders,
             'reservationAddOns' => $this->reservationAddOnsFor($venue),
         ]);
@@ -362,6 +381,79 @@ class PublicVenueController extends Controller
                     ->where('starts_at', '<', $rangeEndsAt->endOfDay())
                     ->where('ends_at', '>', $rangeStartsAt->startOfDay());
             });
+    }
+
+    /**
+     * Countries that have at least one published venue, labelled with the SAP-managed names.
+     *
+     * @return array<string, string>
+     */
+    private function publishedCountries(): array
+    {
+        $countryNames = $this->locationOptionsService->countries();
+
+        return Venue::query()
+            ->published()
+            ->select('country_code')
+            ->distinct()
+            ->pluck('country_code')
+            ->filter()
+            ->mapWithKeys(fn (string $code): array => [$code => $countryNames[$code] ?? $code])
+            ->sort()
+            ->all();
+    }
+
+    /**
+     * Keep venues whose opening hours cover the requested event hours. Venues without
+     * declared hours stay visible because the owner confirms them during the request.
+     */
+    private function applyOpeningHoursFilter(Builder $query, string $startsAt, string $endsAt): void
+    {
+        $isOvernightEvent = $endsAt <= $startsAt;
+
+        $query->where(function (Builder $query) use ($startsAt, $endsAt, $isOvernightEvent): void {
+            $query->whereNull('opens_at')
+                ->orWhereNull('closes_at')
+                ->orWhere(function (Builder $query) use ($startsAt, $endsAt, $isOvernightEvent): void {
+                    if ($isOvernightEvent) {
+                        $query->whereColumn('closes_at', '<', 'opens_at')
+                            ->where('opens_at', '<=', $startsAt)
+                            ->where('closes_at', '>=', $endsAt);
+
+                        return;
+                    }
+
+                    $query->where(fn (Builder $query) => $query
+                        ->whereColumn('opens_at', '<=', 'closes_at')
+                        ->where('opens_at', '<=', $startsAt)
+                        ->where('closes_at', '>=', $endsAt))
+                        ->orWhere(fn (Builder $query) => $query
+                            ->whereColumn('closes_at', '<', 'opens_at')
+                            ->where(fn (Builder $query) => $query
+                                ->where(fn (Builder $query) => $query->where('opens_at', '<=', $startsAt))
+                                ->orWhere(fn (Builder $query) => $query->where('closes_at', '>=', $endsAt))));
+                });
+        });
+    }
+
+    /**
+     * @return array{0: string, 1: string}|null
+     */
+    private function requestedHoursFromRequest(Request $request): ?array
+    {
+        $startsAt = $request->input('start_time');
+        $endsAt = $request->input('end_time');
+        $timePattern = '/^([01]\d|2[0-3]):[0-5]\d$/';
+
+        if (! is_string($startsAt) || ! preg_match($timePattern, $startsAt)) {
+            return null;
+        }
+
+        if (! is_string($endsAt) || ! preg_match($timePattern, $endsAt)) {
+            $endsAt = $startsAt;
+        }
+
+        return [$startsAt.':00', $endsAt.':00'];
     }
 
     /**

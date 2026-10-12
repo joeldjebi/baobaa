@@ -1,9 +1,9 @@
 @php
-    $activeFilters = collect(['q', 'city', 'category', 'capacity', 'min_price', 'max_price', 'start_date', 'end_date'])
+    $activeFilters = collect(['q', 'country', 'city', 'category', 'capacity', 'min_price', 'max_price', 'start_date', 'end_date', 'start_time', 'end_time'])
         ->contains(fn (string $filter): bool => request()->filled($filter));
 @endphp
 
-<x-layouts.baobaa title="Tous les espaces - BAOBAA">
+<x-layouts.baobaa title="Salles et espaces événementiels à louer - BAOBAA" description="Comparez les salles de réception, jardins, rooftops et salles de conférence disponibles en Afrique francophone : prix, capacité, disponibilités et réservation en ligne.">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
             <div class="mx-auto flex max-w-7xl items-center justify-between">
@@ -71,8 +71,18 @@
 
                         <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
                             <label class="rounded-xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
+                                <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Pays</span>
+                                <select name="country" data-filter-country class="mt-0.5 w-full bg-transparent text-[13px] font-extrabold text-[#151821] outline-none">
+                                    <option value="">Tous les pays</option>
+                                    @foreach ($countries as $code => $countryName)
+                                        <option value="{{ $code }}" @selected(strtoupper((string) request('country')) === $code)>{{ $countryName }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label class="rounded-xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
                                 <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Ville</span>
-                                <select name="city" class="mt-0.5 w-full bg-transparent text-[13px] font-extrabold text-[#151821] outline-none">
+                                <select name="city" data-filter-city class="mt-0.5 w-full bg-transparent text-[13px] font-extrabold text-[#151821] outline-none">
                                     <option value="">Toutes les villes</option>
                                     @foreach ($cities as $city)
                                         <option value="{{ $city }}" @selected(request('city') === $city)>{{ $city }}</option>
@@ -123,6 +133,23 @@
                             </div>
                         </div>
 
+                        <div class="rounded-xl bg-[#f7faff] p-2.5 ring-1 ring-[#dce6f7]">
+                            <div class="mb-2 flex items-center gap-2 text-[11px] font-extrabold uppercase text-[#8a94aa]">
+                                <svg class="size-4 text-[#2f6bff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                Horaires de l’événement
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label>
+                                    <span class="block text-[11px] font-bold text-[#6f7890]">Début</span>
+                                    <input type="time" name="start_time" value="{{ request('start_time') }}" class="mt-1 w-full rounded-lg border border-[#dce6f7] bg-white px-2.5 py-1.5 text-[13px] font-extrabold text-[#151821] outline-none transition focus:border-[#2f6bff]">
+                                </label>
+                                <label>
+                                    <span class="block text-[11px] font-bold text-[#6f7890]">Fin</span>
+                                    <input type="time" name="end_time" value="{{ request('end_time') }}" class="mt-1 w-full rounded-lg border border-[#dce6f7] bg-white px-2.5 py-1.5 text-[13px] font-extrabold text-[#151821] outline-none transition focus:border-[#2f6bff]">
+                                </label>
+                            </div>
+                        </div>
+
                         <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2f6bff] px-4 py-3 text-[13px] font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">
                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                             Appliquer les filtres
@@ -154,6 +181,25 @@
 
             const input = root.querySelector('[data-autocomplete-input]');
             const list = root.querySelector('[data-autocomplete-list]');
+            const citiesByCountry = @js($citiesByCountry);
+            const countrySelect = form.querySelector('[data-filter-country]');
+            const citySelect = form.querySelector('[data-filter-city]');
+
+            countrySelect?.addEventListener('change', () => {
+                if (!citySelect) {
+                    return;
+                }
+
+                const cities = countrySelect.value
+                    ? (citiesByCountry[countrySelect.value] ?? [])
+                    : [...new Set(Object.values(citiesByCountry).flat())].sort();
+                const currentCity = citySelect.value;
+
+                citySelect.innerHTML = '';
+                citySelect.append(new Option('Toutes les villes', ''));
+                cities.forEach((city) => citySelect.append(new Option(city, city, false, city === currentCity)));
+            });
+
             const filterStartDate = form.querySelector('[data-filter-start-date]');
             const filterEndDate = form.querySelector('[data-filter-end-date]');
 

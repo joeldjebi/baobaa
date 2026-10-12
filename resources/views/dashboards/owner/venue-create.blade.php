@@ -11,14 +11,10 @@
     $currentStep = in_array($currentStep, $stepKeys, true) ? $currentStep : 'base';
     $currentIndex = array_search($currentStep, $stepKeys, true);
     $lineValue = fn ($value) => is_array($value) ? implode("\n", $value) : '';
-    $paymentMethods = [
-        'baobaa_checkout' => 'Paiement sécurisé BAOBAA',
-        'wave' => 'Wave',
-        'orange_money' => 'Orange Money',
-        'mtn_money' => 'MTN Money',
-        'moov_money' => 'Moov Money',
-        'bank_transfer' => 'Virement bancaire',
-    ];
+    $paymentMethods = \App\Enums\PaymentMethod::options();
+    $priceUnits = \App\Enums\PriceUnit::options();
+    $inputClass = 'mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]';
+    $labelClass = 'text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]';
 @endphp
 
 <x-dashboards.owner-shell title="Ajouter un espace" subtitle="Avancez étape par étape : chaque clic sur Continuer garde votre fiche en brouillon." active="venues" :owner-profile="$ownerProfile" :active-venues-count="$activeVenuesCount" :pending-bookings-count="$pendingBookingsCount" :confirmed-bookings-count="$confirmedBookingsCount" :gross-revenue="$grossRevenue" :active-subscription="$activeSubscription" :active-deposit-rule="$activeDepositRule" :billing-preference-label="$billingPreferenceLabel">
@@ -53,9 +49,7 @@
                     <input type="hidden" name="venue_id" value="{{ $currentVenue->id }}">
                 @endif
 
-                @if ($errors->any())
-                    <div class="rounded-2xl border border-[#ffd0d0] bg-[#fff6f6] px-4 py-3 text-sm font-bold text-[#b42318]">Certains champs doivent être complétés avant l’enregistrement.</div>
-                @endif
+                <x-forms.validation-errors />
 
                 @switch($currentStep)
                     @case('base')
@@ -73,12 +67,37 @@
                                 </select>
                             </label>
                             <label>
-                                <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Ville</span>
-                                <input name="city" value="{{ old('city', $currentVenue?->city ?? $ownerProfile->city) }}" placeholder="Abidjan" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                                <span class="{{ $labelClass }}">Pays</span>
+                                @php
+                                    $selectedCountry = old('country_code', $currentVenue?->country_code ?? $ownerProfile->country_code ?? 'CI');
+                                @endphp
+                                @if (count($countryOptions) > 0)
+                                    <select name="country_code" class="{{ $inputClass }}">
+                                        @foreach ($countryOptions as $code => $countryName)
+                                            <option value="{{ $code }}" @selected(strtoupper((string) $selectedCountry) === $code)>{{ $countryName }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <input name="country_code" value="{{ $selectedCountry }}" maxlength="2" class="{{ $inputClass }} uppercase">
+                                @endif
                             </label>
                             <label>
-                                <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Quartier</span>
-                                <input name="district" value="{{ old('district', $currentVenue?->district) }}" placeholder="Cocody, Plateau..." class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
+                                <span class="{{ $labelClass }}">Ville</span>
+                                <input name="city" list="owner-venue-cities" value="{{ old('city', $currentVenue?->city ?? $ownerProfile->city) }}" placeholder="Abidjan" class="{{ $inputClass }}">
+                                <datalist id="owner-venue-cities">
+                                    @foreach ($cityOptions as $cityOption)
+                                        <option value="{{ $cityOption['name'] }}"></option>
+                                    @endforeach
+                                </datalist>
+                            </label>
+                            <label>
+                                <span class="{{ $labelClass }}">Quartier ou commune</span>
+                                <input name="district" list="owner-venue-districts" value="{{ old('district', $currentVenue?->district) }}" placeholder="Cocody, Plateau..." class="{{ $inputClass }}">
+                                <datalist id="owner-venue-districts">
+                                    @foreach ($districtOptions as $districtOption)
+                                        <option value="{{ $districtOption['name'] }}">{{ $districtOption['city'] }}</option>
+                                    @endforeach
+                                </datalist>
                             </label>
                             <label>
                                 <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Réservation</span>
@@ -90,16 +109,28 @@
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Capacité minimale</span><input name="min_capacity" type="number" value="{{ old('min_capacity', $currentVenue?->min_capacity) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Capacité maximale</span><input name="max_capacity" type="number" value="{{ old('max_capacity', $currentVenue?->max_capacity) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Surface en m²</span><input name="surface_area" type="number" value="{{ old('surface_area', $currentVenue?->surface_area) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
-                            <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Prix de départ</span><input name="starting_price" type="number" value="{{ old('starting_price', $currentVenue?->starting_price) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
+                            <label><span class="{{ $labelClass }}">Prix de départ ({{ $currentVenue?->currency ?? 'XOF' }})</span><input name="starting_price" type="number" min="0" value="{{ old('starting_price', $currentVenue?->starting_price) }}" class="{{ $inputClass }}"></label>
+                            <label>
+                                <span class="{{ $labelClass }}">Ce prix s’entend</span>
+                                <select name="price_unit" class="{{ $inputClass }}">
+                                    @foreach ($priceUnits as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('price_unit', $currentVenue?->price_unit?->value ?? 'event') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label>
+                                <span class="{{ $labelClass }}">Durée minimum de location (heures)</span>
+                                <input name="minimum_duration_hours" type="number" min="1" max="720" value="{{ old('minimum_duration_hours', $currentVenue?->minimum_duration_hours) }}" placeholder="Ex : 4" class="{{ $inputClass }}">
+                            </label>
                             <div class="rounded-2xl border border-[#dce6f7] bg-white p-4">
-                                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Acompte client</p>
-                                <p class="mt-2 text-sm font-bold leading-6 text-[#52617b]">Le montant payé avant confirmation est défini par le SAP pour votre compte partenaire.</p>
+                                <p class="{{ $labelClass }}">Acompte client</p>
+                                <p class="mt-2 text-sm font-bold leading-6 text-[#52617b]">{{ $currentVenue ? app(\App\Services\BookingDepositService::class)->describe($currentVenue) : 'Le montant de l’acompte est fixé par BAOBAA pour votre compte partenaire et affiché aux clients avant le paiement.' }}</p>
                             </div>
                             <div class="md:col-span-2 rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                                 <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                                     <div>
                                         <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Moyens de paiement acceptés</span>
-                                        <p class="mt-1 text-xs font-semibold leading-5 text-[#6f7890]">Le SAP définit le montant d’acompte. Ici, vous indiquez les canaux que le client pourra utiliser pour le paiement.</p>
+                                        <p class="mt-1 text-xs font-semibold leading-5 text-[#6f7890]">Indiquez les moyens de paiement que le client pourra utiliser. Ils sont affichés sur votre annonce.</p>
                                     </div>
                                     <span class="rounded-full bg-white px-3 py-1 text-[11px] font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">Par espace</span>
                                 </div>
@@ -173,6 +204,22 @@
                                     <div data-media-preview-list class="mt-3 grid gap-3"></div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="rounded-[24px] border border-[#dce6f7] bg-white p-4">
+                            <h2 class="text-lg font-extrabold text-[#07152f]">Vidéos en ligne et visite virtuelle 360°</h2>
+                            <p class="mt-1 text-sm font-semibold leading-6 text-[#6f7890]">Vous pouvez aussi coller des liens YouTube ou Vimeo, ainsi qu’un lien de visite 360° (Matterport, Kuula, Momento360, CloudPano, Roundme ou Google Maps).</p>
+                            <div class="mt-4 grid gap-3 md:grid-cols-3">
+                                @foreach ([0, 1, 2] as $index)
+                                    <label>
+                                        <span class="{{ $labelClass }}">Lien vidéo {{ $index + 1 }}</span>
+                                        <input name="video_urls[{{ $index }}]" type="url" value="{{ old("video_urls.$index", $currentVenue?->video_urls[$index] ?? '') }}" placeholder="https://www.youtube.com/watch?v=..." class="{{ $inputClass }}">
+                                    </label>
+                                @endforeach
+                            </div>
+                            <label class="mt-3 block">
+                                <span class="{{ $labelClass }}">Lien de la visite virtuelle 360°</span>
+                                <input name="virtual_tour_url" type="url" value="{{ old('virtual_tour_url', $currentVenue?->virtual_tour_url) }}" placeholder="https://my.matterport.com/show/?m=..." class="{{ $inputClass }}">
+                            </label>
                         </div>
                         <div class="grid gap-3 md:grid-cols-3">
                             @foreach ([0, 1, 2] as $index)
@@ -264,6 +311,23 @@
                     @case('localisation')
                         <label class="block"><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Adresse complète</span><input name="address" value="{{ old('address', $currentVenue?->address) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                         <label class="block"><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Message affiché aux clients</span><textarea name="location_details" rows="4" class="mt-2 w-full resize-none rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('location_details', $currentVenue?->location_details['public_note'] ?? '') }}</textarea></label>
+                        <div class="rounded-[24px] border border-[#dce6f7] bg-[#f8fbff] p-4">
+                            <h2 class="text-lg font-extrabold text-[#07152f]">Horaires d’ouverture</h2>
+                            <p class="mt-1 text-sm font-semibold text-[#6f7890]">Plage horaire pendant laquelle l’espace peut accueillir un événement. Elle sert au filtre « horaires » du catalogue.</p>
+                            <div class="mt-3 grid gap-3 md:grid-cols-2">
+                                <label><span class="{{ $labelClass }}">Ouverture</span><input name="opens_at" type="time" value="{{ old('opens_at', $currentVenue?->opens_at ? substr($currentVenue->opens_at, 0, 5) : '') }}" class="{{ $inputClass }}"></label>
+                                <label><span class="{{ $labelClass }}">Fermeture</span><input name="closes_at" type="time" value="{{ old('closes_at', $currentVenue?->closes_at ? substr($currentVenue->closes_at, 0, 5) : '') }}" class="{{ $inputClass }}"></label>
+                            </div>
+                        </div>
+                        <div class="rounded-[24px] border border-[#dce6f7] bg-[#f8fbff] p-4">
+                            <h2 class="text-lg font-extrabold text-[#07152f]">Position sur la carte</h2>
+                            <p class="mt-1 text-sm font-semibold leading-6 text-[#6f7890]">Dans Google Maps, faites un clic droit sur votre lieu et copiez les coordonnées. Les clients voient uniquement une zone approximative (environ 1 km), jamais l’adresse exacte.</p>
+                            <div class="mt-3 grid gap-3 md:grid-cols-2">
+                                <label><span class="{{ $labelClass }}">Latitude</span><input name="latitude" type="number" step="any" min="-90" max="90" value="{{ old('latitude', $currentVenue?->latitude) }}" placeholder="5.3600" class="{{ $inputClass }}"></label>
+                                <label><span class="{{ $labelClass }}">Longitude</span><input name="longitude" type="number" step="any" min="-180" max="180" value="{{ old('longitude', $currentVenue?->longitude) }}" placeholder="-4.0083" class="{{ $inputClass }}"></label>
+                            </div>
+                        </div>
+                        <p class="text-sm font-extrabold text-[#07152f]">Ajouter un créneau disponible <span class="font-semibold text-[#6f7890]">(gérez tout le calendrier depuis « Disponibilités »)</span></p>
                         <div class="grid gap-3 md:grid-cols-3">
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Date disponible</span><input name="available_date" type="date" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>
                             <label><span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Début</span><input name="starts_at" type="time" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></label>

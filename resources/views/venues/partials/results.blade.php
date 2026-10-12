@@ -27,6 +27,9 @@
                     <p class="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[#6b7b99]">{{ $venue->short_description ?: $venue->description }}</p>
                     <div class="mt-4 flex flex-wrap gap-2">
                         <span class="rounded-full bg-[#f4f7ff] px-3 py-1 text-xs font-extrabold text-[#4d5872]">{{ $venue->min_capacity }}-{{ $venue->max_capacity }} invités</span>
+                        @if ($venue->openingHoursLabel())
+                            <span class="rounded-full bg-[#f4f7ff] px-3 py-1 text-xs font-extrabold text-[#4d5872]">{{ $venue->openingHoursLabel() }}</span>
+                        @endif
                         @if ($venue->surface_area)
                             <span class="rounded-full bg-[#f4f7ff] px-3 py-1 text-xs font-extrabold text-[#4d5872]">{{ $venue->surface_area }} m²</span>
                         @endif
@@ -40,6 +43,7 @@
                         <div>
                             <p class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">À partir de</p>
                             <p class="mt-1 text-lg font-extrabold text-[#2f6bff]">{{ number_format($venue->starting_price, 0, ',', ' ') }} {{ $venue->currency }}</p>
+                            <p class="text-xs font-bold text-[#6f7890]">{{ ($venue->price_unit ?? \App\Enums\PriceUnit::Event)->label() }}</p>
                         </div>
                         <span class="inline-flex shrink-0 items-center justify-center rounded-full bg-[#2f6bff] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition group-hover:bg-[#2258df]">
                             Voir détails

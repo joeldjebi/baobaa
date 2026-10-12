@@ -43,6 +43,7 @@
                         <span class="mb-2 block text-sm font-semibold text-[#17233f]">Téléphone</span>
                         <input name="phone" value="{{ old('phone') }}" autocomplete="tel" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
                     </label>
+                    <x-forms.client-type-fields />
                     <label class="block">
                         <span class="mb-2 block text-sm font-semibold text-[#17233f]">Mot de passe</span>
                         <input name="password" type="password" required autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">

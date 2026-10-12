@@ -48,7 +48,14 @@
         </div>
     </div>
 
-    <div class="mx-auto mt-8 flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5 text-xs font-semibold text-white/45">
+    <div class="mx-auto mt-8 flex max-w-7xl flex-wrap items-center gap-2 border-t border-white/10 pt-5">
+        <p class="mr-1 text-xs font-extrabold uppercase tracking-[0.14em] text-[#8dc1ff]">Moyens de paiement</p>
+        @foreach (\App\Enums\PaymentMethod::cases() as $paymentMethod)
+            <span class="rounded-full bg-white/8 px-3 py-1 text-xs font-bold text-white/75 ring-1 ring-white/10">{{ $paymentMethod->label() }}</span>
+        @endforeach
+    </div>
+
+    <div class="mx-auto mt-5 flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5 text-xs font-semibold text-white/45">
         <p>© {{ now()->year }} {{ config('baobaa.legal.company_name') }}. Tous droits réservés.</p>
         <p>Paiement sécurisé · Partenaires vérifiés · Accompagnement de A à Z</p>
     </div>

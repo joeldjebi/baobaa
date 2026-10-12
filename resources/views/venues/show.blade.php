@@ -8,18 +8,15 @@
     $locationLabel = collect([$district, $city])->filter()->implode(', ');
     $capacity = $venue->min_capacity.'-'.$venue->max_capacity.' invités';
     $surface = $venue->surface_area ? $venue->surface_area.' m²' : null;
-    $price = $venue->starting_price ? number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency : 'Prix sur demande';
+    $price = $venue->priceLabel();
+    $minimumDuration = $venue->minimumDurationLabel();
+    $openingHours = $venue->openingHoursLabel();
+    $mapEmbedUrl = $venue->approximateMapEmbedUrl();
+    $videoEmbedUrls = $venue->videoEmbedUrls();
+    $virtualTourUrl = $venue->virtualTourEmbedUrl();
     $reservation = $depositAmount !== null ? number_format($depositAmount, 0, ',', ' ').' '.$venue->currency : null;
-    $paymentMethodLabels = [
-        'baobaa_checkout' => 'Paiement sécurisé BAOBAA',
-        'wave' => 'Wave',
-        'orange_money' => 'Orange Money',
-        'mtn_money' => 'MTN Money',
-        'moov_money' => 'Moov Money',
-        'bank_transfer' => 'Virement bancaire',
-    ];
     $acceptedPaymentMethods = collect($venue->payment_methods ?: ['baobaa_checkout'])
-        ->map(fn (string $method): string => $paymentMethodLabels[$method] ?? $method)
+        ->map(fn (string $method): string => \App\Enums\PaymentMethod::labelFor($method))
         ->values();
     $publicReviewsCount = (int) $venue->public_reviews_count;
     $publicRating = $publicReviewsCount > 0 ? number_format((float) $venue->public_rating, 1, ',', ' ') : null;
@@ -52,7 +49,9 @@
         'apercu' => 'Aperçu',
         'inclusions' => $includedItems !== [] ? 'Ce qui est inclus' : null,
         'commodites' => $configurations->isNotEmpty() || $amenities->isNotEmpty() ? 'Espace et commodités' : null,
+        'visite-virtuelle' => $virtualTourUrl ? 'Visite 360°' : null,
         'modules' => count($reservationAddOns) > 0 ? 'Services additionnels' : null,
+        'disponibilites' => 'Disponibilités',
         'lieu' => 'Lieu',
         'conditions' => $policies->isNotEmpty() || $faqs->isNotEmpty() ? 'À savoir' : null,
         'avis' => 'Avis clients',
@@ -60,6 +59,36 @@
 @endphp
 
 <x-layouts.baobaa :title="$title.' - BAOBAA'" :description="$venue->short_description ?: \Illuminate\Support\Str::limit(strip_tags((string) $description), 160)" :image="$images[0] ?? null">
+    @php
+        $structuredData = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'EventVenue',
+            'name' => $title,
+            'description' => $venue->short_description ?: \Illuminate\Support\Str::limit(strip_tags((string) $description), 300),
+            'url' => route('venues.show', $venue->slug),
+            'image' => array_slice($galleryImages, 0, 5) ?: null,
+            'maximumAttendeeCapacity' => $venue->max_capacity,
+            'address' => array_filter([
+                '@type' => 'PostalAddress',
+                'addressLocality' => $city,
+                'addressRegion' => $district,
+                'addressCountry' => $venue->country_code,
+            ]),
+            'openingHours' => $venue->opens_at && $venue->closes_at ? 'Mo-Su '.substr($venue->opens_at, 0, 5).'-'.substr($venue->closes_at, 0, 5) : null,
+            'priceRange' => $venue->starting_price ? 'À partir de '.number_format((int) $venue->starting_price, 0, ',', ' ').' '.$venue->currency : null,
+            'aggregateRating' => $publicReviewsCount > 0 ? [
+                '@type' => 'AggregateRating',
+                'ratingValue' => round((float) $venue->public_rating, 1),
+                'reviewCount' => $publicReviewsCount,
+                'bestRating' => 5,
+                'worstRating' => 1,
+            ] : null,
+        ], fn ($value): bool => $value !== null && $value !== []);
+    @endphp
+    <x-slot:head>
+        <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+    </x-slot:head>
+
     <main class="min-h-screen scroll-smooth bg-white pb-24 text-[#151821] lg:pb-0">
         <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
             <div class="mx-auto flex max-w-7xl items-center justify-between">
@@ -147,6 +176,18 @@
                     <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
                     {{ $city }}
                 </span>
+                @if ($openingHours)
+                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">
+                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                        Ouvert de {{ $openingHours }}
+                    </span>
+                @endif
+                @if ($minimumDuration)
+                    <span class="inline-flex items-center gap-2 rounded-full bg-[#f4f7ff] px-3 py-1.5 text-xs font-extrabold text-[#4d5872]">{{ $minimumDuration }}</span>
+                @endif
+                @if ($virtualTourUrl)
+                    <a href="#visite-virtuelle" class="inline-flex items-center gap-2 rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Visite virtuelle 360°</a>
+                @endif
                 @if ($isVerified)
                     <span class="inline-flex items-center gap-2 rounded-full bg-[#ecfdf5] px-3 py-1.5 text-xs font-extrabold text-[#047857]">Espace vérifié</span>
                 @endif
@@ -155,8 +196,13 @@
                 @endforeach
             </div>
 
-            @if (count($videos) > 0)
+            @if (count($videos) > 0 || count($videoEmbedUrls) > 0)
                 <div class="mt-5 grid gap-3 md:grid-cols-2">
+                    @foreach ($videoEmbedUrls as $videoEmbedUrl)
+                        <div class="overflow-hidden rounded-[18px] border border-[#dce6f7] bg-[#07152f] shadow-sm">
+                            <iframe src="{{ $videoEmbedUrl }}" title="Vidéo de {{ $title }}" loading="lazy" class="aspect-video w-full" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        </div>
+                    @endforeach
                     @foreach ($videos as $video)
                         <div class="overflow-hidden rounded-[18px] border border-[#dce6f7] bg-[#07152f] shadow-sm">
                             <video controls preload="metadata" class="aspect-video w-full bg-[#07152f]" aria-label="{{ $video['alt'] }}">
@@ -267,6 +313,16 @@
                     </section>
                 @endif
 
+                @if ($virtualTourUrl)
+                    <section id="visite-virtuelle" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                        <h2 class="text-xl font-extrabold text-[#151821]">Visite virtuelle 360°</h2>
+                        <p class="mt-1 text-sm font-semibold text-[#6f7890]">Déplacez-vous dans l’espace comme si vous y étiez.</p>
+                        <div class="mt-4 overflow-hidden rounded-2xl border border-[#dce6f7] bg-[#07152f]">
+                            <iframe src="{{ $virtualTourUrl }}" title="Visite virtuelle 360° de {{ $title }}" loading="lazy" class="aspect-video w-full" allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        </div>
+                    </section>
+                @endif
+
                 @if (count($reservationAddOns) > 0)
                     <section id="modules" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">Services additionnels</h2>
@@ -285,16 +341,54 @@
                     </section>
                 @endif
 
+                <section id="disponibilites" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <h2 class="text-xl font-extrabold text-[#151821]">Disponibilités</h2>
+                            <p class="mt-1 text-sm font-semibold text-[#6f7890]">Choisissez une date libre pour démarrer votre demande de réservation.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 text-xs font-extrabold text-[#52617b]">
+                            <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-white ring-1 ring-[#2f6bff]"></span>Libre</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="size-3 rounded-full bg-[#e5e9f2]"></span>Indisponible</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 rounded-2xl border border-[#dce6f7] bg-white p-4 shadow-sm" data-venue-calendar data-blocked-dates-url="{{ route('venues.blocked-dates', $venue->slug) }}" data-reservation-url="{{ route('venues.reservation', $venue->slug) }}">
+                        <div class="flex items-center justify-between gap-3">
+                            <button type="button" data-calendar-prev class="grid size-9 place-items-center rounded-full border border-[#dce6f7] text-[#2f6bff] transition hover:bg-[#eef4ff] disabled:opacity-30" aria-label="Mois précédent">‹</button>
+                            <p data-calendar-title class="text-sm font-extrabold capitalize text-[#151821]"></p>
+                            <button type="button" data-calendar-next class="grid size-9 place-items-center rounded-full border border-[#dce6f7] text-[#2f6bff] transition hover:bg-[#eef4ff] disabled:opacity-30" aria-label="Mois suivant">›</button>
+                        </div>
+                        <div class="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-extrabold uppercase text-[#8a94aa]">
+                            @foreach (['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] as $weekday)
+                                <span>{{ $weekday }}</span>
+                            @endforeach
+                        </div>
+                        <div data-calendar-grid class="mt-1 grid grid-cols-7 gap-1"></div>
+                        <p data-calendar-status class="mt-3 text-xs font-semibold text-[#6f7890]">Chargement des disponibilités…</p>
+                    </div>
+                </section>
+
                 <section id="lieu" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                     <h2 class="text-xl font-extrabold text-[#151821]">Emplacement</h2>
                     <div class="mt-4 overflow-hidden rounded-2xl border border-[#dce6f7]">
-                        <div class="flex h-56 items-center justify-center bg-[linear-gradient(135deg,#bfe9ff,#dce7ff,#f2f7ff)] px-5 text-center">
-                            <div>
-                                <p class="text-2xl font-extrabold text-[#2f6bff]">{{ $locationLabel }}</p>
-                                <p class="mt-2 text-sm font-semibold text-[#4d5872]">L’adresse exacte vous est communiquée une fois la réservation confirmée.</p>
+                        @if ($mapEmbedUrl)
+                            <div class="relative">
+                                <iframe src="{{ $mapEmbedUrl }}" title="Zone approximative de {{ $title }}" loading="lazy" class="h-72 w-full" referrerpolicy="no-referrer"></iframe>
+                                <span class="pointer-events-none absolute left-1/2 top-1/2 size-28 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#2f6bff]/60 bg-[#2f6bff]/15"></span>
                             </div>
-                        </div>
+                            <p class="border-t border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-xs font-semibold text-[#4d5872]">{{ $locationLabel }} · Zone approximative. L’adresse exacte vous est communiquée une fois la réservation confirmée.</p>
+                        @else
+                            <div class="flex h-56 items-center justify-center bg-[linear-gradient(135deg,#bfe9ff,#dce7ff,#f2f7ff)] px-5 text-center">
+                                <div>
+                                    <p class="text-2xl font-extrabold text-[#2f6bff]">{{ $locationLabel }}</p>
+                                    <p class="mt-2 text-sm font-semibold text-[#4d5872]">L’adresse exacte vous est communiquée une fois la réservation confirmée.</p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
+                    @if ($openingHours)
+                        <p class="mt-3 text-sm font-semibold text-[#4d5872]">Horaires d’accueil des événements : {{ $openingHours }}.</p>
+                    @endif
                     @if (filled($locationNote))
                         <p class="mt-3 text-sm font-semibold leading-6 text-[#4d5872]">{{ $locationNote }}</p>
                     @endif
@@ -452,8 +546,8 @@
                             <div>
                                 <p class="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">À partir de</p>
                                 <p class="text-2xl font-extrabold tracking-[-0.035em] text-[#151821]">{{ $price }}</p>
-                                @if ($reservation)
-                                    <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">Acompte pour bloquer la date : {{ $reservation }}</p>
+                                @if ($minimumDuration)
+                                    <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">{{ $minimumDuration }}</p>
                                 @endif
                             </div>
                             @if ($publicRating)
@@ -483,6 +577,15 @@
                         <a href="{{ route('event-services.index') }}" class="flex w-full items-center justify-center gap-2 rounded-[18px] border border-[#dce6f7] bg-[#f7faff] px-4 py-3.5 text-sm font-extrabold text-[#2f6bff] transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef4ff]">
                             Réserver uniquement un service événementiel
                         </a>
+
+                        <div class="rounded-[18px] bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">
+                            <p class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#2f6bff]">Comment se passe le paiement ?</p>
+                            <ul class="mt-3 space-y-2 text-xs font-semibold leading-5 text-[#52617b]">
+                                <li><strong class="text-[#151821]">Prix affiché :</strong> {{ $price }}, hors options et services additionnels.</li>
+                                <li><strong class="text-[#151821]">Acompte :</strong> {{ $depositDescription }}@if ($reservation) Exemple sur le prix de départ : {{ $reservation }}.@endif</li>
+                                <li><strong class="text-[#151821]">Prix final :</strong> confirmé sur la proforma après échange avec le propriétaire.</li>
+                            </ul>
+                        </div>
 
                         <div class="rounded-[18px] bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">
                             <p class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#2f6bff]">Moyens de paiement acceptés</p>
@@ -769,6 +872,85 @@
                         activateTab(target, true);
                     });
                 });
+
+                const calendarRoot = document.querySelector('[data-venue-calendar]');
+
+                if (calendarRoot) {
+                    const grid = calendarRoot.querySelector('[data-calendar-grid]');
+                    const titleElement = calendarRoot.querySelector('[data-calendar-title]');
+                    const statusElement = calendarRoot.querySelector('[data-calendar-status]');
+                    const previousMonthButton = calendarRoot.querySelector('[data-calendar-prev]');
+                    const nextMonthButton = calendarRoot.querySelector('[data-calendar-next]');
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const firstMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const lastMonth = new Date(today.getFullYear(), today.getMonth() + 5, 1);
+                    const monthFormatter = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' });
+                    let displayedMonth = new Date(firstMonth);
+                    let blockedDates = new Set();
+
+                    const isoDate = (date) => [
+                        date.getFullYear(),
+                        String(date.getMonth() + 1).padStart(2, '0'),
+                        String(date.getDate()).padStart(2, '0'),
+                    ].join('-');
+
+                    const renderCalendar = () => {
+                        grid.innerHTML = '';
+                        titleElement.textContent = monthFormatter.format(displayedMonth);
+                        previousMonthButton.disabled = displayedMonth <= firstMonth;
+                        nextMonthButton.disabled = displayedMonth >= lastMonth;
+
+                        const leadingDays = (displayedMonth.getDay() + 6) % 7;
+                        const daysInMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() + 1, 0).getDate();
+
+                        for (let index = 0; index < leadingDays; index++) {
+                            grid.appendChild(document.createElement('span'));
+                        }
+
+                        for (let day = 1; day <= daysInMonth; day++) {
+                            const date = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth(), day);
+                            const value = isoDate(date);
+                            const isUnavailable = date < today || blockedDates.has(value);
+                            const cell = document.createElement(isUnavailable ? 'span' : 'a');
+
+                            cell.textContent = String(day);
+                            cell.className = isUnavailable
+                                ? 'grid h-10 place-items-center rounded-xl bg-[#f1f3f8] text-sm font-bold text-[#a3abbd] line-through'
+                                : 'grid h-10 place-items-center rounded-xl bg-white text-sm font-extrabold text-[#151821] ring-1 ring-[#cfdcf7] transition hover:bg-[#2f6bff] hover:text-white';
+
+                            if (! isUnavailable) {
+                                cell.href = `${calendarRoot.dataset.reservationUrl}?start_date=${value}`;
+                                cell.setAttribute('aria-label', `Réserver le ${date.toLocaleDateString('fr-FR', { dateStyle: 'full' })}`);
+                            }
+
+                            grid.appendChild(cell);
+                        }
+                    };
+
+                    previousMonthButton.addEventListener('click', () => {
+                        displayedMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() - 1, 1);
+                        renderCalendar();
+                    });
+                    nextMonthButton.addEventListener('click', () => {
+                        displayedMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth() + 1, 1);
+                        renderCalendar();
+                    });
+
+                    renderCalendar();
+
+                    const lastDay = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
+                    fetch(`${calendarRoot.dataset.blockedDatesUrl}?from=${isoDate(today)}&to=${isoDate(lastDay)}`, { headers: { Accept: 'application/json' } })
+                        .then((response) => response.ok ? response.json() : Promise.reject())
+                        .then((payload) => {
+                            blockedDates = new Set(payload.blocked_dates ?? []);
+                            statusElement.textContent = 'Les dates grisées sont déjà réservées ou bloquées par le propriétaire.';
+                            renderCalendar();
+                        })
+                        .catch(() => {
+                            statusElement.textContent = 'Impossible de charger les disponibilités. Le propriétaire confirmera la date lors de votre demande.';
+                        });
+                }
 
                 setActiveTabFromScroll();
                 refreshSaveButton();

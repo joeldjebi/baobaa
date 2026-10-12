@@ -22,6 +22,7 @@
                     <input name="phone" value="{{ old('phone', $client->phone) }}" class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
                     @error('phone')<span class="mt-2 block text-sm font-semibold text-[#b42318]">{{ $message }}</span>@enderror
                 </label>
+                <x-forms.client-type-fields :client-type="$client->client_type" :organization-name="$client->organization_name" label-class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]" input-class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]" />
                 <button class="justify-self-start rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Enregistrer le profil</button>
             </form>
         </section>
