@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             VenueCategorySeeder::class,
             AmenitySeeder::class,
             EventServiceTypeSeeder::class,
+            ProductCategorySeeder::class,
         ]);
 
         if ($this->shouldSeedDemonstrationData()) {

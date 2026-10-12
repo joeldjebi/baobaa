@@ -18,6 +18,7 @@
                 <a href="{{ route('owner-profiles.index') }}" class="hover:text-white">Partenaires</a>
                 <a href="{{ route('service-provider-profiles.index') }}" class="hover:text-white">Prestataires</a>
                 <a href="{{ route('event-services.index') }}" class="hover:text-white">Services événementiels</a>
+                <a href="{{ route('products.index') }}" class="hover:text-white">Location et vente de matériel</a>
             </div>
         </div>
 

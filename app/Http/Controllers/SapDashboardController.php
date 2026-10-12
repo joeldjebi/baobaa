@@ -612,6 +612,16 @@ class SapDashboardController extends Controller
     /**
      * @return array<string, mixed>
      */
+    /**
+     * Shell metrics shared with the other SAP controllers.
+     *
+     * @return array<string, int>
+     */
+    public function sharedMetrics(): array
+    {
+        return $this->metrics();
+    }
+
     private function metrics(): array
     {
         return [

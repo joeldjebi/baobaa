@@ -42,7 +42,7 @@
 
                         @if (count($partnerConditions['plans']) > 0)
                             <p class="mt-5 text-xs font-extrabold uppercase tracking-[0.18em] text-[#8dc1ff]">Formules disponibles</p>
-                            <div class="mt-3 grid gap-2 sm:grid-cols-{{ min(count($partnerConditions['plans']), 3) }}">
+                            <div @class(['mt-3 grid gap-2', 'sm:grid-cols-2' => count($partnerConditions['plans']) === 2, 'sm:grid-cols-3' => count($partnerConditions['plans']) >= 3])>
                                 @foreach ($partnerConditions['plans'] as $plan)
                                     <div class="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
                                         <p class="text-sm font-extrabold text-white">{{ $plan['name'] }}</p>

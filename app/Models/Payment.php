@@ -16,6 +16,7 @@ class Payment extends Model
     protected $fillable = [
         'booking_id',
         'event_project_id',
+        'order_id',
         'provider_type',
         'provider_id',
         'payer_id',
@@ -44,6 +45,11 @@ class Payment extends Model
         return $this->belongsTo(Booking::class);
     }
 
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
+
     public function eventProject(): BelongsTo
     {
         return $this->belongsTo(EventProject::class);
@@ -64,6 +70,10 @@ class Payment extends Model
     {
         if ($this->booking_id) {
             return $this->booking?->venue?->name ?? 'Réservation d’espace';
+        }
+
+        if ($this->order_id) {
+            return 'Commande '.$this->order?->reference.($this->order?->serviceProviderProfile ? ' · '.$this->order->serviceProviderProfile->business_name : '');
         }
 
         $providerName = $this->provider_type === 'service_provider_profile' ? $this->serviceProviderProfile?->business_name : null;

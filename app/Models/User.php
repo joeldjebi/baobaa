@@ -41,6 +41,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class, 'client_id');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'client_id');
+    }
+
     public function ownerProfile(): HasOne
     {
         return $this->hasOne(OwnerProfile::class);

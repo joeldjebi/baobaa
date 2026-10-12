@@ -59,6 +59,21 @@ class ServiceProviderProfile extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function deliveryZones(): HasMany
+    {
+        return $this->hasMany(DeliveryZone::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function services(): HasMany
     {
         return $this->hasMany(EventService::class);

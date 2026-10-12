@@ -76,6 +76,7 @@
                     @guest
                         <a href="{{ route('venues.list-venue') }}" class="hidden rounded-full bg-[#17191f] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#17191f]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] md:inline-flex">Devenir partenaire</a>
                     @endguest
+                    <x-navigation.cart-link />
                     <x-navigation.account-menu class="bg-white/82 text-[#17191f] ring-white/80 backdrop-blur" />
                     <x-navigation.mobile-menu active="explore" />
                 </div>

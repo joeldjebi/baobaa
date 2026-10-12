@@ -102,6 +102,7 @@
                     @guest
                         <a href="{{ route('venues.list-venue') }}" class="hidden rounded-full bg-[#151821] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#151821]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] lg:inline-flex">Devenir partenaire</a>
                     @endguest
+                    <x-navigation.cart-link />
                     <x-navigation.account-menu />
                     <x-navigation.mobile-menu active="venues" />
                 </div>

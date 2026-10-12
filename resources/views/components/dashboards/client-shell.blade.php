@@ -16,6 +16,7 @@
         ['key' => 'overview', 'label' => 'Vue d’ensemble', 'route' => 'client.dashboard', 'icon' => 'M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z'],
         ['key' => 'projects', 'label' => 'Mes événements', 'route' => 'client.projects', 'icon' => 'M12 3l7 4v10l-7 4-7-4V7l7-4Zm0 0v8m7-4-7 4-7-4'],
         ['key' => 'composer', 'label' => 'Composer', 'route' => 'event-composer.create', 'icon' => 'M12 5v14M5 12h14M4 4h16v16H4V4Z'],
+        ['key' => 'orders', 'label' => 'Commandes de matériel', 'route' => 'client.orders', 'icon' => 'M6 6h15l-2 9H8L6 3H3M9 20h.01M18 20h.01'],
         ['key' => 'reservations', 'label' => 'Réservations', 'route' => 'client.reservations', 'icon' => 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'],
         ['key' => 'payments', 'label' => 'Paiements', 'route' => 'client.payments', 'icon' => 'M3 7h18v10H3V7Zm3 4h5M16 14h2'],
         ['key' => 'profile', 'label' => 'Profil et sécurité', 'route' => 'client.profile', 'icon' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0'],

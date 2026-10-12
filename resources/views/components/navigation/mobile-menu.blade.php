@@ -11,10 +11,12 @@
         'venues' => ['label' => 'Espaces', 'url' => route('venues.index')],
         'partners' => ['label' => 'Partenaires', 'url' => route('owner-profiles.index')],
         'event-services' => ['label' => 'Prestataires', 'url' => route('service-provider-profiles.index')],
+        'products' => ['label' => 'Location et vente', 'url' => route('products.index')],
     ];
 
     if ($user?->hasPortal(UserRole::Client)) {
         $links['client-reservations'] = ['label' => 'Mes réservations', 'url' => route('client.reservations')];
+        $links['cart'] = ['label' => 'Mon panier', 'url' => route('cart.show')];
     } elseif ($user?->hasPortal(UserRole::Owner)) {
         $links['owner-dashboard'] = ['label' => 'Mon espace pro', 'url' => route('owner.dashboard')];
     } else {

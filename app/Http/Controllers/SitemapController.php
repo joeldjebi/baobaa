@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\VenueStatus;
 use App\Models\OwnerProfile;
+use App\Models\Product;
 use App\Models\ServiceProviderProfile;
 use App\Models\Venue;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,7 @@ class SitemapController extends Controller
             ['loc' => route('owner-profiles.index'), 'lastmod' => null, 'priority' => '0.6'],
             ['loc' => route('service-provider-profiles.index'), 'lastmod' => null, 'priority' => '0.7'],
             ['loc' => route('event-services.index'), 'lastmod' => null, 'priority' => '0.6'],
+            ['loc' => route('products.index'), 'lastmod' => null, 'priority' => '0.7'],
             ['loc' => route('owner.register'), 'lastmod' => null, 'priority' => '0.5'],
             ['loc' => route('pages.contact'), 'lastmod' => null, 'priority' => '0.3'],
             ['loc' => route('pages.terms'), 'lastmod' => null, 'priority' => '0.2'],
@@ -56,6 +58,15 @@ class SitemapController extends Controller
                 'loc' => route('service-provider-profiles.show', $profile->public_uuid),
                 'lastmod' => $profile->updated_at?->toAtomString(),
                 'priority' => '0.5',
+            ]));
+
+        Product::query()
+            ->publiclyAvailable()
+            ->select(['id', 'slug', 'updated_at'])
+            ->each(fn (Product $product) => $urls->push([
+                'loc' => route('products.show', $product),
+                'lastmod' => $product->updated_at?->toAtomString(),
+                'priority' => '0.6',
             ]));
 
         return response()
