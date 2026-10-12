@@ -34,7 +34,7 @@ class EventComposerController extends Controller
         $providers = ServiceProviderProfile::query()
             ->publiclyListed()
             ->with(['services' => fn ($query) => $query
-                ->with('type')
+                ->with(['type', 'media'])
                 ->where('status', VenueStatus::Published)
                 ->orderBy('starting_price')
                 ->orderBy('name'),
@@ -135,8 +135,8 @@ class EventComposerController extends Controller
         );
 
         return redirect()
-            ->route('client.projects')
-            ->with('project_status', "Votre projet {$project->reference} est créé. Les prestataires peuvent maintenant être contactés.");
+            ->route('client.projects.show', $project)
+            ->with('project_status', "Votre projet {$project->reference} est créé. Les prestataires vont vous envoyer leur devis : vous pouvez leur écrire ci-dessous.");
     }
 
     /**

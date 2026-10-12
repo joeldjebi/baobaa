@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\PortalAuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingMessageController;
 use App\Http\Controllers\ClientBookingPackageController;
+use App\Http\Controllers\ClientEventProjectController;
 use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventComposerController;
@@ -239,6 +240,7 @@ Route::middleware(['auth', 'role:service_provider'])->group(function (): void {
     Route::patch('/prestataire/services/{eventService}', [EventServiceController::class, 'update'])->name('service-provider.services.update');
     Route::post('/prestataire/services/{eventService}/statut', [EventServiceController::class, 'toggle'])->name('service-provider.services.toggle');
     Route::delete('/prestataire/services/{eventService}', [EventServiceController::class, 'destroy'])->name('service-provider.services.destroy');
+    Route::delete('/prestataire/services/{eventService}/photos/{eventServiceMedia}', [EventServiceController::class, 'destroyMedia'])->name('service-provider.services.media.destroy');
     Route::get('/prestataire/reservations', [ServiceProviderReservationController::class, 'index'])->name('service-provider.reservations');
     Route::get('/prestataire/reservations/{eventProject}', [ServiceProviderReservationController::class, 'show'])->name('service-provider.reservations.show');
     Route::post('/prestataire/reservations/{eventProject}/messages', [ServiceProviderReservationController::class, 'storeMessage'])->name('service-provider.reservations.messages.store');
@@ -282,6 +284,10 @@ Route::middleware(['auth', 'role:client'])->group(function (): void {
     Route::get('/client/dashboard', [DashboardController::class, 'client'])->name('client.dashboard');
     Route::get('/client/evenements', [DashboardController::class, 'clientProjects'])->name('client.projects');
     Route::post('/client/evenements/composer', [EventComposerController::class, 'store'])->name('event-composer.store');
+    Route::get('/client/evenements/{eventProject}', [ClientEventProjectController::class, 'show'])->name('client.projects.show');
+    Route::post('/client/evenements/{eventProject}/prestataires/{serviceProviderProfile}/messages', [ClientEventProjectController::class, 'storeMessage'])->name('client.projects.messages.store');
+    Route::post('/client/evenements/{eventProject}/prestataires/{serviceProviderProfile}/valider', [ClientEventProjectController::class, 'confirm'])->name('client.projects.confirm');
+    Route::post('/client/evenements/{eventProject}/prestataires/{serviceProviderProfile}/paiement-test', [ClientEventProjectController::class, 'pay'])->name('client.projects.pay');
     Route::get('/client/reservations', [DashboardController::class, 'clientReservations'])->name('client.reservations');
     Route::get('/client/reservations/{booking}', [DashboardController::class, 'clientBookingShow'])->name('client.reservations.show');
     Route::patch('/client/reservations/{booking}/package', [ClientBookingPackageController::class, 'update'])->name('client.reservations.package.update');

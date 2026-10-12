@@ -67,7 +67,7 @@
                     @forelse ($recentPayments as $payment)
                         <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                             <p class="text-sm font-extrabold text-[#151821]">{{ number_format($payment->amount, 0, ',', ' ') }} {{ $payment->currency }}</p>
-                            <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $payment->booking?->venue?->name }} · {{ $paymentStatusLabels[$payment->status->value] ?? 'À suivre' }}</p>
+                            <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $payment->subjectLabel() }} · {{ $paymentStatusLabels[$payment->status->value] ?? 'À suivre' }}</p>
                         </div>
                     @empty
                         <p class="rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-4 text-sm font-semibold text-[#6f7890]">Aucun paiement récent.</p>

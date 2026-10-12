@@ -15,6 +15,9 @@ class Payment extends Model
 
     protected $fillable = [
         'booking_id',
+        'event_project_id',
+        'provider_type',
+        'provider_id',
         'payer_id',
         'reference',
         'provider',
@@ -39,6 +42,33 @@ class Payment extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function eventProject(): BelongsTo
+    {
+        return $this->belongsTo(EventProject::class);
+    }
+
+    /**
+     * Service provider paid through an event project deposit (provider_type = service_provider_profile).
+     */
+    public function serviceProviderProfile(): BelongsTo
+    {
+        return $this->belongsTo(ServiceProviderProfile::class, 'provider_id');
+    }
+
+    /**
+     * What the payment is for, readable by clients and the SAP.
+     */
+    public function subjectLabel(): string
+    {
+        if ($this->booking_id) {
+            return $this->booking?->venue?->name ?? 'Réservation d’espace';
+        }
+
+        $providerName = $this->provider_type === 'service_provider_profile' ? $this->serviceProviderProfile?->business_name : null;
+
+        return trim('Services '.($providerName ? '· '.$providerName : '').($this->eventProject ? ' · '.$this->eventProject->reference : ''));
     }
 
     public function payer(): BelongsTo

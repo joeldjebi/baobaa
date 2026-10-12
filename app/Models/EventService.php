@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Enums\VenueStatus;
 use Database\Factories\EventServiceFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
@@ -55,6 +57,16 @@ class EventService extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(EventServiceType::class, 'event_service_type_id');
+    }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(EventServiceMedia::class)->orderByDesc('is_primary')->orderBy('sort_order');
+    }
+
+    protected function coverImageUrl(): Attribute
+    {
+        return Attribute::get(fn (): string => $this->media->first()?->url ?? Venue::placeholderImageUrl());
     }
 
     public function availabilityHolds(): MorphMany

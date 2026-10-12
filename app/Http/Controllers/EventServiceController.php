@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\VenueStatus;
 use App\Models\EventService;
+use App\Models\EventServiceMedia;
 use App\Models\EventServiceType;
 use App\Models\ServiceProviderProfile;
+use App\Services\EventServiceImageService;
 use App\Services\PartnerLogoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,10 @@ use Illuminate\Validation\Rule;
 
 class EventServiceController extends Controller
 {
+    private const MaxImages = 8;
+
+    public function __construct(private readonly EventServiceImageService $eventServiceImageService) {}
+
     public function store(Request $request): RedirectResponse
     {
         $profile = $this->profile($request);
@@ -21,7 +27,7 @@ class EventServiceController extends Controller
         $type = EventServiceType::query()->where('is_active', true)->findOrFail($validated['event_service_type_id']);
 
         $service = $profile->services()->create([
-            ...Arr::except($validated, ['attributes_text', 'availability_notes_text']),
+            ...Arr::except($validated, ['attributes_text', 'availability_notes_text', 'images']),
             'event_service_type_id' => $type->id,
             'country_code' => strtoupper($validated['country_code']),
             'status' => $validated['status'] === VenueStatus::Published->value ? VenueStatus::Published : VenueStatus::Draft,
@@ -29,6 +35,8 @@ class EventServiceController extends Controller
             'attributes' => $this->linesToKeyValue($validated['attributes_text'] ?? ''),
             'availability_notes' => $this->linesToArray($validated['availability_notes_text'] ?? ''),
         ]);
+
+        $this->storeImages($request, $service);
 
         return redirect()->route('service-provider.services.edit', $service)->with('pse_status', 'Service enregistré.');
     }
@@ -38,10 +46,10 @@ class EventServiceController extends Controller
         $profile = $this->profile($request);
         abort_unless((int) $eventService->service_provider_profile_id === (int) $profile->id, 404);
 
-        $validated = $this->validated($request);
+        $validated = $this->validated($request, $eventService);
 
         $eventService->update([
-            ...Arr::except($validated, ['attributes_text', 'availability_notes_text']),
+            ...Arr::except($validated, ['attributes_text', 'availability_notes_text', 'images']),
             'country_code' => strtoupper($validated['country_code']),
             'status' => $validated['status'] === VenueStatus::Published->value ? VenueStatus::Published : VenueStatus::Draft,
             'published_at' => $validated['status'] === VenueStatus::Published->value ? ($eventService->published_at ?: now()) : null,
@@ -49,7 +57,27 @@ class EventServiceController extends Controller
             'availability_notes' => $this->linesToArray($validated['availability_notes_text'] ?? ''),
         ]);
 
+        $this->storeImages($request, $eventService);
+
         return back()->with('pse_status', 'Service mis à jour.');
+    }
+
+    public function destroyMedia(Request $request, EventService $eventService, EventServiceMedia $eventServiceMedia): RedirectResponse
+    {
+        $profile = $this->profile($request);
+        abort_unless((int) $eventService->service_provider_profile_id === (int) $profile->id, 404);
+        abort_unless((int) $eventServiceMedia->event_service_id === (int) $eventService->id, 404);
+
+        $this->eventServiceImageService->delete($eventServiceMedia);
+
+        return back()->with('pse_status', 'Photo retirée.');
+    }
+
+    private function storeImages(Request $request, EventService $eventService): void
+    {
+        foreach ($request->file('images', []) as $image) {
+            $this->eventServiceImageService->store($eventService, $image);
+        }
     }
 
     public function toggle(Request $request, EventService $eventService): RedirectResponse
@@ -106,9 +134,13 @@ class EventServiceController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function validated(Request $request): array
+    private function validated(Request $request, ?EventService $eventService = null): array
     {
+        $remainingImageSlots = max(0, self::MaxImages - ($eventService?->media()->count() ?? 0));
+
         return $request->validate([
+            'images' => ['nullable', 'array', 'max:'.$remainingImageSlots],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
             'event_service_type_id' => ['required', 'integer', 'exists:event_service_types,id'],
             'name' => ['required', 'string', 'max:255'],
             'short_description' => ['nullable', 'string', 'max:500'],

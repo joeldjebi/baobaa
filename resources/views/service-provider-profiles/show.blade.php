@@ -105,11 +105,15 @@
 
                     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @forelse ($services as $service)
-                            <article class="rounded-[22px] border border-[#dce6f7] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#173e7a]/12">
-                                <div class="flex items-start justify-between gap-3">
-                                    <span class="rounded-full bg-[#eef4ff] px-3 py-1.5 text-xs font-extrabold text-[#2f6bff]">{{ $service->type?->name ?? 'Service événementiel' }}</span>
-                                    <span class="rounded-full bg-[#ecfdf5] px-3 py-1.5 text-xs font-extrabold text-[#047857]">Disponible</span>
+                            <article class="overflow-hidden rounded-[22px] border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#173e7a]/12">
+                                <div class="relative">
+                                    <img src="{{ $service->cover_image_url }}" alt="{{ $service->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="aspect-[4/3] w-full object-cover">
+                                    <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-extrabold text-[#2f6bff] shadow-sm">{{ $service->type?->name ?? 'Service événementiel' }}</span>
+                                    @if ($service->media->count() > 1)
+                                        <span class="absolute bottom-3 right-3 rounded-full bg-[#07152f]/80 px-3 py-1 text-xs font-extrabold text-white">{{ $service->media->count() }} photos</span>
+                                    @endif
                                 </div>
+                                <div class="p-5">
                                 <h3 class="mt-4 line-clamp-2 text-xl font-extrabold tracking-[-0.03em] text-[#151821]">{{ $service->name }}</h3>
                                 <p class="mt-3 line-clamp-3 text-sm font-semibold leading-6 text-[#52617b]">{{ $service->short_description ?: $service->description }}</p>
                                 <div class="mt-5 rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">
@@ -123,6 +127,7 @@
                                     </div>
                                 </div>
                                 <a href="{{ route('event-services.index', ['prestataire' => $serviceProviderProfile->public_uuid]) }}" class="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Réserver ce service</a>
+                                </div>
                             </article>
                         @empty
                             <div class="rounded-[18px] border border-dashed border-[#cbd8f4] bg-white p-8 text-sm font-bold text-[#6f7890]">

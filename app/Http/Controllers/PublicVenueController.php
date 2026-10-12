@@ -250,7 +250,7 @@ class PublicVenueController extends Controller
             ->firstOrFail();
 
         $publicEventServices = EventService::query()
-            ->with(['type', 'serviceProviderProfile'])
+            ->with(['type', 'serviceProviderProfile', 'media'])
             ->publiclyAvailable()
             ->when($venue->city, fn ($query) => $query->orderByRaw('CASE WHEN city = ? THEN 0 ELSE 1 END', [$venue->city]))
             ->orderBy('starting_price')

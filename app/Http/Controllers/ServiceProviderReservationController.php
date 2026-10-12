@@ -102,20 +102,9 @@ class ServiceProviderReservationController extends Controller
         $profile = $this->profile($request);
         $this->authorizeProject($profile, $eventProject);
 
-        $this->providerItemsQuery($eventProject, $profile)
-            ->get()
-            ->each(function (EventProjectItem $item): void {
-                $item->forceFill([
-                    'provider_confirmed_at' => $item->provider_confirmed_at ?: now(),
-                    'status' => $item->client_confirmed_at
-                        ? EventProjectItemStatus::Confirmed
-                        : EventProjectItemStatus::AwaitingClientConfirmation,
-                ])->save();
-            });
+        app(EventProjectService::class)->confirmProviderLane($eventProject, $profile->id, 'provider');
 
-        app(EventProjectService::class)->refreshTotals($eventProject);
-
-        return back()->with('pse_status', 'Proforma de réservation confirmée côté prestataire.');
+        return back()->with('pse_status', 'Devis confirmé. Le client est invité à le valider puis à payer l’acompte.');
     }
 
     private function reservationQuery(ServiceProviderProfile $profile): Builder

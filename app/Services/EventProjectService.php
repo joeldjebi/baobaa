@@ -10,8 +10,12 @@ use App\Models\Booking;
 use App\Models\EventProject;
 use App\Models\EventProjectItem;
 use App\Models\EventService;
+use App\Models\Payment;
+use App\Models\ServiceProviderProfile;
 use App\Models\User;
 use App\Models\Venue;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class EventProjectService
@@ -45,6 +49,122 @@ class EventProjectService
                 ->where('status', EventProjectItemStatus::Confirmed->value)
                 ->sum('quoted_amount'),
         ]);
+    }
+
+    /**
+     * Items quoted by one service provider inside a project: the provider "lane" negotiated as a whole.
+     *
+     * @return Collection<int, EventProjectItem>
+     */
+    public function providerLaneItems(EventProject $project, int $serviceProviderProfileId): Collection
+    {
+        return $project->items()
+            ->where('item_type', 'event_service')
+            ->where('provider_type', 'service_provider_profile')
+            ->where('provider_id', $serviceProviderProfileId)
+            ->whereNot('status', EventProjectItemStatus::Cancelled->value)
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * Record the confirmation of one party and move the lane to payment or confirmation when both agreed.
+     *
+     * @param  'client'|'provider'  $party
+     */
+    public function confirmProviderLane(EventProject $project, int $serviceProviderProfileId, string $party): void
+    {
+        DB::transaction(function () use ($project, $serviceProviderProfileId, $party): void {
+            $this->providerLaneItems($project, $serviceProviderProfileId)
+                ->reject(fn (EventProjectItem $item): bool => $item->paid_at !== null)
+                ->each(function (EventProjectItem $item) use ($party): void {
+                    $clientConfirmedAt = $party === 'client' ? ($item->client_confirmed_at ?: now()) : $item->client_confirmed_at;
+                    $providerConfirmedAt = $party === 'provider' ? ($item->provider_confirmed_at ?: now()) : $item->provider_confirmed_at;
+
+                    $item->forceFill([
+                        'client_confirmed_at' => $clientConfirmedAt,
+                        'provider_confirmed_at' => $providerConfirmedAt,
+                        'status' => match (true) {
+                            $clientConfirmedAt && $providerConfirmedAt => (int) $item->deposit_amount > 0
+                                ? EventProjectItemStatus::AwaitingPayment
+                                : EventProjectItemStatus::Confirmed,
+                            $clientConfirmedAt !== null => EventProjectItemStatus::AwaitingProviderConfirmation,
+                            default => EventProjectItemStatus::AwaitingClientConfirmation,
+                        },
+                    ])->save();
+                });
+
+            $this->refreshTotals($project);
+        });
+    }
+
+    /**
+     * Amount still due to secure the provider lane.
+     */
+    public function providerLaneDepositDue(EventProject $project, int $serviceProviderProfileId): int
+    {
+        return (int) $this->providerLaneItems($project, $serviceProviderProfileId)
+            ->where('status', EventProjectItemStatus::AwaitingPayment)
+            ->whereNull('paid_at')
+            ->sum('deposit_amount');
+    }
+
+    /**
+     * Register the deposit payment of a provider lane and confirm its items.
+     *
+     * @param  array<string, mixed>  $providerPayload
+     */
+    public function recordProviderLaneDeposit(EventProject $project, ServiceProviderProfile $serviceProviderProfile, User $payer, string $paymentMethod, array $providerPayload = []): ?Payment
+    {
+        return DB::transaction(function () use ($project, $serviceProviderProfile, $payer, $paymentMethod, $providerPayload): ?Payment {
+            $items = $this->providerLaneItems($project, $serviceProviderProfile->id)
+                ->where('status', EventProjectItemStatus::AwaitingPayment)
+                ->whereNull('paid_at');
+            $amount = (int) $items->sum('deposit_amount');
+
+            if ($items->isEmpty() || $amount <= 0) {
+                return null;
+            }
+
+            $commission = app(PartnerConditionsService::class)->serviceProviderCommission($serviceProviderProfile, (int) $items->sum('quoted_amount'));
+
+            $payment = $project->payments()->create([
+                'provider_type' => 'service_provider_profile',
+                'provider_id' => $serviceProviderProfile->id,
+                'payer_id' => $payer->id,
+                'reference' => $this->uniquePaymentReference(),
+                'provider' => $paymentMethod,
+                'payment_method' => $paymentMethod,
+                'status' => PaymentStatus::Succeeded,
+                'amount' => $amount,
+                'currency' => $project->currency,
+                'provider_payload' => [
+                    'reason' => 'event_service_deposit',
+                    'event_project_item_ids' => $items->modelKeys(),
+                    'commission' => $commission,
+                    ...$providerPayload,
+                ],
+                'paid_at' => now(),
+            ]);
+
+            $items->each(fn (EventProjectItem $item) => $item->forceFill([
+                'status' => EventProjectItemStatus::Confirmed,
+                'paid_at' => now(),
+            ])->save());
+
+            $this->refreshTotals($project);
+
+            return $payment;
+        });
+    }
+
+    private function uniquePaymentReference(): string
+    {
+        do {
+            $reference = 'PAY-'.now()->format('ymd').'-'.Str::upper(Str::random(8));
+        } while (Payment::query()->where('reference', $reference)->exists());
+
+        return $reference;
     }
 
     /**

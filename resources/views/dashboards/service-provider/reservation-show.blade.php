@@ -104,9 +104,23 @@
                 @unless ($providerConfirmed)
                     <form method="POST" action="{{ route('service-provider.reservations.proforma.confirm', $reservation) }}" class="mt-5">
                         @csrf
-                        <button class="rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Confirmer la proforma</button>
+                        <button class="rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Confirmer le devis</button>
                     </form>
                 @endunless
+
+                @php
+                    $paidItems = $providerItems->whereNotNull('paid_at');
+                    $awaitingClient = $providerItems->contains(fn ($item) => $item->client_confirmed_at === null);
+                @endphp
+                <div class="mt-5 rounded-2xl p-4 text-sm font-extrabold ring-1 {{ $paidItems->isNotEmpty() ? 'bg-[#ecfdf5] text-[#047857] ring-[#a7f3d0]' : 'bg-[#f7faff] text-[#52617b] ring-[#dce6f7]' }}">
+                    @if ($paidItems->isNotEmpty())
+                        Acompte payé par le client le {{ $paidItems->max('paid_at')?->format('d/m/Y') }} : la prestation est confirmée.
+                    @elseif ($awaitingClient)
+                        En attente de la validation du devis par le client.
+                    @else
+                        Devis validé par le client : en attente du paiement de l’acompte.
+                    @endif
+                </div>
             </section>
 
             <section class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">

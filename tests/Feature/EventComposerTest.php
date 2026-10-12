@@ -111,7 +111,7 @@ test('client creates a standalone event project with PSE services and ticketing'
             'event_service_ids' => [$service->id],
             'ticketing_requested' => true,
         ])
-        ->assertRedirect(route('client.projects'))
+        ->assertRedirectContains('/client/evenements/')
         ->assertSessionHas('project_status');
 
     $project = EventProject::query()->with('items')->firstOrFail();
@@ -173,7 +173,7 @@ test('client can reserve only PSE services without a venue booking item', functi
             'city' => 'Abidjan',
             'event_service_ids' => [$service->id],
         ])
-        ->assertRedirect(route('client.projects'));
+        ->assertRedirectContains('/client/evenements/');
 
     $project = EventProject::query()->with('items')->firstOrFail();
 
@@ -220,7 +220,7 @@ test('service booking blocks overlapping reservations for ten minutes', function
             'city' => 'Abidjan',
             'event_service_ids' => [$service->id],
         ])
-        ->assertRedirect(route('client.projects'));
+        ->assertRedirectContains('/client/evenements/');
 
     $this->actingAs($secondClient)
         ->from(route('event-services.index'))

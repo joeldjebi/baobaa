@@ -53,4 +53,9 @@ class EventProject extends Model
     {
         return $this->hasMany(EventProjectMessage::class)->latest();
     }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

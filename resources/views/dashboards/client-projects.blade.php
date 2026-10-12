@@ -59,7 +59,10 @@
                             <h2 class="mt-1 break-words text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">{{ $project->name }}</h2>
                             <p class="mt-1 text-sm font-semibold text-[#6f7890]">{{ $project->event_date?->format('d/m/Y') ?? 'Date à préciser' }} · {{ $project->city ?? 'Ville à préciser' }}</p>
                         </div>
-                        <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $projectStatusLabels[$project->status->value] ?? 'À suivre' }}</span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $projectStatusLabels[$project->status->value] ?? 'À suivre' }}</span>
+                            <a href="{{ route('client.projects.show', $project) }}" class="rounded-full bg-[#2f6bff] px-4 py-1.5 text-xs font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Ouvrir le dossier</a>
+                        </div>
                     </div>
 
                     <div class="grid gap-3 p-4 md:grid-cols-3">

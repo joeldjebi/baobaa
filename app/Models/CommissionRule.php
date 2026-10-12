@@ -17,6 +17,7 @@ class CommissionRule extends Model
         'scope',
         'venue_category_id',
         'owner_profile_id',
+        'service_provider_profile_id',
         'commission_type',
         'percentage_rate',
         'fixed_amount',
@@ -39,6 +40,11 @@ class CommissionRule extends Model
     public function venueCategory(): BelongsTo
     {
         return $this->belongsTo(VenueCategory::class);
+    }
+
+    public function serviceProviderProfile(): BelongsTo
+    {
+        return $this->belongsTo(ServiceProviderProfile::class);
     }
 
     public function ownerProfile(): BelongsTo

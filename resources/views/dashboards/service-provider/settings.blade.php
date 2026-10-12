@@ -1,4 +1,18 @@
 <x-dashboards.service-provider-shell title="Paramètres prestataire" subtitle="Gérez votre identité publique et vos informations de contact." active="settings" :profile="$profile" :active-services-count="$activeServicesCount" :draft-services-count="$draftServicesCount" :requests-count="$requestsCount" :gross-revenue="$grossRevenue">
+    <section class="mb-5 rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
+        <h2 class="text-lg font-extrabold text-[#07152f]">Vos conditions BAOBAA</h2>
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+            <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Commission</p>
+                <p class="mt-2 text-sm font-extrabold leading-6 text-[#151821]">{{ $commissionLabel ?? 'Aucune commission active pour le moment.' }}</p>
+            </div>
+            <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
+                <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Acompte</p>
+                <p class="mt-2 text-sm font-extrabold leading-6 text-[#151821]">L’acompte de chaque service est celui que vous indiquez sur l’offre. Le client le paie après avoir validé votre devis ; la prestation est alors confirmée.</p>
+            </div>
+        </div>
+    </section>
+
     <form method="POST" action="{{ route('service-provider.settings.update') }}" enctype="multipart/form-data" class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">
         @csrf
         @method('PATCH')

@@ -181,7 +181,7 @@ class SapDashboardController extends Controller
         return view('dashboards.sap.payments', [
             ...$this->metrics(),
             'payments' => Payment::query()
-                ->with(['booking.venue.ownerProfile', 'payer'])
+                ->with(['booking.venue.ownerProfile', 'payer', 'eventProject', 'serviceProviderProfile'])
                 ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')))
                 ->when($request->filled('q'), function (Builder $query) use ($request): void {
                     $search = '%'.$request->string('q')->toString().'%';
@@ -246,8 +246,9 @@ class SapDashboardController extends Controller
             ...$this->metrics(),
             'categories' => VenueCategory::query()->orderBy('name')->get(['id', 'name']),
             'owners' => OwnerProfile::query()->orderBy('business_name')->get(['id', 'business_name']),
+            'serviceProviders' => ServiceProviderProfile::query()->orderBy('business_name')->get(['id', 'business_name']),
             'rules' => CommissionRule::query()
-                ->with(['venueCategory', 'ownerProfile'])
+                ->with(['venueCategory', 'ownerProfile', 'serviceProviderProfile'])
                 ->when($request->filled('scope'), fn (Builder $query) => $query->where('scope', $request->string('scope')))
                 ->latest()
                 ->paginate(10)
@@ -259,9 +260,10 @@ class SapDashboardController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'scope' => ['required', 'in:global,category,owner'],
-            'venue_category_id' => ['nullable', 'integer'],
-            'owner_profile_id' => ['nullable', 'integer'],
+            'scope' => ['required', 'in:global,category,owner,service_provider'],
+            'venue_category_id' => ['nullable', 'integer', 'required_if:scope,category', 'exists:venue_categories,id'],
+            'owner_profile_id' => ['nullable', 'integer', 'required_if:scope,owner', 'exists:owner_profiles,id'],
+            'service_provider_profile_id' => ['nullable', 'integer', 'exists:service_provider_profiles,id'],
             'commission_type' => ['required', 'in:percentage,fixed,hybrid'],
             'percentage_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'fixed_amount' => ['nullable', 'integer', 'min:0'],
@@ -269,6 +271,9 @@ class SapDashboardController extends Controller
 
         CommissionRule::query()->create([
             ...$validated,
+            'venue_category_id' => $validated['scope'] === 'category' ? $validated['venue_category_id'] : null,
+            'owner_profile_id' => $validated['scope'] === 'owner' ? $validated['owner_profile_id'] : null,
+            'service_provider_profile_id' => $validated['scope'] === 'service_provider' ? ($validated['service_provider_profile_id'] ?? null) : null,
             'currency' => 'XOF',
             'is_active' => true,
             'starts_at' => now(),

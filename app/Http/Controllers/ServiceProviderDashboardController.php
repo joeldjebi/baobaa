@@ -7,6 +7,7 @@ use App\Models\EventProjectItem;
 use App\Models\EventService;
 use App\Models\EventServiceType;
 use App\Models\ServiceProviderProfile;
+use App\Services\PartnerConditionsService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,6 +68,7 @@ class ServiceProviderDashboardController extends Controller
         return view('dashboards.service-provider.settings', [
             ...$this->metrics($profile),
             'profile' => $profile,
+            'commissionLabel' => app(PartnerConditionsService::class)->serviceProviderCommissionLabel($profile),
         ]);
     }
 

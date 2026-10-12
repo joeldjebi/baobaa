@@ -16,7 +16,7 @@
                 <article class="rounded-2xl border border-[#edf2fb] bg-[#fbfcff] p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="truncate font-extrabold text-[#151821]">{{ $payment->booking?->venue?->name }}</p>
+                            <p class="truncate font-extrabold text-[#151821]">{{ $payment->subjectLabel() }}</p>
                             <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $payment->reference }}</p>
                         </div>
                         <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-[11px] font-extrabold text-[#2f6bff]">{{ $paymentStatusLabels[$payment->status->value] ?? 'À suivre' }}</span>
@@ -38,7 +38,7 @@
                     @forelse ($payments as $payment)
                         <tr class="transition hover:bg-[#fbfcff]">
                             <td class="px-4 py-4 font-extrabold text-[#151821]">{{ $payment->reference }}</td>
-                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $payment->booking?->venue?->name }}</td>
+                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $payment->subjectLabel() }}</td>
                             <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $payment->payment_method ?? $payment->provider }}</td>
                             <td class="px-4 py-4 font-extrabold text-[#07152f]">{{ number_format($payment->amount, 0, ',', ' ') }} {{ $payment->currency }}</td>
                             <td class="px-4 py-4"><span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $paymentStatusLabels[$payment->status->value] ?? 'À suivre' }}</span></td>

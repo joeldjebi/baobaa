@@ -71,7 +71,7 @@ class ClientProfileController extends Controller
             ...app(DashboardController::class)->clientMetricsFor($request->user()),
             'client' => $request->user(),
             'payments' => Payment::query()
-                ->with('booking.venue')
+                ->with(['booking.venue', 'eventProject', 'serviceProviderProfile'])
                 ->where('payer_id', $request->user()->id)
                 ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
                 ->when($request->filled('q'), function ($query) use ($request): void {

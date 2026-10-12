@@ -108,7 +108,7 @@ class PublicServiceProviderProfileController extends Controller
         ]);
 
         $services = $profile->services()
-            ->with('type')
+            ->with(['type', 'media'])
             ->where('status', VenueStatus::Published)
             ->when($filters['type_id'], fn (Builder $query) => $query->where('event_service_type_id', $filters['type_id']))
             ->when($filters['q'] !== '', function (Builder $query) use ($filters): void {

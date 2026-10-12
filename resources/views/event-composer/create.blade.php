@@ -178,6 +178,7 @@
                                             @foreach ($provider->services as $service)
                                                 <label class="group flex cursor-pointer gap-3 rounded-[22px] border border-[#e2eaf8] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:shadow-xl hover:shadow-[#173e7a]/8">
                                                     <input type="checkbox" name="event_service_ids[]" value="{{ $service->id }}" data-service-checkbox data-service-name="{{ $service->name }}" data-service-price="{{ $service->starting_price }}" class="mt-1 size-5 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(in_array((int) $service->id, $selectedServiceIds, true))>
+                                                    <img src="{{ $service->cover_image_url }}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="size-16 shrink-0 rounded-2xl object-cover ring-1 ring-[#dce6f7]">
                                                     <span class="min-w-0">
                                                         <span class="block text-sm font-extrabold text-[#07152f]">{{ $service->name }}</span>
                                                         <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">{{ $service->type?->name ?? 'Service événementiel' }} · {{ $service->service_area ?: $service->city }}</span>

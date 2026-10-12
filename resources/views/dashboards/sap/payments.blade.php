@@ -15,7 +15,7 @@
                                 <p class="text-xs font-bold text-[#64708a]">{{ $payment->paid_at?->format('d/m/Y H:i') }}</p>
                             </td>
                             <td class="px-4 py-4 font-bold text-[#64708a]">{{ $payment->payer?->name }}</td>
-                            <td class="px-4 py-4 font-bold text-[#64708a]">{{ $payment->booking?->venue?->name }}</td>
+                            <td class="px-4 py-4 font-bold text-[#64708a]">{{ $payment->subjectLabel() }}</td>
                             <td class="px-4 py-4 font-extrabold">{{ number_format($payment->amount, 0, ',', ' ') }} {{ $payment->currency }}</td>
                             <td class="px-4 py-4 font-bold">{{ $payment->provider }}</td>
                             <td class="px-4 py-4">
