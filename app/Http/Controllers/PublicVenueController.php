@@ -62,8 +62,7 @@ class PublicVenueController extends Controller
             ->when($request->filled('max_price'), fn ($query) => $query->where('starting_price', '<=', $request->integer('max_price')))
             ->when($calendarRange !== null, fn (Builder $query) => $this->applyCalendarAvailabilityFilters($query, ...$calendarRange))
             ->when($requestedHours !== null, fn (Builder $query) => $this->applyOpeningHoursFilter($query, ...$requestedHours))
-            ->orderByDesc('published_at')
-            ->orderBy('name')
+            ->tap(fn (Builder $query) => $this->applySort($query, $request->string('sort')->toString()))
             ->paginate(12)
             ->withQueryString();
 
@@ -381,6 +380,31 @@ class PublicVenueController extends Controller
                     ->where('starts_at', '<', $rangeEndsAt->endOfDay())
                     ->where('ends_at', '>', $rangeStartsAt->startOfDay());
             });
+    }
+
+    /**
+     * Labels of the catalog sort options, keyed by query value.
+     *
+     * @return array<string, string>
+     */
+    public static function sortOptions(): array
+    {
+        return [
+            'recent' => 'Les plus récents',
+            'price_asc' => 'Prix croissant',
+            'price_desc' => 'Prix décroissant',
+            'capacity_desc' => 'Plus grande capacité',
+        ];
+    }
+
+    private function applySort(Builder $query, string $sort): void
+    {
+        match ($sort) {
+            'price_asc' => $query->orderBy('starting_price')->orderBy('name'),
+            'price_desc' => $query->orderByDesc('starting_price')->orderBy('name'),
+            'capacity_desc' => $query->orderByDesc('max_capacity')->orderBy('name'),
+            default => $query->orderByDesc('published_at')->orderBy('name'),
+        };
     }
 
     /**

@@ -9,7 +9,6 @@
     $user = auth()->user();
     $isClient = $user?->hasPortal(UserRole::Client) ?? false;
     $isOwner = $user?->hasPortal(UserRole::Owner) ?? false;
-    $ownerCtaUrl = $user ? route('portals.owner.request.form') : route('owner.register');
     $linkBase = 'rounded-full px-4 py-2 transition hover:bg-white hover:text-[#2f6bff]';
     $activeClass = 'rounded-full bg-white px-4 py-2 text-[#2f6bff] shadow-sm';
 @endphp
@@ -18,14 +17,12 @@
     <a href="{{ url('/') }}" class="{{ $active === 'explore' ? $activeClass : $linkBase }}">Explorer</a>
     <a href="{{ route('venues.index') }}" class="{{ $active === 'venues' ? $activeClass : $linkBase }}">Espaces</a>
     <a href="{{ route('owner-profiles.index') }}" class="{{ $active === 'partners' ? $activeClass : $linkBase }}">Partenaires</a>
-    <a href="{{ route('service-provider-profiles.index') }}" class="{{ $active === 'event-services' ? $activeClass : $linkBase }}">Prestataires</a>
+    <a href="{{ route('service-provider-profiles.index') }}" class="{{ $active === 'event-services' ? $activeClass : $linkBase }}">Professionnels</a>
     <a href="{{ route('products.index') }}" class="{{ $active === 'products' ? $activeClass : $linkBase }}">Location et vente</a>
 
     @if ($isClient)
         <a href="{{ route('client.reservations') }}" class="{{ $active === 'client-reservations' ? $activeClass : $linkBase }}">Mes réservations</a>
     @elseif ($isOwner)
         <a href="{{ route('owner.dashboard') }}" class="{{ $active === 'owner-dashboard' ? $activeClass : $linkBase }}">Mon espace pro</a>
-    @else
-        <a href="{{ $ownerCtaUrl }}" class="{{ $active === 'list-venue' ? $activeClass : $linkBase }}">Devenir partenaire</a>
     @endif
 </nav>

@@ -22,6 +22,7 @@ class PublicOwnerProfileController extends Controller
             ->whereHas('venues', fn (Builder $query) => $query->where('status', VenueStatus::Published));
 
         $profiles = (clone $publicProfilesQuery)
+            ->with(['venues' => fn ($query) => $query->published()->with('media')->latest('published_at')->limit(1)])
             ->withCount([
                 'venues as published_venues_count' => fn (Builder $query) => $query->where('status', VenueStatus::Published),
             ])

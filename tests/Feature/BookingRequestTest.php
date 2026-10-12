@@ -38,7 +38,7 @@ test('guest sees a premium reservation CTA and login requirement on the venue pa
     $this->get(route('venues.show', $venue->slug))
         ->assertOk()
         ->assertSeeText('Réserver cet espace')
-        ->assertSeeText('Réserver uniquement un service événementiel')
+        ->assertSeeText('Réserver uniquement des professionnels')
         ->assertSee(route('venues.reservation', $venue->slug))
         ->assertSee(route('event-services.index'))
         ->assertSee(route('portal.login', ['portal' => 'client', 'redirect' => route('venues.show', $venue->slug)]))

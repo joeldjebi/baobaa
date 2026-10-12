@@ -16,7 +16,7 @@
             <div class="mt-4 grid gap-2 text-sm font-bold text-white/70">
                 <a href="{{ route('venues.index') }}" class="hover:text-white">Espaces</a>
                 <a href="{{ route('owner-profiles.index') }}" class="hover:text-white">Partenaires</a>
-                <a href="{{ route('service-provider-profiles.index') }}" class="hover:text-white">Prestataires</a>
+                <a href="{{ route('service-provider-profiles.index') }}" class="hover:text-white">Professionnels de l’événement</a>
                 <a href="{{ route('event-services.index') }}" class="hover:text-white">Services événementiels</a>
                 <a href="{{ route('products.index') }}" class="hover:text-white">Location et vente de matériel</a>
             </div>
@@ -28,7 +28,7 @@
                 <a href="{{ route('portal.login', ['portal' => 'client']) }}" class="hover:text-white">Connexion client</a>
                 <a href="{{ route('client.register') }}" class="hover:text-white">Créer un compte client</a>
                 <a href="{{ route('venues.list-venue') }}" class="hover:text-white">Publier un espace</a>
-                <a href="{{ route('service-provider.register') }}" class="hover:text-white">Devenir prestataire</a>
+                <a href="{{ route('service-provider.register') }}" class="hover:text-white">Devenir professionnel</a>
             </div>
         </div>
 

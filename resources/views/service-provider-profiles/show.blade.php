@@ -6,20 +6,7 @@
 
 <x-layouts.baobaa :title="$publicName.' - BAOBAA'" :description="\Illuminate\Support\Str::limit($serviceProviderProfile->description ?: 'Découvrez les services événementiels de '.$publicName.' sur BAOBAA.', 160)" :image="$serviceProviderProfile->logo_url">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
-        <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
-            <div class="mx-auto flex max-w-7xl items-center justify-between">
-                <a href="{{ url('/') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
-                </a>
-
-                <x-navigation.public-menu active="event-services" />
-
-                <div class="flex items-center gap-2">
-                    <x-navigation.account-menu />
-                    <x-navigation.mobile-menu active="event-services" />
-                </div>
-            </div>
-        </header>
+        <x-navigation.public-header active="event-services" cta-label="Devenir professionnel" :cta-url="route('service-provider.register')" />
 
         <section class="relative overflow-hidden px-5 py-8 sm:px-8">
             <div class="absolute inset-0 bg-[linear-gradient(180deg,#f8fbff_0%,#eef3ff_62%,#f7f4ff_100%)]"></div>

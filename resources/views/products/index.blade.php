@@ -6,13 +6,31 @@
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <x-navigation.public-header active="products" />
 
-        <section class="mx-auto max-w-7xl px-5 py-8 sm:px-8">
-            <p class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff] shadow-sm ring-1 ring-[#dce6f7]">Location et vente</p>
-            <h1 class="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.05em] sm:text-5xl">Tout le matériel de votre événement, livré ou à retirer.</h1>
-            <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#667088]">Chaises, tables, sonorisation, lumière, décoration… Comparez les prix, vérifiez le stock à vos dates et commandez auprès de prestataires vérifiés.</p>
+        <section class="border-b border-white/80 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] px-5 py-7 sm:px-8 lg:py-9">
+            <div class="mx-auto max-w-7xl">
+                <nav class="text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane"><a href="{{ url('/') }}" class="hover:text-[#2f6bff]">Accueil</a> / Location et vente</nav>
+                <h1 class="mt-2 text-3xl font-extrabold tracking-[-0.045em] text-[#121722] sm:text-4xl">Location et vente de matériel événementiel</h1>
+                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#667088]">Chaises, tables, sonorisation, lumière, décoration… Vérifiez le stock à vos dates, puis faites-vous livrer ou retirez le matériel.</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    @foreach ($categories->take(8) as $category)
+                        <a href="{{ route('products.index', ['category' => $category->slug]) }}" @class([
+                            'rounded-full px-4 py-2 text-xs font-extrabold transition',
+                            'bg-[#2f6bff] text-white' => request('category') === $category->slug,
+                            'bg-white text-[#4d5872] ring-1 ring-[#dce6f7] hover:text-[#2f6bff]' => request('category') !== $category->slug,
+                        ])>{{ $category->name }}</a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
 
-            <div class="mt-7 grid gap-6 lg:grid-cols-[300px_1fr]">
-                <form method="GET" action="{{ route('products.index') }}" class="h-max rounded-[24px] border border-[#dce6f7] bg-white p-4 shadow-xl shadow-[#173e7a]/8 lg:sticky lg:top-24">
+        <section class="mx-auto max-w-7xl px-5 py-8 sm:px-8">
+            <div class="grid gap-6 lg:grid-cols-[300px_1fr]">
+                <div>
+                <button type="button" data-filters-toggle aria-expanded="false" aria-controls="products-filter-form" class="mb-3 flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-[#151821] shadow-sm ring-1 ring-[#dce6f7] lg:hidden">
+                    <span>Filtres{{ count(request()->except('page')) > 0 ? ' actifs' : '' }}</span>
+                    <span aria-hidden="true">⌄</span>
+                </button>
+                <form method="GET" action="{{ route('products.index') }}" id="products-filter-form" class="hidden h-max rounded-[24px] border border-[#dce6f7] bg-white p-4 shadow-xl shadow-[#173e7a]/8 lg:sticky lg:top-24 lg:block">
                     <div class="flex items-center justify-between">
                         <p class="text-sm font-extrabold">Filtres</p>
                         @if (request()->query())
@@ -52,6 +70,7 @@
                     </div>
                     <button class="mt-4 w-full rounded-xl bg-[#2f6bff] px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">Appliquer</button>
                 </form>
+                </div>
 
                 <div>
                     <p class="mb-4 text-sm font-extrabold text-[#4d5872]">{{ $products->total() }} article{{ $products->total() > 1 ? 's' : '' }}</p>
@@ -77,8 +96,18 @@
                             </a>
                         @empty
                             <div class="rounded-[24px] border border-dashed border-[#cbd8f4] bg-white p-10 text-center sm:col-span-2 xl:col-span-3">
-                                <p class="text-lg font-extrabold">Aucun article ne correspond à votre recherche.</p>
-                                <a href="{{ route('products.index') }}" class="mt-4 inline-flex rounded-full bg-[#2f6bff] px-5 py-2.5 text-sm font-extrabold text-white">Voir tout le catalogue</a>
+                                @if (count(request()->except('page')) > 0)
+                                    <p class="text-lg font-extrabold">Aucun article ne correspond à votre recherche.</p>
+                                    <p class="mt-2 text-sm font-semibold text-[#6f7890]">Élargissez vos dates, la ville ou le prix maximum.</p>
+                                    <a href="{{ route('products.index') }}" class="mt-4 inline-flex rounded-full bg-[#2f6bff] px-5 py-2.5 text-sm font-extrabold text-white">Voir tout le catalogue</a>
+                                @else
+                                    <p class="text-lg font-extrabold">Le catalogue de matériel ouvre bientôt.</p>
+                                    <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[#6f7890]">Les professionnels publient actuellement leur matériel. En attendant, trouvez une équipe pour votre événement.</p>
+                                    <div class="mt-5 flex flex-wrap justify-center gap-2">
+                                        <a href="{{ route('service-provider-profiles.index') }}" class="rounded-full bg-[#2f6bff] px-5 py-2.5 text-sm font-extrabold text-white">Voir les professionnels</a>
+                                        <a href="{{ route('service-provider.register') }}" class="rounded-full border border-[#dce6f7] px-5 py-2.5 text-sm font-extrabold text-[#151821]">Je loue du matériel</a>
+                                    </div>
+                                @endif
                             </div>
                         @endforelse
                     </div>
@@ -89,4 +118,11 @@
 
         <x-navigation.public-footer />
     </main>
+
+    <script>
+        document.querySelector('[data-filters-toggle]')?.addEventListener('click', (event) => {
+            const isHidden = document.getElementById('products-filter-form').classList.toggle('hidden');
+            event.currentTarget.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+        });
+    </script>
 </x-layouts.baobaa>

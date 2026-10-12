@@ -23,7 +23,7 @@ uses(RefreshDatabase::class);
 test('public home targets final clients without exposing internal portals', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('Réservez le lieu parfait')
+        ->assertSee('Le lieu, les professionnels et le matériel')
         ->assertSee(route('venues.index'))
         ->assertDontSee('Portail SAP')
         ->assertDontSee('Proprietaire');
@@ -227,7 +227,7 @@ test('public venues index lists published spaces and supports filters', function
 
     $this->get(route('venues.index'))
         ->assertOk()
-        ->assertSeeText('Trouvez l’espace')
+        ->assertSeeText('Espaces événementiels à réserver')
         ->assertSeeText('Salle conférence Riviera')
         ->assertSeeText('Jardin privé Dakar')
         ->assertDontSee('Espace encore en brouillon');
@@ -567,7 +567,7 @@ test('public service provider profiles and detail pages are available', function
 
     $this->get(route('service-provider-profiles.index'))
         ->assertOk()
-        ->assertSeeText('Prestataires événementiels')
+        ->assertSeeText('Professionnels de l’événement')
         ->assertSeeText('Studio Son Signature')
         ->assertSeeText('Capture Émotion')
         ->assertSee($profile->public_uuid)

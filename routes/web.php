@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\UserRole;
-use App\Enums\VenueStatus;
 use App\Http\Controllers\Auth\ClientRegisteredUserController;
 use App\Http\Controllers\Auth\PortalAuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
@@ -14,6 +13,7 @@ use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventComposerController;
 use App\Http\Controllers\EventServiceController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OwnerBookingStatusController;
 use App\Http\Controllers\OwnerPayoutController;
 use App\Http\Controllers\OwnerRegisteredUserController;
@@ -40,85 +40,9 @@ use App\Http\Controllers\ServiceProviderReservationController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestPaymentController;
 use App\Http\Controllers\VenueReviewController;
-use App\Models\Venue;
-use App\Models\VenueCategory;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    $categories = VenueCategory::query()
-        ->where('is_active', true)
-        ->whereHas('venues', fn ($query) => $query->where('status', VenueStatus::Published))
-        ->orderBy('sort_order')
-        ->orderBy('name')
-        ->get(['name', 'slug', 'icon']);
-
-    return view('welcome', [
-        'categories' => $categories,
-        'publishedVenuesCount' => Venue::query()->published()->count(),
-        'publishedCitiesCount' => Venue::query()->published()->distinct()->count('city'),
-        'featuredVenues' => Venue::query()
-            ->with(['category', 'media'])
-            ->withCount(['bookings', 'reviews'])
-            ->where('status', VenueStatus::Published)
-            ->orderByDesc('bookings_count')
-            ->orderByDesc('reviews_count')
-            ->orderByDesc('published_at')
-            ->limit(12)
-            ->get(),
-        'categoryCarouselVenues' => Venue::query()
-            ->with(['category', 'media'])
-            ->where('status', VenueStatus::Published)
-            ->whereNotNull('venue_category_id')
-            ->inRandomOrder()
-            ->limit(12)
-            ->get(),
-        'cityCarouselVenues' => Venue::query()
-            ->with(['category', 'media'])
-            ->where('status', VenueStatus::Published)
-            ->whereNotNull('city')
-            ->inRandomOrder()
-            ->limit(12)
-            ->get(),
-        'districtCarouselVenues' => Venue::query()
-            ->with(['category', 'media'])
-            ->where('status', VenueStatus::Published)
-            ->whereNotNull('district')
-            ->inRandomOrder()
-            ->limit(12)
-            ->get(),
-        'cityHighlights' => Venue::query()
-            ->where('status', VenueStatus::Published)
-            ->select('city', DB::raw('count(*) as venues_count'), DB::raw('min(starting_price) as starting_price'))
-            ->groupBy('city')
-            ->orderByDesc('venues_count')
-            ->limit(6)
-            ->get(),
-        'categoryHighlights' => VenueCategory::query()
-            ->where('is_active', true)
-            ->whereHas('venues', fn ($query) => $query->where('status', VenueStatus::Published))
-            ->withCount(['venues as published_venues_count' => fn ($query) => $query->where('status', VenueStatus::Published)])
-            ->orderByDesc('published_venues_count')
-            ->orderBy('sort_order')
-            ->limit(6)
-            ->get(['id', 'name', 'slug', 'icon']),
-        'searchSuggestions' => Venue::query()
-            ->where('status', VenueStatus::Published)
-            ->orderBy('name')
-            ->limit(12)
-            ->get(['name'])
-            ->map(fn (Venue $venue): array => ['label' => $venue->name, 'type' => 'Espace'])
-            ->merge($categories->map(fn (VenueCategory $category): array => ['label' => $category->name, 'type' => 'Catégorie']))
-            ->values(),
-        'citySuggestions' => Venue::query()
-            ->where('status', VenueStatus::Published)
-            ->select('city')
-            ->distinct()
-            ->orderBy('city')
-            ->pluck('city')
-            ->values(),
-    ]);
-});
+Route::get('/', HomeController::class)->name('home');
 
 Route::redirect('/login', '/client/login')->name('login');
 

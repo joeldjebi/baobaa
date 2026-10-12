@@ -25,7 +25,8 @@
         'city' => trim(($venue->district ? $venue->district.', ' : '').$venue->city, ', '),
         'district' => $venue->district,
         'guests' => $venue->min_capacity.'-'.$venue->max_capacity.' invités',
-        'price' => 'dès '.number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency.' '.($venue->price_unit ?? \App\Enums\PriceUnit::Event)->label(),
+        'price' => number_format($venue->starting_price, 0, ',', ' ').' '.$venue->currency,
+        'price_unit' => ($venue->price_unit ?? \App\Enums\PriceUnit::Event)->label(),
         'image' => $venue->cover_image_url,
         'verified' => $venue->verification_status === \App\Enums\VerificationStatus::Verified,
     ])->values();
@@ -74,7 +75,7 @@
 
                 <div class="flex items-center gap-2">
                     @guest
-                        <a href="{{ route('venues.list-venue') }}" class="hidden rounded-full bg-[#17191f] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#17191f]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] md:inline-flex">Devenir partenaire</a>
+                        <a href="{{ route('owner.register') }}" class="hidden rounded-full bg-[#17191f] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#17191f]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] md:inline-flex">Devenir partenaire</a>
                     @endguest
                     <x-navigation.cart-link />
                     <x-navigation.account-menu class="bg-white/82 text-[#17191f] ring-white/80 backdrop-blur" />
@@ -82,128 +83,152 @@
                 </div>
             </header>
 
-            <div class="relative z-[70] mx-auto flex max-w-[1450px] flex-col items-center pt-10 text-center sm:pt-14 lg:pt-16">
-                <div class="pointer-events-none absolute left-0 top-28 hidden w-[210px] text-left xl:block">
-                    <div class="animate-baobaa-float rounded-[1.65rem] border border-white/75 bg-white/78 p-4 shadow-[0_20px_65px_rgba(23,62,122,.12)] ring-1 ring-[#dce6f7]/70 backdrop-blur-xl">
-                        <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d8aa7]">Réservation</p>
-                        <p class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">sécurisée</p>
-                        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-[#dbe7ff]">
-                            <span class="animate-baobaa-line-flow block h-full w-2/3 rounded-full bg-[#2f6bff]"></span>
-                        </div>
-                    </div>
+            <div class="relative z-[70] mx-auto flex max-w-[1240px] flex-col items-center pt-8 text-center sm:pt-14 lg:pt-16">
+                <div class="animate-baobaa-fade-up inline-flex max-w-full items-center gap-2 rounded-full border border-white/80 bg-white/90 py-1.5 pl-1.5 pr-4 text-xs font-extrabold text-[#2f6bff] shadow-[0_10px_30px_rgba(25,64,150,.12)] ring-1 ring-[#cfdaf5] backdrop-blur sm:text-sm">
+                    @if ($heroThumbnails->isNotEmpty())
+                        <span class="flex -space-x-2">
+                            @foreach ($heroThumbnails as $thumbnail)
+                                <img src="{{ $thumbnail }}" alt="" width="28" height="28" class="size-7 rounded-full object-cover ring-2 ring-white" loading="eager" decoding="async">
+                            @endforeach
+                        </span>
+                    @endif
+                    <span class="whitespace-nowrap">{{ number_format($publishedVenuesCount, 0, ',', ' ') }} espace{{ $publishedVenuesCount > 1 ? 's' : '' }} dans {{ $publishedCitiesCount }} ville{{ $publishedCitiesCount > 1 ? 's' : '' }}</span>
+                    <span class="hidden text-[#9eb4ed] sm:inline">&middot;</span>
+                    <span class="hidden whitespace-nowrap sm:inline">Partenaires vérifiés</span>
                 </div>
 
-                <div class="pointer-events-none absolute right-0 top-36 hidden w-[230px] text-left xl:block">
-                    <div class="animate-baobaa-float rounded-[1.65rem] border border-white/75 bg-white/78 p-4 shadow-[0_20px_65px_rgba(23,62,122,.12)] ring-1 ring-[#dce6f7]/70 backdrop-blur-xl" style="animation-delay: -2.5s">
-                        <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d8aa7]">Disponibilités</p>
-                        <p class="mt-2 text-sm font-bold leading-5 text-[#07152f]">Comparez les meilleurs créneaux avant de réserver.</p>
-                        <div class="mt-4 grid grid-cols-4 gap-1.5">
-                            @foreach ([65, 88, 54, 78] as $height)
-                                <span class="block rounded-full bg-[#edf4ff] p-1">
-                                    <span class="block rounded-full bg-[#2f6bff]" style="height: {{ $height / 4 }}px"></span>
-                                </span>
+                <h1 class="animate-baobaa-fade-up mt-5 max-w-[900px] text-[34px] font-extrabold leading-[1.05] tracking-[-0.045em] text-[#202027] sm:text-[56px] lg:text-[68px]" style="animation-delay: .08s">
+                    Le lieu, les professionnels et le matériel de votre
+                    <span class="relative inline-block text-[#2f6bff]">
+                        événement
+                        <span class="absolute -bottom-1 left-1/2 h-1.5 w-[94%] -translate-x-1/2 rounded-full bg-[#9ab7ff]"></span>
+                    </span>
+                </h1>
+
+                <p class="animate-baobaa-fade-up mt-4 max-w-2xl text-base font-semibold leading-7 text-[#626b7e] sm:text-lg" style="animation-delay: .16s">
+                    Comparez des espaces vérifiés, réservez en ligne avec un acompte sécurisé et complétez votre événement en quelques clics.
+                </p>
+
+                <div class="animate-baobaa-fade-up relative z-[80] mt-7 w-full max-w-[1120px]" style="animation-delay: .24s" data-hero-search>
+                    <div class="mx-auto flex w-max max-w-full gap-1 overflow-x-auto rounded-full bg-white/80 p-1 text-sm font-extrabold shadow-sm ring-1 ring-[#dce6f7] backdrop-blur baobaa-scrollbar-none" role="tablist" aria-label="Que recherchez-vous ?">
+                        @foreach (['venues' => 'Espaces', 'professionals' => 'Professionnels', 'products' => 'Matériel'] as $tab => $label)
+                            <button type="button" role="tab" data-hero-tab="{{ $tab }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" class="shrink-0 rounded-full px-5 py-2 transition aria-selected:bg-[#2f6bff] aria-selected:text-white aria-selected:shadow-lg aria-selected:shadow-[#2f6bff]/25 text-[#52617b] hover:text-[#2f6bff]">{{ $label }}</button>
+                        @endforeach
+                    </div>
+
+                    <form method="GET" action="{{ route('venues.index') }}" data-hero-panel="venues" class="relative mt-3 rounded-[2rem] border border-white/80 bg-white/95 p-3 text-left shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df] backdrop-blur-xl" data-home-search-form>
+                        <div class="grid items-center gap-0 lg:grid-cols-[1.1fr_.85fr_.95fr_.9fr_auto]">
+                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quoi</span>
+                                <input type="text" name="q" autocomplete="off" data-search-input placeholder="Salle de mariage, rooftop…" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
+                            </label>
+                            <label class="relative border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5" data-city-autocomplete>
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Où</span>
+                                <input type="text" name="city" autocomplete="off" data-city-input placeholder="Ville ou quartier" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
+                                <div data-city-list class="absolute left-2 right-2 top-[calc(100%+8px)] z-[90] hidden rounded-2xl border border-[#dce6f7] bg-white p-2 text-left shadow-2xl shadow-[#173e7a]/16 lg:left-4 lg:right-4"></div>
+                            </label>
+                            <div class="relative border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5" data-date-range>
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quand</span>
+                                <button type="button" data-date-toggle class="mt-1 w-full bg-transparent text-left text-base font-semibold text-[#9a9ca3] outline-none">Choisir une date</button>
+                                <div data-date-panel class="absolute left-2 right-2 top-[calc(100%+8px)] z-[90] hidden rounded-3xl border border-[#dce6f7] bg-white p-4 shadow-2xl shadow-[#173e7a]/16 lg:left-4 lg:right-4 lg:min-w-[360px]">
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
+                                            <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date début</span>
+                                            <input type="date" name="start_date" min="{{ now()->toDateString() }}" data-start-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
+                                        </label>
+                                        <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
+                                            <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date fin</span>
+                                            <input type="date" name="end_date" min="{{ now()->toDateString() }}" data-end-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
+                                        </label>
+                                    </div>
+                                    <button type="button" data-date-apply class="mt-3 w-full rounded-full bg-[#2f6bff] px-4 py-2.5 text-sm font-extrabold text-white">Valider les dates</button>
+                                </div>
+                            </div>
+                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Invités</span>
+                                <input type="number" min="1" name="capacity" inputmode="numeric" placeholder="Nombre" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
+                            </label>
+                            <button class="mt-3 inline-flex items-center justify-center gap-2 rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0">
+                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                                Rechercher
+                            </button>
+                        </div>
+                        <div data-search-results class="relative z-[85] mt-3 hidden rounded-3xl border border-[#dce6f7] bg-[#f8fbff] p-3 text-left shadow-2xl shadow-[#173e7a]/12"></div>
+                    </form>
+
+                    <form method="GET" action="{{ route('service-provider-profiles.index') }}" data-hero-panel="professionals" hidden class="mt-3 rounded-[2rem] border border-white/80 bg-white/95 p-3 text-left shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df]">
+                        <div class="grid items-center gap-0 lg:grid-cols-[1.4fr_1fr_auto]">
+                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quel professionnel ?</span>
+                                <input type="text" name="q" placeholder="Sonorisation, photographe, décoration…" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
+                            </label>
+                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Ville</span>
+                                <select name="city" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none">
+                                    <option value="">Toutes les villes</option>
+                                    @foreach ($citySuggestions as $citySuggestion)
+                                        <option value="{{ $citySuggestion }}">{{ $citySuggestion }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <button class="mt-3 inline-flex items-center justify-center gap-2 rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0">Trouver un professionnel</button>
+                        </div>
+                    </form>
+
+                    <form method="GET" action="{{ route('products.index') }}" data-hero-panel="products" hidden class="mt-3 rounded-[2rem] border border-white/80 bg-white/95 p-3 text-left shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df]">
+                        <div class="grid items-center gap-0 lg:grid-cols-[1.4fr_1fr_auto]">
+                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
+                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quel matériel ?</span>
+                                <input type="text" name="q" placeholder="Chaises, tente, enceinte…" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
+                            </label>
+                            <div class="flex items-center gap-2 border-b border-[#e5e7ee] px-3 py-3 lg:border-b-0 lg:border-r lg:px-5">
+                                @foreach (['rental' => 'Louer', 'sale' => 'Acheter'] as $mode => $label)
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="mode" value="{{ $mode }}" class="peer sr-only" @checked($loop->first)>
+                                        <span class="block rounded-full px-4 py-2 text-sm font-extrabold text-[#52617b] ring-1 ring-[#dce6f7] peer-checked:bg-[#eef4ff] peer-checked:text-[#2f6bff] peer-checked:ring-[#2f6bff]">{{ $label }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <button class="mt-3 inline-flex items-center justify-center gap-2 rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0">Voir le matériel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="animate-baobaa-fade-up mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-extrabold text-[#506079] sm:text-sm" style="animation-delay: .3s">
+                    @foreach (['Prix clairs avant de réserver', 'Acompte sécurisé', 'Réponse du propriétaire sur la plateforme'] as $promise)
+                        <span class="inline-flex items-center gap-1.5">
+                            <svg class="size-4 text-[#2f6bff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                            {{ $promise }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+
+            @if ($categories->isNotEmpty())
+                <div id="categories" class="relative z-10 mx-auto mt-10 max-w-[1240px]">
+                    <button type="button" data-category-prev class="absolute -left-2 top-4 z-20 hidden size-10 place-items-center rounded-full bg-white text-[#2f6bff] shadow-lg ring-1 ring-[#d8dce9] transition hover:bg-[#eef3ff] disabled:opacity-0 md:grid" aria-label="Catégories précédentes">
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" data-category-next class="absolute -right-2 top-4 z-20 hidden size-10 place-items-center rounded-full bg-white text-[#2f6bff] shadow-lg ring-1 ring-[#d8dce9] transition hover:bg-[#eef3ff] disabled:opacity-0 md:grid" aria-label="Catégories suivantes">
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
+                    <div data-category-scroll class="baobaa-scrollbar-none overflow-x-auto scroll-smooth px-1 pb-3 md:px-10">
+                        <div class="mx-auto flex w-max gap-6">
+                            @foreach ($categories as $index => $category)
+                                <a href="{{ route('venues.index', ['category' => $category->slug]) }}" class="group flex w-[88px] shrink-0 flex-col items-center gap-2 text-center">
+                                    <span class="grid size-14 place-items-center rounded-full bg-white shadow-[0_2px_10px_rgba(38,48,75,.12)] ring-1 ring-[#d8dce9] transition group-hover:-translate-y-1 group-hover:shadow-[0_8px_22px_rgba(47,107,255,.2)]">
+                                        <span class="grid size-9 place-items-center rounded-xl" style="background-color: {{ $categoryColors[$index % count($categoryColors)] }}22; color: {{ $categoryColors[$index % count($categoryColors)] }}">
+                                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $categoryIcon($category->icon ?? null) !!}</svg>
+                                        </span>
+                                    </span>
+                                    <span class="line-clamp-2 min-h-9 text-[13px] font-extrabold leading-[1.15] text-[#333b4f] transition group-hover:text-[#2f6bff]">{{ $category->name }}</span>
+                                </a>
                             @endforeach
                         </div>
                     </div>
                 </div>
-
-                <div class="animate-baobaa-fade-up relative inline-flex max-w-full items-center gap-2 overflow-hidden rounded-full border border-white/80 bg-white/86 px-4 py-2 text-xs font-extrabold text-[#2f6bff] shadow-[0_10px_30px_rgba(25,64,150,.12)] ring-1 ring-[#cfdaf5] backdrop-blur sm:text-sm">
-                    <span class="animate-baobaa-shimmer absolute inset-y-0 w-16 -skew-x-12 bg-white/70"></span>
-                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                    <span>{{ number_format($publishedVenuesCount, 0, ',', ' ') }} espace{{ $publishedVenuesCount > 1 ? 's' : '' }} disponible{{ $publishedVenuesCount > 1 ? 's' : '' }}</span>
-                    <span class="text-[#9eb4ed]">&middot;</span>
-                    <span>{{ $publishedCitiesCount }} ville{{ $publishedCitiesCount > 1 ? 's' : '' }}</span>
-                    <span class="text-[#9eb4ed]">&middot;</span>
-                    <span>Partenaires vérifiés</span>
-                </div>
-
-                <h1 class="animate-baobaa-fade-up mt-5 max-w-[920px] text-[36px] font-extrabold leading-[1.02] tracking-[-0.05em] text-[#202027] sm:text-[58px] lg:text-[72px]" style="animation-delay: .08s">
-                    Réservez le lieu parfait pour votre
-                    <span class="relative inline-block text-[#2f6bff]">
-                        événement
-                        <span class="absolute -bottom-1 left-1/2 h-1.5 w-[94%] -translate-x-1/2 rounded-full bg-[#9ab7ff]"></span>
-                        <span class="animate-baobaa-line-flow absolute -bottom-1 left-[29%] h-1.5 w-[42%] rounded-full bg-white/85"></span>
-                    </span>
-                </h1>
-
-                <p class="animate-baobaa-fade-up mt-4 max-w-3xl text-base font-semibold leading-6 text-[#626b7e] sm:text-lg sm:leading-7" style="animation-delay: .16s">
-                    Des salles vérifiées, des prix clairs et une réservation sécurisée pour transformer chaque idée en événement mémorable.
-                </p>
-
-                <div class="animate-baobaa-fade-up mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-extrabold text-[#506079]" style="animation-delay: .2s">
-                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Proforma claire</span>
-                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Acompte sécurisé</span>
-                    <span class="rounded-full bg-white/75 px-3 py-1.5 shadow-sm ring-1 ring-white/80">Partenaires vérifiés</span>
-                </div>
-
-                <form method="GET" action="{{ route('venues.index') }}" class="animate-baobaa-fade-up animate-baobaa-soft-breathe relative z-[80] mt-5 w-full max-w-[1220px] rounded-[2rem] border border-white/80 bg-white/94 px-3 py-3 shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df] backdrop-blur-xl" style="animation-delay: .24s" data-home-search-form>
-                    <div class="grid items-center gap-0 lg:grid-cols-[1.1fr_.85fr_.95fr_.9fr_auto]">
-                        <label class="group border-b border-[#dedede] px-2 py-2.5 text-left transition lg:border-b-0 lg:border-r lg:px-5">
-                            <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quoi</span>
-                            <input type="text" name="q" autocomplete="off" data-search-input placeholder="Essayez &quot;salle mariage&quot;" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:text-[#7d7f86] sm:text-lg">
-                        </label>
-                        <label class="relative border-b border-[#dedede] px-2 py-2.5 text-left lg:border-b-0 lg:border-r lg:px-5" data-city-autocomplete>
-                            <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Où</span>
-                            <input type="text" name="city" autocomplete="off" data-city-input placeholder="Abidjan" class="mt-1 w-full bg-transparent text-base font-extrabold text-[#25262b] outline-none placeholder:text-[#25262b] sm:text-lg">
-                            <div data-city-list class="absolute left-2 right-2 top-[calc(100%+8px)] z-[90] hidden rounded-2xl border border-[#dce6f7] bg-white p-2 text-left shadow-2xl shadow-[#173e7a]/16 lg:left-4 lg:right-4"></div>
-                        </label>
-                        <div class="relative border-b border-[#dedede] px-2 py-2.5 text-left lg:border-b-0 lg:border-r lg:px-5" data-date-range>
-                            <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quand</span>
-                            <button type="button" data-date-toggle class="mt-1 w-full bg-transparent text-left text-base font-semibold text-[#8a8c93] outline-none sm:text-lg">Début - fin</button>
-                            <div data-date-panel class="absolute left-2 right-2 top-[calc(100%+8px)] z-[90] hidden rounded-3xl border border-[#dce6f7] bg-white p-4 shadow-2xl shadow-[#173e7a]/16 lg:left-4 lg:right-4 lg:min-w-[360px]">
-                                <div class="grid gap-3 sm:grid-cols-2">
-                                    <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
-                                        <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date début</span>
-                                        <input type="date" name="start_date" min="{{ now()->toDateString() }}" data-start-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
-                                    </label>
-                                    <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
-                                        <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date fin</span>
-                                        <input type="date" name="end_date" min="{{ now()->toDateString() }}" data-end-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
-                                    </label>
-                                </div>
-                                <button type="button" data-date-apply class="mt-3 w-full rounded-full bg-[#2f6bff] px-4 py-2.5 text-sm font-extrabold text-white">Valider les dates</button>
-                            </div>
-                        </div>
-                        <div class="border-b border-[#dedede] px-2 py-2.5 text-left lg:border-b-0 lg:border-r lg:px-5">
-                            <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Budget</span>
-                            <div class="mt-1 grid grid-cols-2 gap-2">
-                                <input type="number" min="1" name="min_price" placeholder="Min" class="w-full min-w-0 bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:text-[#8a8c93] sm:text-lg">
-                                <input type="number" min="1" name="max_price" placeholder="Max" class="w-full min-w-0 bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:text-[#8a8c93] sm:text-lg">
-                            </div>
-                        </div>
-                        <button class="mt-3 inline-flex items-center justify-center gap-3 overflow-hidden rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0 sm:px-8">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                            Trouver un espace
-                        </button>
-                    </div>
-                    <div data-search-results class="relative z-[85] mt-3 hidden rounded-3xl border border-[#dce6f7] bg-[#f8fbff] p-3 text-left shadow-2xl shadow-[#173e7a]/12"></div>
-                </form>
-            </div>
-
-            <div id="categories" class="relative z-10 mx-auto mt-9 max-w-[1800px] overflow-hidden">
-                <button type="button" data-category-prev class="absolute left-0 top-7 z-20 hidden size-10 place-items-center rounded-full bg-white text-[#2f6bff] shadow-lg ring-1 ring-[#d8dce9] transition hover:bg-[#eef3ff] md:grid" aria-label="Catégories précédentes">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <button type="button" data-category-next class="absolute right-0 top-7 z-20 hidden size-10 place-items-center rounded-full bg-white text-[#2f6bff] shadow-lg ring-1 ring-[#d8dce9] transition hover:bg-[#eef3ff] md:grid" aria-label="Catégories suivantes">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-
-                <div data-category-scroll class="baobaa-scrollbar-none overflow-x-auto scroll-smooth px-10 pb-3">
-                    <div class="animate-baobaa-marquee flex w-max gap-7 hover:[animation-play-state:paused]">
-                        @foreach ($categories->concat($categories) as $index => $category)
-                            <a href="{{ route('venues.index', ['category' => $category->slug]) }}" class="group flex w-[92px] shrink-0 flex-col items-center gap-2 text-center">
-                                <span class="grid size-14 place-items-center rounded-full bg-white text-[#2f6bff] shadow-[0_2px_10px_rgba(38,48,75,.12)] ring-1 ring-[#d8dce9] transition group-hover:-translate-y-1 group-hover:shadow-[0_8px_22px_rgba(47,107,255,.2)]">
-                                    <span class="grid size-9 place-items-center rounded-xl" style="background-color: {{ $categoryColors[$index % count($categoryColors)] }}22; color: {{ $categoryColors[$index % count($categoryColors)] }}">
-                                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">{!! $categoryIcon($category->icon ?? null) !!}</svg>
-                                    </span>
-                                </span>
-                                <span class="line-clamp-2 min-h-9 text-[13px] font-extrabold leading-[1.15] text-[#333b4f] transition group-hover:text-[#2f6bff]">{{ $category->name }}</span>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
+            @endif
         </section>
 
         <section id="espaces" class="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:py-18" data-carousel-section>
@@ -351,10 +376,31 @@
                         behavior: 'smooth',
                     });
                 };
+                const refreshCategoryArrows = () => {
+                    const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+                    previous.disabled = scroller.scrollLeft <= 4;
+                    next.disabled = scroller.scrollLeft >= maxScroll - 4;
+                };
 
                 previous.addEventListener('click', () => scrollCategories(-1));
                 next.addEventListener('click', () => scrollCategories(1));
+                scroller.addEventListener('scroll', refreshCategoryArrows, { passive: true });
+                window.addEventListener('resize', refreshCategoryArrows);
+                window.addEventListener('load', refreshCategoryArrows);
+                document.fonts?.ready.then(refreshCategoryArrows);
+                refreshCategoryArrows();
             }
+
+            const heroTabs = [...document.querySelectorAll('[data-hero-tab]')];
+            const heroPanels = [...document.querySelectorAll('[data-hero-panel]')];
+
+            heroTabs.forEach((tab) => tab.addEventListener('click', () => {
+                heroTabs.forEach((item) => item.setAttribute('aria-selected', item === tab ? 'true' : 'false'));
+                heroPanels.forEach((panel) => {
+                    panel.hidden = panel.dataset.heroPanel !== tab.dataset.heroTab;
+                });
+                document.querySelector(`[data-hero-panel="${tab.dataset.heroTab}"] input[type="text"]`)?.focus({ preventScroll: true });
+            }));
 
             document.querySelectorAll('[data-carousel-section]').forEach((section) => {
                 const carousel = section.querySelector('[data-carousel]');
@@ -508,7 +554,7 @@
                     return;
                 }
 
-                dateToggle.textContent = 'Début - fin';
+                dateToggle.textContent = 'Choisir une date';
                 dateToggle.classList.add('text-[#8a8c93]');
                 dateToggle.classList.remove('text-[#25262b]');
             };

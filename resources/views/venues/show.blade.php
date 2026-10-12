@@ -32,7 +32,10 @@
             'alt' => $media->alt_text ?: $title,
         ])->values()->all();
     $galleryImages = array_values($images);
-    $highlights = $venue->highlights ?: [];
+    $highlights = collect($venue->highlights ?: [])
+        ->reject(fn (string $highlight): bool => in_array(mb_strtolower(trim($highlight)), ['lieu vérifié', 'espace vérifié'], true))
+        ->values()
+        ->all();
     $includedItems = $venue->included_items ?: [];
     $houseRules = $venue->house_rules ?: [];
     $configurations = $venue->configurations->where('is_active', true)->sortBy('sort_order')->values();
@@ -90,24 +93,7 @@
     </x-slot:head>
 
     <main class="min-h-screen scroll-smooth bg-white pb-24 text-[#151821] lg:pb-0">
-        <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
-            <div class="mx-auto flex max-w-7xl items-center justify-between">
-                <a href="{{ url('/') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
-                </a>
-
-                <x-navigation.public-menu active="venues" />
-
-                <div class="flex items-center gap-2">
-                    @guest
-                        <a href="{{ route('venues.list-venue') }}" class="hidden rounded-full bg-[#151821] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#151821]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] lg:inline-flex">Devenir partenaire</a>
-                    @endguest
-                    <x-navigation.cart-link />
-                    <x-navigation.account-menu />
-                    <x-navigation.mobile-menu active="venues" />
-                </div>
-            </div>
-        </header>
+        <x-navigation.public-header active="venues" />
 
         <section class="mx-auto max-w-7xl px-5 py-6 sm:px-8">
             <nav class="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane">
@@ -140,13 +126,13 @@
                     </div>
                 @elseif (count($galleryImages) === 1)
                     <button type="button" data-gallery-index="0" class="block w-full cursor-zoom-in overflow-hidden rounded-[18px]">
-                        <img src="{{ $galleryImages[0] }}" alt="{{ $title }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-64 w-full object-cover transition duration-500 hover:scale-[1.02] sm:h-[460px]">
+                        <img src="{{ $galleryImages[0] }}" alt="{{ $title }}" width="1280" height="720" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-64 w-full object-cover transition duration-500 hover:scale-[1.02] sm:h-[460px]">
                     </button>
                 @else
                     @php($secondaryImages = array_slice($galleryImages, 1, 4))
                     <div class="grid gap-2 overflow-hidden rounded-[18px] lg:grid-cols-[1.08fr_.92fr]">
                         <button type="button" data-gallery-index="0" class="relative cursor-zoom-in overflow-hidden text-left">
-                            <img src="{{ $galleryImages[0] }}" alt="{{ $title }}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-64 w-full object-cover transition duration-500 hover:scale-[1.02] sm:h-[420px]">
+                            <img src="{{ $galleryImages[0] }}" alt="{{ $title }}" width="1280" height="720" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-64 w-full object-cover transition duration-500 hover:scale-[1.02] sm:h-[420px]">
                         </button>
                         <div class="hidden gap-2 sm:grid {{ count($secondaryImages) > 1 ? 'grid-cols-2' : 'grid-cols-1' }}">
                             @foreach ($secondaryImages as $imageIndex => $image)
@@ -242,7 +228,7 @@
                                     <p class="text-xs font-semibold text-[#8a94aa]">Vous échangez avec le propriétaire depuis votre espace client après votre demande.</p>
                                 </div>
                             </div>
-                            <a href="{{ route('owner-profiles.show', $venue->ownerProfile->public_uuid) }}" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#2f6bff] px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 ring-4 ring-[#eaf1ff] transition hover:-translate-y-0.5 hover:bg-[#2258df]">
+                            <a href="{{ route('owner-profiles.show', $venue->ownerProfile->public_uuid) }}" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-[#cfdaf5] bg-white px-5 py-2.5 text-sm font-extrabold text-[#2f6bff] transition hover:-translate-y-0.5 hover:border-[#2f6bff]">
                                 Découvrir le partenaire
                                 <span class="text-base leading-none">→</span>
                             </a>
@@ -252,7 +238,7 @@
 
                 <section id="apercu" class="scroll-mt-32">
                     <h2 class="text-xl font-extrabold text-[#151821]">Aperçu</h2>
-                    @if ($venue->short_description && $venue->description)
+                    @if ($venue->short_description && $venue->description && trim($venue->short_description) !== trim($venue->description))
                         <p class="mt-3 text-sm font-bold leading-7 text-[#151821]">{{ $venue->short_description }}</p>
                     @endif
                     <p class="mt-3 whitespace-pre-line text-sm font-medium leading-7 text-[#4d5872]">{{ $description ?: 'Le propriétaire complète actuellement la présentation de cet espace.' }}</p>
@@ -576,7 +562,7 @@
                         </a>
 
                         <a href="{{ route('event-services.index') }}" class="flex w-full items-center justify-center gap-2 rounded-[18px] border border-[#dce6f7] bg-[#f7faff] px-4 py-3.5 text-sm font-extrabold text-[#2f6bff] transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef4ff]">
-                            Réserver uniquement un service événementiel
+                            Réserver uniquement des professionnels
                         </a>
 
                         <div class="rounded-[18px] bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">

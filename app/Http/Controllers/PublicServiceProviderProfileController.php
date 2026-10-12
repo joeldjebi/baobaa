@@ -26,7 +26,7 @@ class PublicServiceProviderProfileController extends Controller
 
         $profilesQuery = ServiceProviderProfile::query()
             ->with(['services' => fn ($query) => $query
-                ->with('type')
+                ->with(['type', 'media'])
                 ->where('status', VenueStatus::Published)
                 ->when($filters['type_id'], fn (Builder $query) => $query->where('event_service_type_id', $filters['type_id']))
                 ->orderBy('starting_price')
@@ -35,6 +35,7 @@ class PublicServiceProviderProfileController extends Controller
             ])
             ->withCount([
                 'services as published_services_count' => fn (Builder $query) => $query->where('status', VenueStatus::Published),
+                'products as published_products_count' => fn (Builder $query) => $query->where('status', VenueStatus::Published),
             ])
             ->publiclyListed()
             ->whereHas('services', fn (Builder $query) => $query

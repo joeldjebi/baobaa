@@ -272,8 +272,7 @@ test('homepage shows real counters instead of marketing placeholders', function 
 
     $this->get('/')
         ->assertOk()
-        ->assertSeeText('2 espaces disponibles')
-        ->assertSeeText('2 villes')
+        ->assertSeeText('2 espaces dans 2 villes')
         ->assertDontSeeText('2 000+ espaces vérifiés')
         ->assertDontSeeText('40+ villes servies');
 });
@@ -303,7 +302,7 @@ test('service provider counters use every verified provider and not only the cur
 
     $this->get(route('service-provider-profiles.index'))
         ->assertOk()
-        ->assertSeeText('13 prestataires vérifiés')
+        ->assertSeeText('13 professionnels vérifiés')
         ->assertSeeText('13 services disponibles')
         ->assertDontSeeText('Prestataire non vérifié')
         ->assertDontSeeText('Studio Son Signature');

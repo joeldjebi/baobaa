@@ -34,7 +34,7 @@ class PartnerConditionsService
                         ? $plan->active_venues_limit.' espace'.($plan->active_venues_limit > 1 ? 's' : '').' actif'.($plan->active_venues_limit > 1 ? 's' : '')
                         : 'Espaces illimités',
                     'commission' => $plan->reduced_commission_rate !== null
-                        ? 'Commission réduite à '.$this->formatRate((float) $plan->reduced_commission_rate).' %'
+                        ? 'Commission réduite à '.$this->formatRate((float) $plan->reduced_commission_rate)."\u{00A0}%"
                         : null,
                     'features' => array_values($plan->features ?? []),
                 ])
@@ -114,7 +114,7 @@ class PartnerConditionsService
 
         return $rule->commission_type === 'fixed'
             ? number_format((int) $rule->fixed_amount, 0, ',', ' ').' '.$rule->currency.' par réservation confirmée'
-            : $this->formatRate((float) $rule->percentage_rate).' % du montant de chaque réservation confirmée';
+            : $this->formatRate((float) $rule->percentage_rate)."\u{00A0}% du montant de chaque réservation confirmée";
     }
 
     private function formatRate(float $rate): string

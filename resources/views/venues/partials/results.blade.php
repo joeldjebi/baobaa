@@ -1,11 +1,51 @@
 <div data-venues-results>
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <p class="text-sm font-extrabold text-[#4d5872]">{{ $venues->total() }} espace{{ $venues->total() > 1 ? 's' : '' }} trouvé{{ $venues->total() > 1 ? 's' : '' }}</p>
-            <p class="mt-1 text-xs font-bold text-[#8a94aa]">Les catégories sans espace publié sont masquées automatiquement.</p>
-        </div>
-        <div class="rounded-full border border-[#dce6f7] bg-white px-4 py-2 text-xs font-extrabold text-[#6f7890] shadow-sm">Tri : espaces récents</div>
+    @php
+        $filterLabels = [
+            'q' => fn ($value) => '« '.$value.' »',
+            'country' => fn ($value) => 'Pays : '.$value,
+            'city' => fn ($value) => $value,
+            'category' => fn ($value) => 'Catégorie : '.\Illuminate\Support\Str::headline($value),
+            'capacity' => fn ($value) => $value.' invités min.',
+            'min_price' => fn ($value) => 'Dès '.number_format((int) $value, 0, ',', ' ').' XOF',
+            'max_price' => fn ($value) => 'Jusqu’à '.number_format((int) $value, 0, ',', ' ').' XOF',
+            'start_date' => fn ($value) => 'Du '.\Carbon\Carbon::parse($value)->format('d/m'),
+            'end_date' => fn ($value) => 'Au '.\Carbon\Carbon::parse($value)->format('d/m'),
+            'start_time' => fn ($value) => 'Dès '.$value,
+            'end_time' => fn ($value) => 'Jusqu’à '.$value,
+        ];
+        $activeFilterChips = collect($filterLabels)
+            ->filter(fn ($label, $key) => request()->filled($key))
+            ->map(function ($label, $key) {
+                try {
+                    return ['label' => $label((string) request($key)), 'url' => route('venues.index', request()->except([$key, 'page']))];
+                } catch (\Throwable) {
+                    return null;
+                }
+            })
+            ->filter();
+    @endphp
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm font-extrabold text-[#4d5872]" aria-live="polite">{{ $venues->total() }} espace{{ $venues->total() > 1 ? 's' : '' }} trouvé{{ $venues->total() > 1 ? 's' : '' }}</p>
+        <label class="flex items-center gap-2 rounded-full border border-[#dce6f7] bg-white px-4 py-1.5 text-xs font-extrabold text-[#6f7890] shadow-sm">
+            Trier par
+            <select name="sort" form="venues-filter-form" data-sort-select class="bg-transparent text-xs font-extrabold text-[#151821] outline-none">
+                @foreach (\App\Http\Controllers\PublicVenueController::sortOptions() as $value => $label)
+                    <option value="{{ $value }}" @selected(request('sort', 'recent') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </label>
     </div>
+
+    @if ($activeFilterChips->isNotEmpty())
+        <div class="mb-4 flex flex-wrap gap-2">
+            @foreach ($activeFilterChips as $chip)
+                <a href="{{ $chip['url'] }}" data-filter-chip class="inline-flex items-center gap-1.5 rounded-full bg-[#eef4ff] px-3 py-1.5 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#cfdcf7] transition hover:bg-[#2f6bff] hover:text-white" aria-label="Retirer le filtre {{ $chip['label'] }}">
+                    {{ $chip['label'] }} <span aria-hidden="true">×</span>
+                </a>
+            @endforeach
+        </div>
+    @endif
 
     <div class="space-y-4">
         @forelse ($venues as $venue)
@@ -15,7 +55,7 @@
             @endphp
             <a href="{{ route('venues.show', $venue->slug) }}" class="group grid overflow-hidden rounded-[1.5rem] bg-white shadow-sm ring-1 ring-[#dce6f7] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12 md:grid-cols-[220px_1fr] xl:grid-cols-[250px_1fr_190px]">
                 <div class="relative min-h-52 overflow-hidden md:min-h-full">
-                    <img src="{{ $image }}" alt="{{ $venue->name }}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                    <img src="{{ $image }}" alt="{{ $venue->name }}" width="400" height="300" decoding="async" referrerpolicy="no-referrer" loading="{{ $loop->index < 2 ? 'eager' : 'lazy' }}" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     @if ($venue->verification_status === \App\Enums\VerificationStatus::Verified)
                         <span class="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">Vérifié</span>
                     @endif

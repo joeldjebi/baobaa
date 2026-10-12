@@ -5,53 +5,33 @@
 
 <x-layouts.baobaa title="Salles et espaces événementiels à louer - BAOBAA" description="Comparez les salles de réception, jardins, rooftops et salles de conférence disponibles en Afrique francophone : prix, capacité, disponibilités et réservation en ligne.">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
-        <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
-            <div class="mx-auto flex max-w-7xl items-center justify-between">
-                <a href="{{ url('/') }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
-                </a>
+        <x-navigation.public-header active="venues" />
 
-                <x-navigation.public-menu active="venues" />
-
-                <div class="flex items-center gap-2">
-                    <x-navigation.account-menu />
-                    <x-navigation.mobile-menu active="venues" />
-                </div>
-            </div>
-        </header>
-
-        <section class="relative overflow-hidden border-b border-white/80 px-5 py-8 sm:px-8 lg:py-10">
-            <div class="absolute inset-0 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_55%,#e9eeff_100%)]"></div>
-            <div class="absolute -left-24 top-14 h-60 w-[42rem] rounded-full bg-[#dce8ff] blur-3xl"></div>
-            <div class="absolute -right-28 top-4 h-72 w-[46rem] rounded-full bg-[#efe7ff] blur-3xl"></div>
-
-            <div class="relative mx-auto grid max-w-7xl gap-6 lg:grid-cols-[0.88fr_1.12fr] lg:items-end">
+        <section class="border-b border-white/80 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] px-5 py-6 sm:px-8 lg:py-8">
+            <div class="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff] shadow-sm ring-1 ring-[#dce6f7]">Catalogue BAOBAA</p>
-                    <h1 class="mt-4 max-w-xl text-4xl font-extrabold leading-[0.96] tracking-[-0.055em] text-[#121722] sm:text-5xl">Trouvez l’espace qui donne du niveau à votre événement.</h1>
-                    <p class="mt-4 max-w-xl text-sm font-semibold leading-6 text-[#667088]">Comparez les lieux publiés, vérifiez les disponibilités, ajustez votre budget et réservez avec une expérience claire et sécurisée.</p>
+                    <nav class="text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane"><a href="{{ url('/') }}" class="hover:text-[#2f6bff]">Accueil</a> / Espaces</nav>
+                    <h1 class="mt-2 text-3xl font-extrabold tracking-[-0.045em] text-[#121722] sm:text-4xl">Espaces événementiels à réserver</h1>
+                    <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#667088]">Comparez les lieux, vérifiez les disponibilités à vos dates et envoyez votre demande en ligne.</p>
                 </div>
-
-                <div class="grid gap-3 sm:grid-cols-3">
-                    <div class="rounded-3xl border border-white bg-white/86 p-4 shadow-lg shadow-[#173e7a]/8">
-                        <p class="text-2xl font-extrabold tracking-[-0.04em] text-[#151821]">{{ number_format($publishedVenuesCount, 0, ',', ' ') }}</p>
-                        <p class="mt-1 text-xs font-bold text-[#6f7890]">espaces publiés</p>
-                    </div>
-                    <div class="rounded-3xl border border-white bg-white/86 p-4 shadow-lg shadow-[#173e7a]/8">
-                        <p class="text-2xl font-extrabold tracking-[-0.04em] text-[#151821]">{{ $cities->count() }}</p>
-                        <p class="mt-1 text-xs font-bold text-[#6f7890]">villes disponibles</p>
-                    </div>
-                    <div class="rounded-3xl border border-white bg-white/86 p-4 shadow-lg shadow-[#173e7a]/8">
-                        <p class="text-2xl font-extrabold tracking-[-0.04em] text-[#151821]">{{ $categories->count() }}</p>
-                        <p class="mt-1 text-xs font-bold text-[#6f7890]">catégories actives</p>
-                    </div>
+                <div class="flex flex-wrap gap-2 text-xs font-extrabold text-[#4d5872]">
+                    <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">{{ number_format($publishedVenuesCount, 0, ',', ' ') }} espaces</span>
+                    <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">{{ $cities->count() }} villes</span>
+                    <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">{{ $categories->count() }} catégories</span>
                 </div>
             </div>
         </section>
 
         <section class="mx-auto grid max-w-7xl gap-6 px-5 py-7 sm:px-8 lg:grid-cols-[320px_1fr]">
             <aside class="lg:sticky lg:top-24 lg:self-start">
-                <form method="GET" action="{{ route('venues.index') }}" class="rounded-[24px] border border-[#dce6f7] bg-white p-3.5 shadow-2xl shadow-[#173e7a]/10" data-venues-filter-form data-no-global-loader>
+                <button type="button" data-filters-toggle aria-expanded="false" aria-controls="venues-filter-form" class="mb-3 flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-[#151821] shadow-sm ring-1 ring-[#dce6f7] lg:hidden">
+                    <span class="inline-flex items-center gap-2">
+                        <svg class="size-4 text-[#2f6bff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+                        Filtres{{ $activeFilters ? ' actifs' : '' }}
+                    </span>
+                    <span aria-hidden="true">⌄</span>
+                </button>
+                <form method="GET" action="{{ route('venues.index') }}" id="venues-filter-form" class="hidden rounded-[24px] border border-[#dce6f7] bg-white p-3.5 shadow-2xl shadow-[#173e7a]/10 lg:block" data-venues-filter-form data-no-global-loader>
                     <div class="flex items-center justify-between gap-3 border-b border-[#edf2fb] pb-3">
                         <div>
                             <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Filtres</p>
@@ -104,15 +84,15 @@
                         <div class="grid gap-2.5">
                             <label class="flex min-h-[58px] flex-col justify-center rounded-xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
                                 <span class="block whitespace-nowrap text-[11px] font-extrabold uppercase text-[#8a94aa]">Invités min.</span>
-                                <input type="number" min="1" name="capacity" value="{{ request('capacity') }}" placeholder="120" class="mt-0.5 w-full min-w-0 bg-transparent text-[13px] font-extrabold text-[#151821] outline-none placeholder:text-[#a0a8b8]">
+                                <input type="number" min="1" name="capacity" value="{{ request('capacity') }}" placeholder="Ex : 120" class="mt-0.5 w-full min-w-0 bg-transparent text-[13px] font-extrabold text-[#151821] outline-none placeholder:text-[#a0a8b8]">
                             </label>
                             <label class="flex min-h-[58px] flex-col justify-center rounded-xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
                                 <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Budget min.</span>
-                                <input type="number" min="1" name="min_price" value="{{ request('min_price') }}" placeholder="100000" class="mt-0.5 w-full min-w-0 bg-transparent text-[13px] font-extrabold text-[#151821] outline-none placeholder:text-[#a0a8b8]">
+                                <input type="number" min="1" name="min_price" value="{{ request('min_price') }}" placeholder="Ex : 100 000" class="mt-0.5 w-full min-w-0 bg-transparent text-[13px] font-extrabold text-[#151821] outline-none placeholder:text-[#a0a8b8]">
                             </label>
                             <label class="flex min-h-[58px] flex-col justify-center rounded-xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
                                 <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Budget max.</span>
-                                <input type="number" min="1" name="max_price" value="{{ request('max_price') }}" placeholder="700000" class="mt-0.5 w-full min-w-0 bg-transparent text-[13px] font-extrabold text-[#151821] outline-none placeholder:text-[#a0a8b8]">
+                                <input type="number" min="1" name="max_price" value="{{ request('max_price') }}" placeholder="Ex : 700 000" class="mt-0.5 w-full min-w-0 bg-transparent text-[13px] font-extrabold text-[#151821] outline-none placeholder:text-[#a0a8b8]">
                             </label>
                         </div>
 
@@ -198,6 +178,19 @@
                 citySelect.innerHTML = '';
                 citySelect.append(new Option('Toutes les villes', ''));
                 cities.forEach((city) => citySelect.append(new Option(city, city, false, city === currentCity)));
+            });
+
+            const filtersToggle = document.querySelector('[data-filters-toggle]');
+
+            filtersToggle?.addEventListener('click', () => {
+                const isHidden = form.classList.toggle('hidden');
+                filtersToggle.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+            });
+
+            document.addEventListener('change', (event) => {
+                if (event.target.matches('[data-sort-select]')) {
+                    fetchResults();
+                }
             });
 
             const filterStartDate = form.querySelector('[data-filter-start-date]');

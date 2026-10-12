@@ -10,19 +10,7 @@
 
 <x-layouts.baobaa :title="$title.' - BAOBAA'">
     <main class="min-h-screen bg-[#f6f8fc] text-[#07152f]">
-        <header class="sticky top-0 z-40 border-b border-white/70 bg-white/95 px-5 py-3 shadow-sm shadow-[#173e7a]/5 sm:px-8 baobaa-sticky-stable">
-            <div class="mx-auto flex max-w-7xl items-center justify-between">
-                <a href="{{ route('venues.show', $venue->slug) }}" class="flex items-center gap-3 text-[#2f6bff]">
-                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-11 w-auto rounded-2xl object-cover shadow-lg shadow-[#2f6bff]/25" loading="lazy">
-                </a>
-
-                <x-navigation.public-menu active="venues" />
-                <div class="flex items-center gap-2">
-                    <x-navigation.account-menu />
-                    <x-navigation.mobile-menu active="venues" />
-                </div>
-            </div>
-        </header>
+        <x-navigation.public-header active="venues" />
 
         <section class="mx-auto max-w-7xl px-5 py-8 sm:px-8">
             <div class="overflow-hidden rounded-[34px] bg-[#07162f] text-white shadow-2xl shadow-[#07162f]/18">

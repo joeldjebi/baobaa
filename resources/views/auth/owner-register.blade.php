@@ -8,17 +8,17 @@
 <x-layouts.baobaa title="Devenir partenaire - BAOBAA">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <section class="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
-            <div class="relative overflow-hidden bg-[#07152f] px-6 py-8 text-white sm:px-10 lg:px-14">
+            <div class="relative order-2 overflow-hidden bg-[#07152f] px-6 py-10 text-white sm:px-10 lg:order-1 lg:px-14">
                 <div class="absolute inset-0">
                     <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.98),rgba(47,107,255,.72))]"></div>
                 </div>
 
-                <div class="relative z-10 flex h-full min-h-[48vh] flex-col justify-between">
-                    <a href="{{ url('/') }}" class="flex items-center justify-start">
+                <div class="relative z-10 mx-auto flex h-full max-w-xl flex-col justify-center gap-8">
+                    <a href="{{ url('/') }}" class="hidden items-center justify-start lg:flex">
                         <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-10 w-auto max-w-[160px] rounded-full object-contain bg-white/90 p-1 shadow-lg shadow-[#2f6bff]/20" loading="lazy">
                     </a>
 
-                    <div class="max-w-2xl py-10">
+                    <div class="max-w-2xl">
                         <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Devenir partenaire</p>
                         <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.05em] sm:text-5xl">Louez votre espace à des organisateurs d’événements.</h1>
                         <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">L’inscription est gratuite. Nous vérifions votre profil, puis vous publiez vos espaces et recevez des demandes de réservation.</p>
@@ -59,8 +59,12 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-center px-5 py-10 sm:px-8">
+            <div class="order-1 flex items-center justify-center px-5 py-8 sm:px-8 lg:order-2 lg:py-10">
                 <div class="w-full max-w-2xl">
+                    <div class="mb-5 flex items-center justify-between lg:hidden">
+                        <a href="{{ url('/') }}"><img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-10 w-auto rounded-xl object-contain"></a>
+                        <a href="{{ url('/') }}" class="text-sm font-extrabold text-[#2f6bff]">← Retour au site</a>
+                    </div>
                     @if ($pendingRequest)
                         <div class="mb-5 rounded-[22px] border border-[#b9d3ff] bg-white p-5 shadow-xl shadow-[#173e7a]/8">
                             <p class="text-sm font-extrabold text-[#2f6bff]">Votre demande est déjà en cours de validation.</p>

@@ -38,6 +38,9 @@
     <meta name="twitter:image" content="{{ $image ?? asset('images/baobaa.jpg') }}">
     <link rel="icon" href="{{ asset('images/baobaa.jpg') }}">
     {{ $head ?? '' }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else

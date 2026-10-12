@@ -47,7 +47,7 @@ class BookingDepositService
 
         $description = $rule->deposit_type === 'fixed'
             ? 'Acompte fixe de '.$format((int) $rule->fixed_amount)
-            : 'Acompte de '.rtrim(rtrim(number_format((float) $rule->percentage_rate, 2, ',', ''), '0'), ',').' % du montant total';
+            : 'Acompte de '.rtrim(rtrim(number_format((float) $rule->percentage_rate, 2, ',', ''), '0'), ',')."\u{00A0}% du montant total";
 
         if ((int) $rule->minimum_amount > 0) {
             $description .= ', minimum '.$format((int) $rule->minimum_amount);

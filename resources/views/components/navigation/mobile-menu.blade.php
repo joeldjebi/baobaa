@@ -10,7 +10,7 @@
         'explore' => ['label' => 'Explorer', 'url' => url('/')],
         'venues' => ['label' => 'Espaces', 'url' => route('venues.index')],
         'partners' => ['label' => 'Partenaires', 'url' => route('owner-profiles.index')],
-        'event-services' => ['label' => 'Prestataires', 'url' => route('service-provider-profiles.index')],
+        'event-services' => ['label' => 'Professionnels', 'url' => route('service-provider-profiles.index')],
         'products' => ['label' => 'Location et vente', 'url' => route('products.index')],
     ];
 
