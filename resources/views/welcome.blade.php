@@ -59,7 +59,7 @@
         <x-navigation.public-header active="explore" />
 
         {{-- Hero --}}
-        <section class="relative px-5 pb-16 pt-10 sm:px-8 lg:pb-24 lg:pt-14">
+        <section class="relative px-5 pb-12 pt-8 sm:px-8 sm:pb-16 sm:pt-10 lg:pb-24 lg:pt-14">
             <div class="absolute inset-0 opacity-[0.35] [background-image:linear-gradient(rgba(47,107,255,.10)_1px,transparent_1px),linear-gradient(90deg,rgba(47,107,255,.10)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_75%)]" aria-hidden="true"></div>
 
             <div class="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.08fr_.92fr]">
@@ -97,7 +97,7 @@
                         </div>
 
                         <form method="GET" action="{{ route('venues.index') }}" data-hero-panel="venues" class="mt-3 rounded-[1.6rem] bg-white p-2 shadow-[0_24px_60px_rgba(18,30,75,.14)] ring-1 ring-[#dce6f7]" data-home-search-form>
-                            <div class="grid gap-1 sm:grid-cols-[1fr_1fr_auto]">
+                            <div class="grid gap-1 sm:grid-cols-2">
                                 <label class="rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]">
                                     <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Quoi</span>
                                     <input type="text" name="q" autocomplete="off" data-search-input placeholder="Salle de mariage…" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5]">
@@ -107,7 +107,31 @@
                                     <input type="text" name="city" autocomplete="off" data-city-input placeholder="Ville ou quartier" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5]">
                                     <div data-city-list class="absolute left-0 right-0 top-[calc(100%+8px)] z-[90] hidden rounded-2xl border border-[#dce6f7] bg-white p-2 text-left shadow-2xl shadow-[#173e7a]/16"></div>
                                 </label>
-                                <button class="inline-flex items-center justify-center gap-2 rounded-[1.2rem] bg-[#2f6bff] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/30 transition hover:-translate-y-0.5 hover:bg-[#2258df]">
+                            </div>
+                            <div class="mt-1 grid grid-cols-2 gap-1 border-t border-[#edf2fb] pt-1 sm:grid-cols-[1.2fr_1fr_auto]">
+                                <div class="relative rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]" data-date-range>
+                                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Période</span>
+                                    <button type="button" data-date-toggle aria-haspopup="dialog" class="mt-0.5 block w-full truncate text-left text-sm font-bold text-[#9aa3b5]">Choisir une date</button>
+                                    <div data-date-panel class="absolute left-0 top-[calc(100%+8px)] z-[90] hidden w-[min(300px,calc(100vw-48px))] rounded-2xl border border-[#dce6f7] bg-white p-3 text-left shadow-2xl shadow-[#173e7a]/16">
+                                        <label class="block text-[11px] font-extrabold text-[#6f7890]">Du
+                                            <input type="date" name="start_date" min="{{ now()->toDateString() }}" data-start-date class="mt-1 w-full rounded-xl border border-[#dce6f7] px-3 py-2 text-sm font-bold text-[#151821] outline-none focus:border-[#2f6bff]">
+                                        </label>
+                                        <label class="mt-2 block text-[11px] font-extrabold text-[#6f7890]">Au (facultatif)
+                                            <input type="date" name="end_date" min="{{ now()->toDateString() }}" data-end-date class="mt-1 w-full rounded-xl border border-[#dce6f7] px-3 py-2 text-sm font-bold text-[#151821] outline-none focus:border-[#2f6bff]">
+                                        </label>
+                                        <button type="button" data-date-apply class="mt-3 w-full rounded-xl bg-[#07152f] py-2.5 text-sm font-extrabold text-white">Valider</button>
+                                    </div>
+                                </div>
+                                <label class="rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]">
+                                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Budget</span>
+                                    <select name="max_price" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none">
+                                        <option value="">Tout budget</option>
+                                        @foreach ([100000, 250000, 500000, 1000000] as $budget)
+                                            <option value="{{ $budget }}">Jusqu’à {{ number_format($budget, 0, ',', ' ') }} XOF</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <button class="col-span-2 inline-flex items-center justify-center gap-2 rounded-[1.2rem] bg-[#2f6bff] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/30 transition hover:-translate-y-0.5 hover:bg-[#2258df] sm:col-span-1">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                                     Rechercher
                                 </button>
@@ -136,7 +160,7 @@
                         </form>
                     </div>
 
-                    <div class="animate-baobaa-fade-up mt-7 flex flex-wrap items-center gap-x-4 gap-y-2" style="animation-delay: .75s">
+                    <div class="animate-baobaa-fade-up mt-7 hidden flex-wrap items-center gap-x-4 gap-y-2 sm:flex" style="animation-delay: .75s">
                         <span class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d879d]">Payez avec</span>
                         @foreach ($paymentLabels as $paymentIndex => $paymentLabel)
                             <span class="inline-flex items-center gap-1.5 text-sm font-bold text-[#38445c]"><span class="size-2 rounded-full" style="background: {{ ['#1dc8ff', '#ff7a00', '#ffcb05', '#1f4fbf', '#0f9f6e'][$paymentIndex % 5] }}"></span>{{ $paymentLabel }}</span>
@@ -145,7 +169,7 @@
                 </div>
 
                 {{-- Phone mockup --}}
-                <div class="relative mx-auto grid w-full max-w-[520px] place-items-center py-6" aria-hidden="true">
+                <div class="relative mx-auto hidden w-full max-w-[520px] place-items-center py-6 sm:grid" aria-hidden="true">
                     <div class="absolute size-[360px] rounded-full bg-[linear-gradient(140deg,#2f6bff,#7c5cff)] opacity-95 sm:size-[420px]" data-reveal="scale"></div>
                     <svg class="baobaa-orbit absolute size-[460px] text-[#2f6bff]/45 sm:size-[520px]" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="49" stroke="currentColor" stroke-width=".35" stroke-dasharray="1.4 1.6"/></svg>
 
@@ -212,17 +236,17 @@
         </section>
 
         {{-- Bento --}}
-        <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+        <section class="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16 lg:py-24">
             <div class="max-w-2xl" data-reveal>
                 <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Pourquoi BAOBAA</p>
                 <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.01em] sm:text-5xl">Organiser, sans <span class="text-[#2f6bff]">mauvaise surprise.</span></h2>
             </div>
 
-            <div class="mt-10 grid gap-4 lg:grid-cols-12">
-                <article class="relative overflow-hidden rounded-[2rem] bg-[#07152f] p-7 text-white lg:col-span-7 lg:row-span-2" data-reveal>
-                    <h3 class="font-display text-2xl font-extrabold">Les vraies dates libres.</h3>
+            <div class="mt-7 grid gap-3 sm:mt-10 sm:gap-4 lg:grid-cols-12">
+                <article class="relative overflow-hidden rounded-3xl sm:rounded-[2rem] bg-[#07152f] p-5 sm:p-7 text-white lg:col-span-7 lg:row-span-2" data-reveal>
+                    <h3 class="font-display text-xl font-extrabold sm:text-2xl">Les vraies dates libres.</h3>
                     <p class="mt-2 max-w-md text-sm font-semibold leading-6 text-white/65">Chaque espace affiche son calendrier : dates réservées, bloquées ou libres. Vous ne demandez que ce qui est réellement disponible.</p>
-                    <div class="mx-auto mt-8 max-w-md" data-animate-on-view>
+                    <div class="mx-auto mt-8 hidden max-w-md sm:block" data-animate-on-view>
                         <div class="grid grid-cols-7 gap-2 text-center text-[11px] font-extrabold text-white/40">
                             @foreach (['L', 'M', 'M', 'J', 'V', 'S', 'D'] as $weekday)
                                 <span>{{ $weekday }}</span>
@@ -254,50 +278,50 @@
                     </div>
                 </article>
 
-                <article class="rounded-[2rem] bg-white p-7 ring-1 ring-[#dce6f7] lg:col-span-5" data-reveal>
+                <article class="rounded-3xl sm:rounded-[2rem] bg-white p-5 sm:p-7 ring-1 ring-[#dce6f7] lg:col-span-5" data-reveal>
                     <div class="flex items-start justify-between gap-6">
                         <div>
-                            <h3 class="font-display text-2xl font-extrabold">Acompte sécurisé.</h3>
+                            <h3 class="font-display text-xl font-extrabold sm:text-2xl">Acompte sécurisé.</h3>
                             <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Un acompte bloque votre date. Le solde suit la proforma validée avec le propriétaire.</p>
                         </div>
-                        <svg class="size-28 shrink-0 -rotate-90" viewBox="0 0 100 100" data-reveal style="--gauge-offset: 87" aria-hidden="true">
+                        <svg class="hidden size-28 shrink-0 -rotate-90 sm:block" viewBox="0 0 100 100" data-reveal style="--gauge-offset: 87" aria-hidden="true">
                             <circle cx="50" cy="50" r="46" fill="none" stroke="#eef2fb" stroke-width="8"/>
                             <circle class="baobaa-gauge-value" cx="50" cy="50" r="46" fill="none" stroke="#2f6bff" stroke-width="8" stroke-linecap="round"/>
                         </svg>
                     </div>
                 </article>
 
-                <article class="rounded-[2rem] bg-[#e9efff] p-7 lg:col-span-5" data-reveal>
-                    <h3 class="font-display text-2xl font-extrabold">Payez comme vous voulez.</h3>
+                <article class="rounded-3xl sm:rounded-[2rem] bg-[#e9efff] p-5 sm:p-7 lg:col-span-5" data-reveal>
+                    <h3 class="font-display text-xl font-extrabold sm:text-2xl">Payez comme vous voulez.</h3>
                     <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Mobile Money ou virement, selon ce que l’espace accepte.</p>
-                    <div class="mt-5 flex flex-wrap gap-2.5" data-animate-on-view>
+                    <div class="mt-5 hidden flex-wrap gap-2.5 sm:flex" data-animate-on-view>
                         @foreach ($paymentLabels as $chipIndex => $paymentLabel)
                             <span class="baobaa-chip rounded-full px-4 py-2 text-sm font-extrabold text-white shadow-lg" style="--chip-rotate: {{ [-4, 3, -2, 5, -3][$chipIndex % 5] }}deg; --chip-delay: {{ $chipIndex * 110 }}ms; background: {{ ['#1dc8ff', '#ff7a00', '#e8b100', '#1f4fbf', '#0f9f6e'][$chipIndex % 5] }}">{{ $paymentLabel }}</span>
                         @endforeach
                     </div>
                 </article>
 
-                <article class="rounded-[2rem] bg-white p-7 ring-1 ring-[#dce6f7] lg:col-span-4" data-reveal>
-                    <h3 class="font-display text-2xl font-extrabold">Des lieux vérifiés.</h3>
+                <article class="rounded-3xl sm:rounded-[2rem] bg-white p-5 sm:p-7 ring-1 ring-[#dce6f7] lg:col-span-4" data-reveal>
+                    <h3 class="font-display text-xl font-extrabold sm:text-2xl">Des lieux vérifiés.</h3>
                     <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Photos réelles, prix clairs et avis de clients ayant réservé.</p>
-                    <div class="relative mt-6 h-36">
+                    <div class="relative mt-6 hidden h-36 sm:block">
                         @foreach ($popularListings->take(3)->values() as $stackIndex => $stackVenue)
                             <img src="{{ $stackVenue['image'] }}" alt="" width="200" height="140" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="absolute left-1/2 top-0 h-32 w-44 rounded-2xl object-cover shadow-xl ring-4 ring-white transition duration-700" style="transform: translateX(calc(-50% + {{ ($stackIndex - 1) * 64 }}px)) rotate({{ ($stackIndex - 1) * 8 }}deg); z-index: {{ $stackIndex === 1 ? 3 : 1 }}">
                         @endforeach
                     </div>
                 </article>
 
-                <article class="rounded-[2rem] bg-[#07152f] p-7 text-white lg:col-span-4" data-reveal>
-                    <h3 class="font-display text-2xl font-extrabold">On se parle, simplement.</h3>
+                <article class="rounded-3xl sm:rounded-[2rem] bg-[#07152f] p-5 sm:p-7 text-white lg:col-span-4" data-reveal>
+                    <h3 class="font-display text-xl font-extrabold sm:text-2xl">On se parle, simplement.</h3>
                     <p class="mt-2 text-sm font-semibold leading-6 text-white/65">Échangez avec le propriétaire et négociez depuis votre réservation.</p>
-                    <div class="mt-5 space-y-2" data-animate-on-view>
+                    <div class="mt-5 hidden space-y-2 sm:block" data-animate-on-view>
                         <p class="baobaa-bubble w-max max-w-[85%] rounded-2xl rounded-bl-md bg-white px-4 py-2.5 text-sm font-bold text-[#07152f]" style="--bubble-delay: 100ms">La salle est libre le 21 ?</p>
                         <p class="baobaa-bubble ml-auto w-max max-w-[85%] rounded-2xl rounded-br-md bg-[#2f6bff] px-4 py-2.5 text-sm font-bold" style="--bubble-delay: 700ms">Oui ! Je vous envoie la proforma.</p>
                     </div>
                 </article>
 
-                <article class="rounded-[2rem] bg-white p-7 ring-1 ring-[#dce6f7] lg:col-span-4" data-reveal>
-                    <h3 class="font-display text-2xl font-extrabold">Tout au même endroit.</h3>
+                <article class="rounded-3xl sm:rounded-[2rem] bg-white p-5 sm:p-7 ring-1 ring-[#dce6f7] lg:col-span-4" data-reveal>
+                    <h3 class="font-display text-xl font-extrabold sm:text-2xl">Tout au même endroit.</h3>
                     <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Le lieu, les professionnels et le matériel, dans un seul dossier.</p>
                     <div class="mt-5 grid grid-cols-3 gap-2 text-center text-xs font-extrabold" data-reveal-stagger="120" data-reveal-variant="scale">
                         <a href="{{ route('venues.index') }}" class="rounded-2xl bg-[#eef4ff] px-2 py-4 text-[#2f6bff] transition hover:-translate-y-1">Espaces</a>
@@ -309,14 +333,14 @@
         </section>
 
         {{-- Story --}}
-        <section class="bg-[#07152f] px-5 py-20 text-white sm:px-8 lg:py-28" data-story>
+        <section class="bg-[#07152f] px-5 py-14 text-white sm:px-8 lg:py-20" data-story>
             <div class="mx-auto max-w-7xl">
                 <div class="max-w-2xl" data-reveal>
                     <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#8db4ff]"><span class="size-1.5 rounded-full bg-[#8db4ff]"></span>Comment ça marche</p>
                     <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.01em] sm:text-5xl">Réserver, c’est quatre gestes.</h2>
                 </div>
 
-                <div class="mt-14 grid gap-10 lg:grid-cols-[1fr_auto_380px]">
+                <div class="mt-8 grid gap-10 lg:mt-10 lg:grid-cols-[1fr_auto_380px]">
                     <div>
                         @foreach ([
                             ['Cherchez.', 'Filtrez par ville, date, nombre d’invités et budget. Seuls les espaces réellement libres à vos dates s’affichent.'],
@@ -324,10 +348,10 @@
                             ['Réservez.', 'Envoyez votre demande, validez la proforma et payez l’acompte par Mobile Money pour bloquer la date.'],
                             ['Célébrez.', 'Ajoutez des professionnels et le matériel nécessaire, puis profitez. Tout est suivi depuis votre espace client.'],
                         ] as $stepIndex => [$stepTitle, $stepText])
-                            <div @class(['baobaa-story-step flex min-h-[42vh] flex-col justify-center py-6 lg:min-h-[70vh]', 'is-active' => $stepIndex === 0]) data-story-step>
+                            <div @class(['baobaa-story-step flex flex-col justify-center border-t border-white/10 py-5 first:border-t-0 first:pt-0 lg:min-h-[30vh] lg:border-t-0 lg:py-6', 'is-active' => $stepIndex === 0]) data-story-step>
                                 <p class="text-sm font-extrabold text-[#8db4ff]">Étape 0{{ $stepIndex + 1 }}</p>
-                                <h3 class="mt-2 font-display text-5xl font-extrabold tracking-[-0.01em] sm:text-6xl">{{ $stepTitle }}</h3>
-                                <p class="mt-4 max-w-md text-base font-semibold leading-7 text-white/65">{{ $stepText }}</p>
+                                <h3 class="mt-1 font-display text-3xl font-extrabold tracking-[-0.01em] sm:text-4xl lg:mt-2 lg:text-5xl">{{ $stepTitle }}</h3>
+                                <p class="mt-2 max-w-md text-[15px] font-medium leading-6 text-white/70 lg:mt-3 lg:text-base lg:leading-7">{{ $stepText }}</p>
                             </div>
                         @endforeach
                     </div>
@@ -418,7 +442,7 @@
         </section>
 
         {{-- Popular venues --}}
-        <section id="espaces" class="mx-auto max-w-7xl px-5 py-20 sm:px-8" data-carousel-section>
+        <section id="espaces" class="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-20" data-carousel-section>
             <div class="mb-8 flex flex-wrap items-end justify-between gap-5" data-reveal>
                 <div>
                     <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Tendances</p>
@@ -455,31 +479,31 @@
         </section>
 
         {{-- Audiences --}}
-        <section class="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+        <section class="mx-auto max-w-7xl px-5 pb-12 sm:px-8 sm:pb-20">
             <div class="max-w-2xl" data-reveal>
                 <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Pour tout le monde</p>
                 <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.01em] sm:text-5xl">Organisez, louez ou proposez vos services.</h2>
             </div>
 
-            <div class="baobaa-audience-group mt-10 flex flex-col gap-3 lg:h-[420px] lg:flex-row" data-reveal>
+            <div class="baobaa-audience-group mt-7 flex sm:mt-10 flex-col gap-3 lg:h-[420px] lg:flex-row" data-reveal>
                 @foreach ([
                     ['J’organise', 'Mon événement', 'Trouvez le lieu, les professionnels et le matériel, comparez et réservez en ligne avec un acompte sécurisé.', ['Espaces vérifiés et dates libres', 'Paiement Mobile Money', 'Suivi depuis votre espace client'], route('venues.index'), 'Trouver un espace', 'bg-[#2f6bff]', 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'],
                     ['Je loue', 'Mon espace', 'Publiez votre salle gratuitement, recevez des demandes qualifiées et encaissez des acomptes sécurisés.', ['Inscription gratuite', 'Calendrier et proformas', 'Commission uniquement si vous louez'], route('owner.register'), 'Devenir partenaire', 'bg-[#07152f]', 'M4 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M8 7h2M12 7h2M8 11h2M12 11h2M2 21h20'],
                     ['Je propose', 'Mes services', 'Son, lumière, photo, décoration, matériel : présentez vos offres aux organisateurs et recevez des devis.', ['Services et matériel', 'Devis et messagerie', 'Livraison par ville'], route('service-provider.register'), 'Devenir professionnel', 'bg-[#0f9f6e]', 'M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm12-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'],
                 ] as [$audienceKicker, $audienceTitle, $audienceText, $audiencePoints, $audienceUrl, $audienceCta, $audienceColor, $audienceIcon])
-                    <a href="{{ $audienceUrl }}" class="baobaa-audience {{ $audienceColor }} group relative flex flex-1 overflow-hidden rounded-[2rem] p-7 text-white">
+                    <a href="{{ $audienceUrl }}" class="baobaa-audience {{ $audienceColor }} group relative flex flex-1 overflow-hidden rounded-[2rem] p-6 text-white sm:p-7">
                         <svg class="pointer-events-none absolute -bottom-6 -right-6 size-48 text-white/10 transition duration-700 group-hover:rotate-6 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $audienceIcon }}"/></svg>
                         <span class="baobaa-audience-label absolute bottom-7 left-7 hidden origin-bottom-left -rotate-90 translate-x-6 whitespace-nowrap font-display text-2xl font-extrabold lg:block">{{ $audienceKicker }}</span>
                         <div class="baobaa-audience-body relative flex flex-col">
                             <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-white/70">{{ $audienceKicker }}</p>
                             <p class="mt-2 font-display text-3xl font-extrabold">{{ $audienceTitle }}</p>
-                            <p class="mt-3 max-w-sm text-sm font-semibold leading-6 text-white/80">{{ $audienceText }}</p>
-                            <ul class="mt-5 space-y-2 text-sm font-bold">
+                            <p class="mt-2 max-w-sm text-sm font-medium leading-6 text-white/85 sm:mt-3">{{ $audienceText }}</p>
+                            <ul class="mt-5 hidden space-y-2 text-sm font-bold sm:block">
                                 @foreach ($audiencePoints as $audiencePoint)
                                     <li class="flex items-center gap-2"><span class="grid size-5 place-items-center rounded-full bg-white/20"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>{{ $audiencePoint }}</li>
                                 @endforeach
                             </ul>
-                            <span class="mt-6 inline-flex w-max items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-[#07152f] transition group-hover:gap-3">{{ $audienceCta }} <span aria-hidden="true">→</span></span>
+                            <span class="mt-5 inline-flex w-max sm:mt-6 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-[#07152f] transition group-hover:gap-3">{{ $audienceCta }} <span aria-hidden="true">→</span></span>
                         </div>
                     </a>
                 @endforeach
@@ -488,27 +512,27 @@
 
         {{-- Figures --}}
         <section class="border-y border-[#dce6f7] bg-white">
-            <div class="mx-auto grid max-w-7xl sm:grid-cols-2 lg:grid-cols-4" data-reveal-stagger="100">
+            <div class="mx-auto grid max-w-7xl grid-cols-2 lg:grid-cols-4" data-reveal-stagger="100">
                 @foreach ([
                     [$publishedVenuesCount, 'espaces', 'Publiés et vérifiés'],
                     [$publishedCitiesCount, 'villes', 'Où organiser votre événement'],
                     [$professionalsCount, 'pros', 'Professionnels de l’événement'],
                     [count($paymentLabels), 'moyens', 'De paiement acceptés'],
                 ] as [$figureValue, $figureUnit, $figureLabel])
-                    <div class="border-[#dce6f7] px-5 py-10 sm:px-8 [&:not(:last-child)]:border-b sm:[&:nth-child(odd)]:border-r lg:border-b-0 lg:[&:not(:last-child)]:border-r">
-                        <p class="font-display text-6xl font-extrabold tracking-[-0.01em] text-[#07152f]"><span data-count-to="{{ $figureValue }}">{{ $figureValue }}</span><span class="ml-1 text-2xl text-[#2f6bff]">{{ $figureUnit }}</span></p>
-                        <p class="mt-2 text-sm font-semibold text-[#52617b]">{{ $figureLabel }}</p>
+                    <div class="border-[#dce6f7] px-5 py-6 sm:px-8 sm:py-10 [&:nth-child(-n+2)]:border-b [&:nth-child(odd)]:border-r lg:border-b-0 lg:[&:not(:last-child)]:border-r">
+                        <p class="font-display text-4xl font-extrabold tracking-[-0.01em] text-[#07152f] sm:text-6xl"><span data-count-to="{{ $figureValue }}">{{ $figureValue }}</span><span class="ml-1 text-lg text-[#2f6bff] sm:text-2xl">{{ $figureUnit }}</span></p>
+                        <p class="mt-1 text-xs font-medium text-[#52617b] sm:mt-2 sm:text-sm">{{ $figureLabel }}</p>
                     </div>
                 @endforeach
             </div>
         </section>
 
         {{-- FAQ --}}
-        <section class="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[.8fr_1.2fr]">
+        <section class="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:gap-10 sm:px-8 sm:py-20 lg:grid-cols-[.8fr_1.2fr]">
             <div data-reveal="left">
                 <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>FAQ</p>
-                <h2 class="mt-3 font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.01em]">Questions fréquentes.</h2>
-                <div class="mt-8 rounded-[2rem] bg-[#07152f] p-7 text-white">
+                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[0.98] tracking-[-0.01em] sm:text-5xl">Questions fréquentes.</h2>
+                <div class="mt-8 hidden rounded-[2rem] bg-[#07152f] p-7 text-white lg:block">
                     <p class="font-display text-xl font-extrabold">Une autre question&nbsp;?</p>
                     <p class="mt-1 text-sm font-semibold text-white/65">Notre équipe vous répond.</p>
                     <div class="mt-5 grid gap-2">
@@ -526,19 +550,19 @@
             <div class="divide-y divide-[#dce6f7] border-y border-[#dce6f7]" data-reveal-stagger="70">
                 @foreach ($faqs as $faqIndex => [$question, $answer])
                     <details class="baobaa-faq group" @if ($faqIndex === 0) open @endif>
-                        <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6">
-                            <span class="font-display text-xl font-extrabold tracking-[-0.01em]">{{ $question }}</span>
-                            <span class="baobaa-faq-icon grid size-10 shrink-0 place-items-center rounded-full bg-[#eef2fb] text-xl font-bold text-[#07152f] group-open:rotate-45 group-open:bg-[#2f6bff] group-open:text-white" aria-hidden="true">+</span>
+                        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 sm:gap-6 sm:py-6">
+                            <span class="font-display text-[17px] font-bold leading-snug tracking-[-0.01em] sm:text-xl sm:font-extrabold">{{ $question }}</span>
+                            <span class="baobaa-faq-icon grid size-8 shrink-0 place-items-center rounded-full bg-[#eef2fb] text-lg sm:size-10 sm:text-xl font-bold text-[#07152f] group-open:rotate-45 group-open:bg-[#2f6bff] group-open:text-white" aria-hidden="true">+</span>
                         </summary>
-                        <p class="baobaa-faq-answer max-w-2xl pb-6 text-base font-semibold leading-7 text-[#52617b]">{{ $answer }}</p>
+                        <p class="baobaa-faq-answer max-w-2xl pb-5 text-[15px] font-normal leading-7 text-[#52617b] sm:pb-6 sm:text-base">{{ $answer }}</p>
                     </details>
                 @endforeach
             </div>
         </section>
 
         {{-- Final call to action --}}
-        <section class="px-5 pb-20 sm:px-8">
-            <div class="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-[linear-gradient(135deg,#2f6bff,#5b4dff)] px-7 py-14 text-white sm:px-14 sm:py-20" data-reveal="scale">
+        <section class="px-5 pb-12 sm:px-8 sm:pb-20">
+            <div class="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-[linear-gradient(135deg,#2f6bff,#5b4dff)] px-6 py-10 text-white sm:px-14 sm:py-20" data-reveal="scale">
                 <div class="baobaa-aurora pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-white/15 blur-2xl" data-aurora="30" aria-hidden="true"></div>
                 <div class="relative max-w-2xl">
                     <h2 class="font-display text-4xl font-extrabold leading-[1] tracking-[-0.01em] sm:text-6xl">Votre prochain événement commence ici.</h2>
@@ -729,7 +753,7 @@
                 cityList.classList.remove('hidden');
             };
 
-            const formatDate = (value) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+            const formatDate = (value) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' })
                 .format(new Date(`${value}T00:00:00`));
 
             const updateDateLabel = () => {
@@ -747,21 +771,21 @@
 
                 if (startDate?.value && endDate?.value) {
                     dateToggle.textContent = `${formatDate(startDate.value)} - ${formatDate(endDate.value)}`;
-                    dateToggle.classList.remove('text-[#8a8c93]');
-                    dateToggle.classList.add('text-[#25262b]');
+                    dateToggle.classList.remove('text-[#9aa3b5]');
+                    dateToggle.classList.add('text-[#151821]');
                     return;
                 }
 
                 if (startDate?.value) {
                     dateToggle.textContent = `Le ${formatDate(startDate.value)}`;
-                    dateToggle.classList.remove('text-[#8a8c93]');
-                    dateToggle.classList.add('text-[#25262b]');
+                    dateToggle.classList.remove('text-[#9aa3b5]');
+                    dateToggle.classList.add('text-[#151821]');
                     return;
                 }
 
                 dateToggle.textContent = 'Choisir une date';
-                dateToggle.classList.add('text-[#8a8c93]');
-                dateToggle.classList.remove('text-[#25262b]');
+                dateToggle.classList.add('text-[#9aa3b5]');
+                dateToggle.classList.remove('text-[#151821]');
             };
 
             searchInput?.addEventListener('input', renderSearchResults);
@@ -771,6 +795,14 @@
             dateToggle?.addEventListener('click', () => datePanel?.classList.toggle('hidden'));
             startDate?.addEventListener('change', updateDateLabel);
             endDate?.addEventListener('change', updateDateLabel);
+            searchForm?.addEventListener('submit', () => {
+                searchForm.querySelectorAll('input[name], select[name]').forEach((field) => {
+                    field.disabled = field.value === '';
+                });
+            });
+            window.addEventListener('pageshow', () => searchForm?.querySelectorAll('[disabled]').forEach((field) => {
+                field.disabled = false;
+            }));
             dateApply?.addEventListener('click', () => {
                 updateDateLabel();
                 datePanel?.classList.add('hidden');

@@ -521,8 +521,10 @@
         transition: opacity .5s ease;
     }
 
-    .motion-ready .baobaa-story-step:not(.is-active) {
-        opacity: .28;
+    @media (min-width: 1024px) {
+        .motion-ready .baobaa-story-step:not(.is-active) {
+            opacity: .28;
+        }
     }
 
     .baobaa-timeline-fill {
