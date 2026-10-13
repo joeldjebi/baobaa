@@ -292,6 +292,26 @@ Champs principaux :
 - motif de blocage ;
 - recurrence eventuelle.
 
+### Verrou temporaire de disponibilite
+
+Objectif : empecher deux clients de reserver le meme espace ou le meme service evenementiel sur le meme creneau au meme moment.
+
+Regles principales :
+
+- lorsqu'un client demarre une reservation d'espace ou une demande de services, le systeme cree un verrou temporaire ;
+- la duree maximale du verrou est de 10 minutes ;
+- un verrou actif bloque le creneau pour les autres clients ;
+- un verrou expire ne doit plus bloquer le creneau, meme s'il reste en base ;
+- lorsqu'une reservation ou un dossier evenement est cree, le verrou est converti et rattache a la reservation ;
+- les controles de chevauchement doivent etre faits cote backend, dans une transaction, et non uniquement dans le calendrier ou l'interface.
+
+Le verrou s'applique a :
+
+- un espace evenementiel ;
+- un service d'un prestataire evenementiel.
+
+Le catalogue public `/espaces` doit tenir compte des dates deja confirmees et des verrous actifs afin de ne pas proposer des espaces indisponibles pour la periode recherchee.
+
 ### Tarif
 
 Champs principaux :
@@ -342,6 +362,39 @@ Regle importante :
 - les articles/services sont affiches a l'interieur de cette reservation ;
 - la negociation porte sur la reservation ou sur la partie d'un prestataire dans cette reservation, pas sur chaque ligne d'article de facon isolee ;
 - cote prestataire, si plusieurs services du meme prestataire sont choisis dans le meme dossier evenement, ils doivent etre regroupes dans une seule reservation avec un montant global propose.
+
+### Prestataires evenementiels
+
+Les prestataires evenementiels permettent au client de composer un evenement complet, avec ou sans espace BAOBAA.
+
+Exemples :
+
+- sonorisation ;
+- lumiere ;
+- podium ;
+- photographie ;
+- video ;
+- mobilier ;
+- decoration ;
+- securite ;
+- animation ;
+- logistique evenementielle.
+
+Regles principales :
+
+- les types de services sont crees et geres par le SAP ;
+- un prestataire cree son compte, soumet sa demande et attend validation SAP ;
+- un prestataire publie ses services apres validation ;
+- le client peut reserver uniquement des services sans reserver d'espace ;
+- le client peut aussi partir d'un espace et ajouter des services dans le package de son evenement ;
+- la page publique doit utiliser des libelles marketing comme "Prestataires", "Experts" ou "Services evenementiels" et ne pas afficher les abreviations internes.
+
+Pages publiques :
+
+- `/prestataires` liste les prestataires verifies qui ont au moins un service publie ;
+- `/prestataires/{profil}` affiche le detail d'un prestataire et ses services publics ;
+- `/services-evenementiels` permet de composer une demande de services sans obligatoirement choisir un espace ;
+- `/composer-mon-evenement` reste une route compatible vers le meme parcours.
 
 ### Paiement
 
@@ -922,12 +975,72 @@ Parcours critiques a tester :
 - validation d'espace par admin ;
 - recherche et filtrage ;
 - verification de disponibilite ;
+- exclusion des espaces deja reserves ou temporairement verrouilles lors d'une recherche par date ;
 - creation de reservation ;
+- creation d'un dossier evenement avec services de prestataires ;
 - paiement reussi ;
 - calcul commission ;
 - abonnement proprietaire ;
 - annulation et remboursement ;
 - interdiction de double reservation.
+
+## 16.1. Securite disponibilite et anti-chevauchement
+
+Le systeme doit proteger les creneaux a deux niveaux :
+
+- affichage public : les dates deja confirmees ou temporairement bloquees ne doivent pas etre proposees comme disponibles ;
+- validation serveur : toute creation de reservation doit verifier les chevauchements juste avant l'ecriture en base.
+
+Etats bloquants pour un espace :
+
+- reservation en brouillon actif ;
+- reservation en attente proprietaire ;
+- reservation en attente de paiement non expiree ;
+- reservation confirmee ;
+- litige ouvert ;
+- verrou temporaire actif non expire.
+
+Pour les services de prestataires, le meme principe s'applique via le dossier evenement et les services selectionnes.
+
+Le endpoint public `/espaces/{slug}/disponibilites-bloquees` permet de recuperer les dates et creneaux bloques d'un espace afin d'alimenter un calendrier public plus intelligent.
+
+## 16.2. Deploiement production
+
+Commandes recommandees sur le serveur de production :
+
+```bash
+cd /home/baobaa/app
+
+sudo -u baobaa -H git status --short --branch
+sudo -u baobaa -H git fetch origin
+sudo -u baobaa -H git pull --ff-only origin main
+
+sudo -u baobaa -H composer install --no-dev --optimize-autoloader
+sudo -u baobaa -H php artisan optimize:clear
+sudo -u baobaa -H php artisan migrate --force
+sudo -u baobaa -H npm ci
+sudo -u baobaa -H npm run build
+sudo -u baobaa -H php artisan config:cache
+sudo -u baobaa -H php artisan route:cache
+sudo -u baobaa -H php artisan view:cache
+```
+
+Apres deploiement :
+
+```bash
+sudo -u baobaa -H php artisan route:list --except-vendor
+sudo -u baobaa -H php artisan baobaa:diagnose-wasabi-images
+tail -50 storage/logs/laravel.log
+```
+
+Verifier egalement :
+
+- `APP_ENV=production` ;
+- `APP_DEBUG=false` ;
+- `APP_URL` avec le domaine reel ;
+- variables Wasabi presentes ;
+- permissions en ecriture sur `storage` et `bootstrap/cache` ;
+- absence de fichiers locaux ou secrets dans Git.
 
 ## 17. Priorites de developpement
 

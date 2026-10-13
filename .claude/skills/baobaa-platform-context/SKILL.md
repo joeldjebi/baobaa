@@ -54,9 +54,21 @@ Cette section distingue explicitement les éléments ajoutés pendant le travail
 
 ### 7) Validation de régression
 
-- Validation ciblée exécutée sur le parcours principal de réservation/public booking : `php artisan test --compact tests/Feature/BookingRequestTest.php`.
-- Résultat vérifié : 13 tests passés, 111 assertions, exit code 0.
-- Cette validation confirme qu’une modification d’UX ne doit pas casser la logique de réservation déjà validée.
+- Validation ciblée exécutée après l'ajout des verrous de disponibilité, du catalogue prestataires et du filtrage public par dates :
+    - `vendor/bin/pint --format agent`;
+    - `php artisan view:cache --no-interaction`;
+    - `php artisan test --compact tests/Feature/PortalAuthenticationTest.php --filter='public venues search excludes booked and temporarily blocked dates|public venues index lists published spaces'`;
+    - `php artisan test --compact tests/Feature/EventComposerTest.php --filter='service booking blocks overlapping reservations'`;
+    - `php artisan test --compact tests/Feature/BookingRequestTest.php --filter='venue booking blocks overlapping reservations'`.
+- Résultat vérifié : les tests ciblés passent.
+- Ne pas supposer que toute la suite complète a été relancée après chaque micro-ajustement Markdown.
+
+### 8) Dernier commit poussé
+
+- Branche locale de travail : `develop`.
+- Dernier commit poussé vers `origin/main` : `0c1e6e5 feat: secure event availability and provider discovery`.
+- Push effectué avec : `git push origin develop:main`.
+- Ne pas repusher sans demande explicite de l'utilisateur.
 
 ## Product Identity
 
@@ -246,6 +258,7 @@ Public:
 - `/` home.
 - `/espaces` venue catalog with filters/AJAX results.
 - `/espaces/{slug}` venue detail.
+- `/espaces/{slug}/disponibilites-bloquees` JSON endpoint for blocked dates/slots.
 - `/partenaires` public PEE profiles.
 - `/partenaires/{ownerProfile}` public PEE detail/list of spaces.
 - `/prestataires` public PSE profile catalog.
@@ -413,10 +426,68 @@ Do not duplicate these flows in controllers:
 
 - `BookingWorkflowService`: orchestrates booking financial workflow, proforma, deposit payment and event project sync.
 - `EventProjectService`: creates/syncs `EventProject` and `EventProjectItem`.
+- `AvailabilityHoldService`: creates and converts 10-minute temporary availability holds for venues and event services, and prevents overlapping reservations under concurrency.
 - `ProformaInvoiceService`: creates/updates proforma invoice for booking.
 - `BookingDepositService`: computes deposit/acompte using SAP/PEE rules.
 - `PartnerLogoService`: stores and signs PEE/PSE logos.
 - `VenueMediaStorageService`: stores and signs venue media on Wasabi/S3-compatible storage.
+
+## Availability And Anti-Overlap Rules
+
+This area is security-sensitive. Do not rely on frontend calendars only.
+
+Implemented model/service:
+
+- `AvailabilityHold`
+- `AvailabilityHoldStatus`
+- `AvailabilityHoldService`
+
+Hold duration:
+
+- maximum 10 minutes;
+- active holds block the resource while `status = active` and `expires_at > now()`;
+- expired active holds no longer block availability;
+- converted holds are attached to `Booking` and/or `EventProject`.
+
+Resources protected:
+
+- `Venue`
+- `EventService`
+
+Backend behavior:
+
+- venue booking creation uses `AvailabilityHoldService` to lock the venue inside the booking transaction;
+- standalone event composer uses `AvailabilityHoldService` to lock selected event services;
+- overlapping confirmed/active business records must block new requests;
+- conflict detection must happen server-side immediately before persisting a booking/project.
+
+Public catalog behavior:
+
+- `/espaces` excludes spaces already unavailable for the searched date range;
+- exclusions include blocking booking statuses, non-expired pending payment bookings, active non-expired holds, and explicit unavailable owner dates;
+- search suggestions also respect the selected date range so unavailable spaces are not suggested;
+- date filtering uses index-friendly date bounds, not `whereDate()` on indexed columns when a range can be used.
+
+Blocked date endpoint:
+
+- route name: `venues.blocked-dates`;
+- URL: `/espaces/{slug}/disponibilites-bloquees`;
+- returns `blocked_dates` and `blocked_slots`;
+- use this endpoint for future public calendar disabling/warnings on venue detail or reservation pages.
+
+Blocking booking statuses for venue availability:
+
+- `draft`;
+- `pending_owner`;
+- `pending_payment` if not expired;
+- `confirmed`;
+- `disputed`.
+
+Important test coverage:
+
+- `tests/Feature/PortalAuthenticationTest.php` checks `/espaces` excludes booked/held venues for selected dates;
+- `tests/Feature/BookingRequestTest.php` checks venue booking overlap lock;
+- `tests/Feature/EventComposerTest.php` checks event service overlap lock.
 
 ## Reservation Workflow
 
@@ -444,6 +515,12 @@ Current intended flow:
 14. After successful deposit payment, later proposed amounts must not update financial totals.
 
 Important: current real payment is a test flow. Do not represent it as a completed payment gateway integration.
+
+Availability note:
+
+- `BookingController::store()` creates the booking through `AvailabilityHoldService`.
+- If another client already holds or reserved the same venue/time range, the request must fail gracefully and tell the client the slot is no longer available.
+- Keep this server-side guard even if the UI later disables dates visually.
 
 ## Proforma Rules
 
@@ -537,6 +614,12 @@ Current limitation:
 - PSE-side negotiation and provider-side proforma confirmation exist at grouped `EventProject` level for the provider's services;
 - client-side service item detail/reply/confirmation still needs a dedicated UI;
 - independent payment per provider lane is not implemented yet.
+
+Availability note:
+
+- `EventComposerController::store()` locks selected `EventService` records through `AvailabilityHoldService`;
+- if one selected service is already held or reserved for the requested period, the project should not be created and the user should choose another slot/service;
+- service availability must remain protected even if future UI adds richer calendars.
 
 ## PSE Scope
 
@@ -1001,8 +1084,16 @@ npm run build
 
 Expected focused result after event composer/PSE workflow:
 
-- 70 tests passing;
-- 445 assertions.
+- Do not rely on a hardcoded total because tests are evolving quickly.
+- For the availability/provider discovery work, the latest verified focused commands are:
+
+```bash
+vendor/bin/pint --format agent
+php artisan view:cache --no-interaction
+php artisan test --compact tests/Feature/PortalAuthenticationTest.php --filter='public venues search excludes booked and temporarily blocked dates|public venues index lists published spaces'
+php artisan test --compact tests/Feature/EventComposerTest.php --filter='service booking blocks overlapping reservations'
+php artisan test --compact tests/Feature/BookingRequestTest.php --filter='venue booking blocks overlapping reservations'
+```
 
 If only editing Markdown, tests are not required, but still check for secrets before commit.
 
@@ -1028,7 +1119,7 @@ Strongest next implementation path:
 4. Build SAP ticketing management: ticket categories, fee rule, commission or fixed BAOBAA fee.
 5. Build individual public service detail pages.
 6. Add notification events for booking/proforma/payment/portal validation.
-7. Harden availability checks to prevent double booking under concurrency.
+7. Extend the public calendars to consume `/espaces/{slug}/disponibilites-bloquees` and visually disable/warn blocked dates.
 
 ## Git And Deployment Discipline
 
@@ -1048,4 +1139,4 @@ Acceptable hits are config files using `env(...)`, not real credential values.
 
 Last known pushed feature commit before this skill expansion:
 
-- `6c83215 Add event composer and PSE workflow`
+- `0c1e6e5 feat: secure event availability and provider discovery`
