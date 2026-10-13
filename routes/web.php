@@ -134,6 +134,7 @@ Route::middleware(['auth', 'role:sap'])->group(function (): void {
     Route::get('/sap/clients', [SapDashboardController::class, 'clients'])->name('sap.clients');
     Route::get('/sap/prestataires', [SapDashboardController::class, 'providers'])->name('sap.providers');
     Route::get('/sap/prestataires/{serviceProviderProfile}', [SapDashboardController::class, 'providerDetail'])->name('sap.providers.show');
+    Route::post('/sap/prestataires/{serviceProviderProfile}/verification', [SapDashboardController::class, 'decideProvider'])->name('sap.providers.verification');
     Route::post('/sap/users/{user}/statut', [SapDashboardController::class, 'updateUserStatus'])->name('sap.users.status');
     Route::get('/sap/espaces', [SapDashboardController::class, 'venues'])->name('sap.venues');
     Route::post('/sap/espaces/{venue}/statut', [SapDashboardController::class, 'updateVenueStatus'])->name('sap.venues.status');

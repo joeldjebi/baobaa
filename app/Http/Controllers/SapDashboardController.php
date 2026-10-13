@@ -23,6 +23,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Models\Venue;
 use App\Models\VenueCategory;
+use App\Services\ServiceProviderVerificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -115,6 +116,24 @@ class SapDashboardController extends Controller
             ...$this->metrics(),
             'providers' => $providers,
         ]);
+    }
+
+    public function decideProvider(Request $request, ServiceProviderProfile $serviceProviderProfile, ServiceProviderVerificationService $verificationService): RedirectResponse
+    {
+        $validated = $request->validate([
+            'decision' => ['required', 'in:approve,reject'],
+            'decision_note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        if ($validated['decision'] === 'approve') {
+            $verificationService->approve($serviceProviderProfile, $request->user());
+
+            return back()->with('sap_status', $serviceProviderProfile->business_name.' est validé : son profil et ses prestations sont visibles par les clients.');
+        }
+
+        $verificationService->reject($serviceProviderProfile, $request->user(), $validated['decision_note'] ?? null);
+
+        return back()->with('sap_status', $serviceProviderProfile->business_name.' est refusé : son profil et ses prestations sont masqués.');
     }
 
     public function providerDetail(ServiceProviderProfile $serviceProviderProfile): View

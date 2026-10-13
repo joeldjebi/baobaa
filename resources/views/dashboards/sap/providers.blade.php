@@ -1,4 +1,7 @@
-@php($statusLabels = ['pending' => 'En attente', 'verified' => 'Vérifié', 'rejected' => 'Refusé', 'suspended' => 'Suspendu'])
+@php
+    $statusLabels = ['pending' => 'En attente', 'verified' => 'Validé', 'rejected' => 'Refusé', 'unverified' => 'Non vérifié'];
+    $statusColors = ['pending' => 'bg-[#fff7e6] text-[#b45309]', 'verified' => 'bg-[#e8f8f1] text-[#047857]', 'rejected' => 'bg-[#fff1f1] text-[#b42318]', 'unverified' => 'bg-[#f2f4f8] text-[#52617b]'];
+@endphp
 
 <x-dashboards.sap-shell title="PSE" subtitle="Suivez les prestataires, leurs services publiés et leurs réservations actives." active="providers" :owners-count="$ownersCount" :clients-count="$clientsCount" :published-venues-count="$publishedVenuesCount" :pending-access-requests-count="$pendingAccessRequestsCount" :pending-sponsorships-count="$pendingSponsorshipsCount" :gross-payments-amount="$grossPaymentsAmount" :active-bookings-count="$activeBookingsCount">
     <section class="rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
@@ -58,13 +61,29 @@
                                 </div>
                             </td>
                             <td class="px-4 py-4">
-                                <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $statusLabels[$provider->verification_status->value] ?? $provider->verification_status->value }}</span>
+                                <span class="rounded-full px-3 py-1 text-xs font-extrabold {{ $statusColors[$provider->verification_status->value] ?? 'bg-[#eef4ff] text-[#2f6bff]' }}">{{ $statusLabels[$provider->verification_status->value] ?? $provider->verification_status->value }}</span>
                             </td>
                             <td class="px-4 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                @if ($provider->verification_status !== \App\Enums\VerificationStatus::Verified)
+                                    <form method="POST" action="{{ route('sap.providers.verification', $provider) }}">
+                                        @csrf
+                                        <input type="hidden" name="decision" value="approve">
+                                        <button class="rounded-full bg-[#0f9f6e] px-3 py-2 text-xs font-extrabold text-white shadow-sm transition hover:bg-[#047857]">Valider</button>
+                                    </form>
+                                @endif
                                 <x-dashboards.action-menu>
                                     <a href="{{ route('sap.providers.show', $provider) }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Voir le détail</a>
                                     <a href="{{ route('sap.bookings', ['q' => $provider->business_name]) }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Voir les réservations</a>
+                                    @if ($provider->verification_status !== \App\Enums\VerificationStatus::Rejected)
+                                        <form method="POST" action="{{ route('sap.providers.verification', $provider) }}" onsubmit="return confirm('Refuser ce prestataire ? Son profil et ses prestations seront masqués.')">
+                                            @csrf
+                                            <input type="hidden" name="decision" value="reject">
+                                            <button class="block w-full rounded-xl px-3 py-2 text-left text-[#b42318] hover:bg-[#fff1f1]">{{ $provider->verification_status === \App\Enums\VerificationStatus::Verified ? 'Retirer la validation' : 'Refuser' }}</button>
+                                        </form>
+                                    @endif
                                 </x-dashboards.action-menu>
+                                </div>
                             </td>
                         </tr>
                     @empty
