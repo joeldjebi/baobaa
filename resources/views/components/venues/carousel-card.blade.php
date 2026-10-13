@@ -3,7 +3,7 @@
     'badge' => null,
 ])
 
-<a href="{{ route('venues.show', ['slug' => $listing['slug']]) }}" class="group block w-full min-w-0 overflow-hidden rounded-[1.45rem] bg-white shadow-sm ring-1 ring-[#dce6f7] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12">
+<a href="{{ route('venues.show', ['slug' => $listing['slug']]) }}" data-tilt class="baobaa-tilt group block w-full min-w-0 overflow-hidden rounded-[1.45rem] bg-white shadow-sm ring-1 ring-[#dce6f7] hover:shadow-2xl hover:shadow-[#2f6bff]/12">
     <div class="relative aspect-[4/3] overflow-hidden">
         <img src="{{ $listing['image'] }}" alt="{{ $listing['title'] }}" width="400" height="300" decoding="async" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
         @if ($listing['verified'] ?? false)

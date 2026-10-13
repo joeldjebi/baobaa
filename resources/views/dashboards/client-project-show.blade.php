@@ -53,7 +53,9 @@
     @endforeach
 
     @forelse ($providerLanes as $lane)
-        @php($provider = $lane['provider'])
+        @php
+            $provider = $lane['provider'];
+        @endphp
         <section id="prestataire-{{ $provider->id }}" class="mt-5 scroll-mt-24 rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -109,7 +111,9 @@
                 <p class="text-sm font-extrabold text-[#07152f]">Messages avec {{ $provider->business_name }}</p>
                 <div class="mt-3 max-h-80 space-y-2 overflow-y-auto">
                     @forelse ($lane['messages'] as $message)
-                        @php($isMine = (int) $message->sender_id === (int) $client->id)
+                        @php
+                            $isMine = (int) $message->sender_id === (int) $client->id;
+                        @endphp
                         <div class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
                             <div class="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm font-semibold leading-6 {{ $isMine ? 'bg-[#2f6bff] text-white' : 'bg-[#f2f6ff] text-[#151821]' }}">
                                 <p>{{ $message->message }}</p>

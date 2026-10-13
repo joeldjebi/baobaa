@@ -189,3 +189,174 @@
         font-weight: 800;
     }
 }
+
+/*
+ * Motion system: elements are only hidden once JavaScript has added
+ * .motion-ready, so content stays visible without JS or with reduced motion.
+ */
+@layer components {
+    .motion-ready [data-reveal] {
+        opacity: 0;
+        transform: translate3d(0, 28px, 0);
+        transition:
+            opacity .8s cubic-bezier(.22, 1, .36, 1),
+            transform .9s cubic-bezier(.22, 1, .36, 1);
+        transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .motion-ready [data-reveal='scale'] {
+        transform: scale(.94);
+    }
+
+    .motion-ready [data-reveal='left'] {
+        transform: translate3d(-36px, 0, 0);
+    }
+
+    .motion-ready [data-reveal='right'] {
+        transform: translate3d(36px, 0, 0);
+    }
+
+    .motion-ready [data-reveal].is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    .motion-word {
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .motion-ready .motion-word {
+        opacity: 0;
+        transform: translate3d(0, .55em, 0) rotate(2deg);
+        filter: blur(6px);
+        animation: baobaa-word-rise .9s cubic-bezier(.22, 1, .36, 1) forwards;
+        animation-delay: calc(var(--word-index, 0) * 70ms + 120ms);
+    }
+
+    .baobaa-rotating-word {
+        display: inline-grid;
+        grid-template-columns: minmax(0, 1fr);
+        text-align: left;
+        vertical-align: bottom;
+        overflow: hidden;
+        transition: width .55s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .baobaa-rotating-word > span {
+        grid-area: 1 / 1;
+        justify-self: start;
+        white-space: nowrap;
+        transition:
+            transform .65s cubic-bezier(.22, 1, .36, 1),
+            opacity .45s ease;
+    }
+
+    .baobaa-rotating-word > span:not(.is-active) {
+        opacity: 0;
+        transform: translate3d(0, 90%, 0);
+    }
+
+    .baobaa-rotating-word > span.is-leaving {
+        opacity: 0;
+        transform: translate3d(0, -90%, 0);
+    }
+
+    .baobaa-photo-track {
+        display: flex;
+        width: max-content;
+        gap: 1rem;
+        animation: baobaa-photo-scroll var(--track-duration, 60s) linear infinite;
+    }
+
+    .baobaa-photo-track[data-direction='reverse'] {
+        animation-direction: reverse;
+    }
+
+    .baobaa-photo-band:hover .baobaa-photo-track {
+        animation-play-state: paused;
+    }
+
+    .baobaa-tilt {
+        transform-style: preserve-3d;
+        transition: transform .35s cubic-bezier(.22, 1, .36, 1), box-shadow .35s ease;
+    }
+
+    .motion-ready [data-reveal].is-visible.baobaa-tilt {
+        transition: transform .35s cubic-bezier(.22, 1, .36, 1), box-shadow .35s ease, opacity .8s ease;
+    }
+
+    .baobaa-step-line {
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 1.4s cubic-bezier(.65, 0, .35, 1) .2s;
+    }
+
+    .is-visible .baobaa-step-line,
+    :not(.motion-ready) .baobaa-step-line {
+        transform: scaleX(1);
+    }
+
+    .baobaa-aurora {
+        transition: transform 1.2s cubic-bezier(.22, 1, .36, 1);
+        will-change: transform;
+    }
+
+    .baobaa-gradient-text {
+        background: linear-gradient(100deg, #2f6bff 0%, #7c5cff 35%, #00a3ff 65%, #2f6bff 100%);
+        background-size: 220% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: baobaa-gradient-pan 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes baobaa-word-rise {
+        to {
+            opacity: 1;
+            transform: none;
+            filter: blur(0);
+        }
+    }
+
+    @keyframes baobaa-photo-scroll {
+        from {
+            transform: translate3d(0, 0, 0);
+        }
+
+        to {
+            transform: translate3d(-50%, 0, 0);
+        }
+    }
+
+    @keyframes baobaa-gradient-pan {
+        from {
+            background-position: 0% 50%;
+        }
+
+        to {
+            background-position: 100% 50%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .motion-ready [data-reveal],
+        .motion-ready .motion-word {
+            opacity: 1;
+            transform: none;
+            filter: none;
+            animation: none;
+            transition: none;
+        }
+
+        .baobaa-photo-track,
+        .baobaa-gradient-text {
+            animation: none;
+        }
+
+        .baobaa-step-line {
+            transform: scaleX(1);
+            transition: none;
+        }
+    }
+}

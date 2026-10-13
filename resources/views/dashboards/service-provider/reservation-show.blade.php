@@ -147,7 +147,9 @@
 
                 <div class="mt-5 space-y-3">
                     @forelse ($providerMessages as $message)
-                        @php($isMine = (int) $message->sender_id === (int) auth()->id())
+                        @php
+                            $isMine = (int) $message->sender_id === (int) auth()->id();
+                        @endphp
                         <article class="rounded-2xl border {{ $isMine ? 'border-[#cfe0ff] bg-[#f4f8ff]' : 'border-[#edf2fb] bg-white' }} p-4">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <p class="font-extrabold text-[#151821]">{{ $isMine ? 'Vous' : $message->sender?->name }}</p>

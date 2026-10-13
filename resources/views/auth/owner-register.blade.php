@@ -145,7 +145,9 @@
                         <div class="mt-4 grid gap-4 sm:grid-cols-2">
                             <label class="block">
                                 <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Pays</span>
-                                @php($selectedCountry = strtoupper(old('country_code', $ownerProfile?->country_code ?? 'CI')))
+                                @php
+                                    $selectedCountry = strtoupper(old('country_code', $ownerProfile?->country_code ?? 'CI'));
+                                @endphp
                                 @if (count($countryOptions) > 0)
                                     <select name="country_code" required class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
                                         @foreach ($countryOptions as $code => $countryName)

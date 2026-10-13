@@ -21,13 +21,17 @@
                     <a href="{{ route('products.index') }}" class="mt-4 inline-flex rounded-full bg-[#2f6bff] px-5 py-2.5 text-sm font-extrabold text-white">Découvrir le matériel</a>
                 </div>
             @else
-                @php($grandTotal = 0)
+                @php
+                    $grandTotal = 0;
+                @endphp
                 <form method="POST" action="{{ route('cart.checkout') }}" id="checkout-form" class="hidden">@csrf</form>
 
                 <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
                     <div class="space-y-5">
                         @foreach ($providerGroups as $group)
-                            @php($provider = $group['provider'])
+                            @php
+                                $provider = $group['provider'];
+                            @endphp
                             <section class="rounded-[26px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]" data-provider-group>
                                 <h2 class="text-lg font-extrabold">{{ $provider->business_name }}</h2>
                                 <div class="mt-4 space-y-3">
@@ -96,7 +100,9 @@
                                     @endif
                                     <span>Livraison : <strong class="text-[#151821]" data-delivery-fee-label>{{ $money(0) }}</strong></span>
                                 </div>
-                                @php($grandTotal += $group['items_total'] + $group['deposit_total'])
+                                @php
+                                    $grandTotal += $group['items_total'] + $group['deposit_total'];
+                                @endphp
                             </section>
                         @endforeach
                     </div>

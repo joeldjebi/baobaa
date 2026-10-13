@@ -144,7 +144,9 @@
             @endphp
 
             @forelse ($conversation as $message)
-                @php($isMine = (int) $message->sender_id === (int) auth()->id())
+                @php
+                    $isMine = (int) $message->sender_id === (int) auth()->id();
+                @endphp
                 <article class="rounded-2xl border {{ $isMine ? 'border-[#cfe0ff] bg-[#f4f8ff]' : 'border-[#edf2fb] bg-white' }} p-4">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <p class="font-extrabold text-[#151821]">{{ $isMine ? $actorLabel : ($message->sender?->name ?? ($message->sender_id ? App\Models\User::find($message->sender_id)?->name : 'Partenaire')) }}</p>

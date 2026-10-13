@@ -129,7 +129,9 @@
                         <img src="{{ $galleryImages[0] }}" alt="{{ $title }}" width="1280" height="720" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-64 w-full object-cover transition duration-500 hover:scale-[1.02] sm:h-[460px]">
                     </button>
                 @else
-                    @php($secondaryImages = array_slice($galleryImages, 1, 4))
+                    @php
+                        $secondaryImages = array_slice($galleryImages, 1, 4);
+                    @endphp
                     <div class="grid gap-2 overflow-hidden rounded-[18px] lg:grid-cols-[1.08fr_.92fr]">
                         <button type="button" data-gallery-index="0" class="relative cursor-zoom-in overflow-hidden text-left">
                             <img src="{{ $galleryImages[0] }}" alt="{{ $title }}" width="1280" height="720" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="h-64 w-full object-cover transition duration-500 hover:scale-[1.02] sm:h-[420px]">

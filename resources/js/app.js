@@ -1,3 +1,5 @@
+import './motion';
+
 const loader = document.getElementById('baobaa-global-loader');
 let loaderTimer = null;
 

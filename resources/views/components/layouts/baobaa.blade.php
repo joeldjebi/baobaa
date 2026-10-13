@@ -38,6 +38,12 @@
     <meta name="twitter:image" content="{{ $image ?? asset('images/baobaa.jpg') }}">
     <link rel="icon" href="{{ asset('images/baobaa.jpg') }}">
     {{ $head ?? '' }}
+    <script>
+        if (! window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.classList.add('motion-ready');
+            setTimeout(() => window.__baobaaMotion || document.documentElement.classList.remove('motion-ready'), 2500);
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
