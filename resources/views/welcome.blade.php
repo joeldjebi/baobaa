@@ -37,384 +37,518 @@
     $districtListings = $mapVenueCards($districtCarouselVenues);
 @endphp
 
+@php
+    $heroVenue = $popularListings->first();
+    $storyVenues = $popularListings->take(3)->values();
+    $paymentLabels = collect(\App\Enums\PaymentMethod::cases())->reject(fn ($method) => $method === \App\Enums\PaymentMethod::BaobaaCheckout)->map->label()->values();
+    $contact = config('baobaa.contact');
+    $faqs = [
+        ['Comment réserver un espace sur BAOBAA ?', 'Choisissez un espace, indiquez votre date, vos horaires et le nombre d’invités, puis envoyez votre demande. Le propriétaire la valide, une proforma récapitule le prix et vous payez l’acompte pour bloquer la date.'],
+        ['À quoi sert l’acompte ?', 'L’acompte bloque votre date : personne d’autre ne peut réserver le même créneau. Son montant est affiché avant le paiement et le solde se règle selon la proforma validée avec le propriétaire.'],
+        ['Puis-je négocier le prix ?', 'Oui. Lors de votre demande, vous pouvez proposer un montant. Le propriétaire répond depuis la messagerie de la réservation et la proforma est mise à jour.'],
+        ['Quels moyens de paiement sont acceptés ?', 'Wave, Orange Money, MTN Money, Moov Money et le virement bancaire, selon ce que chaque propriétaire accepte. Les moyens disponibles sont affichés sur chaque annonce.'],
+        ['Puis-je réserver des professionnels ou du matériel sans salle ?', 'Oui. Vous pouvez composer un événement uniquement avec des professionnels (son, lumière, photo…) ou louer et acheter du matériel, avec livraison ou retrait.'],
+        ['Comment publier mon espace ?', 'Créez votre compte partenaire gratuitement. Notre équipe vérifie votre profil, puis vous publiez vos espaces, vos prix et votre calendrier de disponibilités.'],
+    ];
+@endphp
+
 <x-layouts.baobaa title="BAOBAA - Réservez une salle ou un espace pour votre événement" description="Trouvez et réservez la salle idéale pour votre mariage, séminaire, conférence ou soirée en Afrique francophone. Espaces vérifiés, prix clairs et paiement sécurisé.">
-    <style>
-        .baobaa-venue-carousel-grid {
-            grid-auto-flow: column;
-            grid-auto-columns: min(76vw, 292px);
-        }
+    <div class="baobaa-scroll-progress" data-scroll-progress aria-hidden="true"></div>
 
-        @media (min-width: 768px) {
-            .baobaa-venue-carousel-grid {
-                grid-auto-columns: calc((100% - 80px) / 3.35);
-            }
-        }
+    <main class="min-h-screen overflow-x-clip bg-[#f5f7ff] text-[#07152f]">
+        <x-navigation.public-header active="explore" />
 
-        @media (min-width: 1024px) {
-            .baobaa-venue-carousel-grid {
-                grid-auto-columns: calc((100% - 80px) / 4.35);
-            }
-        }
-    </style>
+        {{-- Hero --}}
+        <section class="relative px-5 pb-16 pt-10 sm:px-8 lg:pb-24 lg:pt-14">
+            <div class="absolute inset-0 opacity-[0.35] [background-image:linear-gradient(rgba(47,107,255,.10)_1px,transparent_1px),linear-gradient(90deg,rgba(47,107,255,.10)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_75%)]" aria-hidden="true"></div>
 
-    <main class="min-h-screen overflow-hidden bg-[#eef3ff]">
-        <section class="relative overflow-hidden px-5 pb-8 pt-5 sm:px-8 lg:px-14">
-            <div class="absolute inset-0 bg-[linear-gradient(180deg,#f4f7ff_0%,#fbfdff_43%,#eef4ff_68%,#f4f0ff_100%)]"></div>
-            <div class="absolute inset-0 opacity-[0.38] [background-image:linear-gradient(rgba(47,107,255,.13)_1px,transparent_1px),linear-gradient(90deg,rgba(47,107,255,.13)_1px,transparent_1px)] [background-size:72px_72px]"></div>
-            <div class="absolute inset-x-0 top-[82px] h-px bg-gradient-to-r from-transparent via-[#2f6bff]/18 to-transparent"></div>
-            <div class="absolute left-0 right-0 top-[34%] h-[260px] -skew-y-6 bg-gradient-to-r from-[#2f6bff]/0 via-[#2f6bff]/8 to-[#9b5de5]/0 blur-2xl"></div>
-            <div class="baobaa-aurora pointer-events-none absolute inset-0" data-aurora="-36" aria-hidden="true">
-                <div class="animate-baobaa-hero-drift absolute -left-[12%] top-[45%] h-[360px] w-[72%] rounded-[50%] bg-[#dbe6ff]/70 blur-3xl"></div>
-                <div class="animate-baobaa-hero-drift absolute left-[30%] top-[8%] h-[260px] w-[40%] rounded-[50%] bg-[#cfe2ff]/60 blur-3xl" style="animation-delay: -11s"></div>
-            </div>
-            <div class="baobaa-aurora pointer-events-none absolute inset-0" data-aurora="44" aria-hidden="true">
-                <div class="animate-baobaa-hero-drift absolute -right-[12%] top-[38%] h-[380px] w-[74%] rounded-[50%] bg-[#e7e4ff]/70 blur-3xl" style="animation-delay: -7s"></div>
-                <div class="animate-baobaa-hero-drift absolute right-[8%] top-[4%] size-[220px] rounded-full bg-[#ffe3f1]/50 blur-3xl" style="animation-delay: -3s"></div>
-            </div>
+            <div class="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.08fr_.92fr]">
+                <div>
+                    <p class="animate-baobaa-fade-up inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-xs font-extrabold text-[#2f6bff] shadow-sm ring-1 ring-[#dce6f7]">
+                        <span class="relative grid size-2.5 place-items-center"><span class="baobaa-pulse-ring absolute size-2.5 rounded-full bg-[#2f6bff]"></span><span class="size-2 rounded-full bg-[#2f6bff]"></span></span>
+                        La plateforme événementielle d’Afrique francophone
+                    </p>
 
-            <header class="relative z-[120] mx-auto flex max-w-[1680px] items-center justify-between">
-                <a href="{{ url('/') }}" class="flex shrink-0 items-center text-[#2f6bff]">
-                    <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-12 w-auto max-w-[180px] rounded-2xl bg-white/80 object-contain p-1 shadow-sm ring-1 ring-[#dbe3f8] sm:h-14" loading="eager">
-                </a>
-
-                <x-navigation.public-menu active="explore" class="border-white/80 bg-white/72 shadow-sm backdrop-blur" />
-
-                <div class="flex items-center gap-2">
-                    @guest
-                        <a href="{{ route('owner.register') }}" class="hidden rounded-full bg-[#17191f] px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#17191f]/10 transition hover:-translate-y-0.5 hover:bg-[#2f6bff] md:inline-flex">Devenir partenaire</a>
-                    @endguest
-                    <x-navigation.cart-link />
-                    <x-navigation.account-menu class="bg-white/82 text-[#17191f] ring-white/80 backdrop-blur" />
-                    <x-navigation.mobile-menu active="explore" />
-                </div>
-            </header>
-
-            <div class="relative z-[70] mx-auto flex max-w-[1240px] flex-col items-center pt-8 text-center sm:pt-14 lg:pt-16">
-                <div class="animate-baobaa-fade-up inline-flex max-w-full items-center gap-2 rounded-full border border-white/80 bg-white/90 py-1.5 pl-1.5 pr-4 text-xs font-extrabold text-[#2f6bff] shadow-[0_10px_30px_rgba(25,64,150,.12)] ring-1 ring-[#cfdaf5] backdrop-blur sm:text-sm">
-                    @if ($heroThumbnails->isNotEmpty())
-                        <span class="flex -space-x-2">
-                            @foreach ($heroThumbnails as $thumbnail)
-                                <img src="{{ $thumbnail }}" alt="" width="28" height="28" class="size-7 rounded-full object-cover ring-2 ring-white" loading="eager" decoding="async">
+                    @php
+                        $headlineWords = explode(' ', 'Le lieu parfait pour votre');
+                    @endphp
+                    <h1 class="mt-6 font-display text-[44px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[64px] lg:text-[76px]">
+                        <span class="sr-only">Le lieu parfait pour votre événement</span>
+                        <span aria-hidden="true">
+                            @foreach ($headlineWords as $wordIndex => $word)
+                                <span class="motion-word" style="--word-index: {{ $wordIndex }}">{{ $word }}</span>
                             @endforeach
+                            <span class="motion-word relative" style="--word-index: {{ count($headlineWords) }}">
+                                <span class="baobaa-rotating-word pb-[.1em]" data-rotating-words="2400">@foreach (['événement.', 'mariage.', 'séminaire.', 'gala.', 'anniversaire.', 'lancement.'] as $rotatingWord)<span class="baobaa-gradient-text">{{ $rotatingWord }}</span>@endforeach</span>
+                                <svg class="absolute -bottom-2 left-0 h-3 w-full text-[#2f6bff]" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 9C60 3 160 1 298 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+                            </span>
                         </span>
-                    @endif
-                    <span class="whitespace-nowrap"><span data-count-to="{{ $publishedVenuesCount }}">{{ number_format($publishedVenuesCount, 0, ',', ' ') }}</span> espace{{ $publishedVenuesCount > 1 ? 's' : '' }} dans {{ $publishedCitiesCount }} ville{{ $publishedCitiesCount > 1 ? 's' : '' }}</span>
-                    <span class="hidden text-[#9eb4ed] sm:inline">&middot;</span>
-                    <span class="hidden whitespace-nowrap sm:inline">Partenaires vérifiés</span>
+                    </h1>
+
+                    <p class="animate-baobaa-fade-up mt-6 max-w-xl text-base font-semibold leading-7 text-[#52617b] sm:text-lg" style="animation-delay: .5s">
+                        Salles, jardins, rooftops et auditoriums vérifiés. Comparez les prix, voyez les dates libres et bloquez la vôtre avec un acompte sécurisé.
+                    </p>
+
+                    <div class="animate-baobaa-fade-up relative z-30 mt-7 max-w-xl" style="animation-delay: .6s" data-hero-search>
+                        <div class="flex w-max max-w-full gap-1 overflow-x-auto rounded-full bg-white p-1 text-sm font-extrabold shadow-sm ring-1 ring-[#dce6f7] baobaa-scrollbar-none" role="tablist" aria-label="Que recherchez-vous ?">
+                            @foreach (['venues' => 'Espaces', 'professionals' => 'Professionnels', 'products' => 'Matériel'] as $tab => $label)
+                                <button type="button" role="tab" data-hero-tab="{{ $tab }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" class="shrink-0 rounded-full px-4 py-2 text-[#52617b] transition hover:text-[#2f6bff] aria-selected:bg-[#07152f] aria-selected:text-white">{{ $label }}</button>
+                            @endforeach
+                        </div>
+
+                        <form method="GET" action="{{ route('venues.index') }}" data-hero-panel="venues" class="mt-3 rounded-[1.6rem] bg-white p-2 shadow-[0_24px_60px_rgba(18,30,75,.14)] ring-1 ring-[#dce6f7]" data-home-search-form>
+                            <div class="grid gap-1 sm:grid-cols-[1fr_1fr_auto]">
+                                <label class="rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]">
+                                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Quoi</span>
+                                    <input type="text" name="q" autocomplete="off" data-search-input placeholder="Salle de mariage…" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5]">
+                                </label>
+                                <label class="relative rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]" data-city-autocomplete>
+                                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Où</span>
+                                    <input type="text" name="city" autocomplete="off" data-city-input placeholder="Ville ou quartier" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5]">
+                                    <div data-city-list class="absolute left-0 right-0 top-[calc(100%+8px)] z-[90] hidden rounded-2xl border border-[#dce6f7] bg-white p-2 text-left shadow-2xl shadow-[#173e7a]/16"></div>
+                                </label>
+                                <button class="inline-flex items-center justify-center gap-2 rounded-[1.2rem] bg-[#2f6bff] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/30 transition hover:-translate-y-0.5 hover:bg-[#2258df]">
+                                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                                    Rechercher
+                                </button>
+                            </div>
+                            <div data-search-results class="relative z-[85] mt-2 hidden rounded-3xl border border-[#dce6f7] bg-[#f8fbff] p-3 text-left"></div>
+                        </form>
+
+                        <form method="GET" action="{{ route('service-provider-profiles.index') }}" data-hero-panel="professionals" hidden class="mt-3 rounded-[1.6rem] bg-white p-2 shadow-[0_24px_60px_rgba(18,30,75,.14)] ring-1 ring-[#dce6f7]">
+                            <div class="grid gap-1 sm:grid-cols-[1fr_auto]">
+                                <label class="rounded-2xl px-4 py-2.5">
+                                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Quel professionnel ?</span>
+                                    <input type="text" name="q" placeholder="Sonorisation, photographe, décoration…" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5]">
+                                </label>
+                                <button class="rounded-[1.2rem] bg-[#2f6bff] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/30">Trouver</button>
+                            </div>
+                        </form>
+
+                        <form method="GET" action="{{ route('products.index') }}" data-hero-panel="products" hidden class="mt-3 rounded-[1.6rem] bg-white p-2 shadow-[0_24px_60px_rgba(18,30,75,.14)] ring-1 ring-[#dce6f7]">
+                            <div class="grid gap-1 sm:grid-cols-[1fr_auto]">
+                                <label class="rounded-2xl px-4 py-2.5">
+                                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Quel matériel ?</span>
+                                    <input type="text" name="q" placeholder="Chaises, tente, enceinte…" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5]">
+                                </label>
+                                <button class="rounded-[1.2rem] bg-[#2f6bff] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/30">Voir le matériel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="animate-baobaa-fade-up mt-7 flex flex-wrap items-center gap-x-4 gap-y-2" style="animation-delay: .75s">
+                        <span class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d879d]">Payez avec</span>
+                        @foreach ($paymentLabels as $paymentIndex => $paymentLabel)
+                            <span class="inline-flex items-center gap-1.5 text-sm font-bold text-[#38445c]"><span class="size-2 rounded-full" style="background: {{ ['#1dc8ff', '#ff7a00', '#ffcb05', '#1f4fbf', '#0f9f6e'][$paymentIndex % 5] }}"></span>{{ $paymentLabel }}</span>
+                        @endforeach
+                    </div>
                 </div>
 
-                @php
-                    $headlineWords = explode(' ', 'Le lieu, les professionnels et le matériel de votre');
-                @endphp
-                <h1 class="mt-5 max-w-[900px] text-[34px] font-extrabold leading-[1.08] tracking-[-0.045em] text-[#202027] sm:text-[56px] lg:text-[68px]">
-                    <span class="sr-only">Le lieu, les professionnels et le matériel de votre événement</span>
-                    <span aria-hidden="true">
-                        @foreach ($headlineWords as $wordIndex => $word)
-                            <span class="motion-word" style="--word-index: {{ $wordIndex }}">{{ $word }}</span>
+                {{-- Phone mockup --}}
+                <div class="relative mx-auto grid w-full max-w-[520px] place-items-center py-6" aria-hidden="true">
+                    <div class="absolute size-[360px] rounded-full bg-[linear-gradient(140deg,#2f6bff,#7c5cff)] opacity-95 sm:size-[420px]" data-reveal="scale"></div>
+                    <svg class="baobaa-orbit absolute size-[460px] text-[#2f6bff]/45 sm:size-[520px]" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="49" stroke="currentColor" stroke-width=".35" stroke-dasharray="1.4 1.6"/></svg>
+
+                    <div class="baobaa-aurora relative" data-aurora="-14">
+                        <div class="baobaa-phone">
+                            <div class="baobaa-phone-notch"></div>
+                            <div class="baobaa-phone-screen px-4 pt-12">
+                                <div class="flex items-center justify-between text-[11px] font-extrabold text-[#07152f]"><span>9:41</span><span class="rounded-full bg-[#eef4ff] px-2 py-0.5 text-[#2f6bff]">BAOBAA</span></div>
+                                <p class="mt-4 font-display text-xl font-extrabold leading-tight text-[#07152f]">On fête quoi&nbsp;?</p>
+                                <div class="mt-3 flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-[#9aa3b5] ring-1 ring-[#e4ebf8]">
+                                    <svg class="size-3.5 text-[#2f6bff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                                    Salle, jardin, rooftop…
+                                </div>
+                                @if ($heroVenue)
+                                    <div class="mt-4 overflow-hidden rounded-2xl bg-white shadow-lg shadow-[#173e7a]/10 ring-1 ring-[#e4ebf8]">
+                                        <img src="{{ $heroVenue['image'] }}" alt="" width="270" height="150" decoding="async" referrerpolicy="no-referrer" class="h-32 w-full object-cover">
+                                        <div class="p-3">
+                                            <p class="line-clamp-1 text-xs font-extrabold text-[#07152f]">{{ $heroVenue['title'] }}</p>
+                                            <p class="mt-0.5 text-[10px] font-bold text-[#7d879d]">{{ $heroVenue['city'] }} · {{ $heroVenue['guests'] }}</p>
+                                            <div class="mt-2 flex items-center justify-between">
+                                                <span class="text-xs font-extrabold text-[#2f6bff]">{{ $heroVenue['price'] }}</span>
+                                                <span class="rounded-full bg-[#2f6bff] px-3 py-1 text-[10px] font-extrabold text-white">Réserver</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                                <p class="mt-4 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#7d879d]">Dates libres</p>
+                                <div class="mt-2 grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold" data-animate-on-view>
+                                    @foreach (range(1, 14) as $day)
+                                        @php
+                                            $isBooked = in_array($day, [3, 4, 9], true);
+                                            $isChosen = $day === 12;
+                                        @endphp
+                                        <span @class([
+                                            'baobaa-calendar-cell grid h-6 place-items-center rounded-md',
+                                            'bg-[#eceff5] text-[#b4bccb] line-through' => $isBooked,
+                                            'bg-[#2f6bff] text-white shadow-md shadow-[#2f6bff]/40' => $isChosen,
+                                            'bg-white text-[#07152f] ring-1 ring-[#e4ebf8]' => ! $isBooked && ! $isChosen,
+                                        ]) style="--cell-delay: {{ 400 + $day * 45 }}ms">{{ $day }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="baobaa-float-card absolute -left-2 top-16 rounded-2xl bg-white px-3.5 py-2.5 shadow-xl shadow-[#173e7a]/15 ring-1 ring-[#e4ebf8] sm:-left-6" style="--float-delay: -1s" data-reveal="left">
+                        <div class="flex items-center gap-2.5">
+                            <span class="grid size-8 place-items-center rounded-full bg-[#12b76a] text-white"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                            <span><span class="block text-xs font-extrabold text-[#07152f]">Demande acceptée</span><span class="block text-[10px] font-bold text-[#7d879d]">Le propriétaire a répondu</span></span>
+                        </div>
+                    </div>
+                    <div class="baobaa-float-card absolute -right-2 top-[46%] rounded-2xl bg-white px-3.5 py-2.5 shadow-xl shadow-[#173e7a]/15 ring-1 ring-[#e4ebf8] sm:-right-8" style="--float-delay: -3s" data-reveal="right">
+                        <div class="flex items-center gap-2.5">
+                            <span class="grid size-8 place-items-center rounded-xl bg-[#1dc8ff] text-sm font-extrabold text-white">W</span>
+                            <span><span class="block text-xs font-extrabold text-[#07152f]">Acompte payé</span><span class="block text-[10px] font-bold text-[#7d879d]">Via Wave · date bloquée</span></span>
+                        </div>
+                    </div>
+                    <div class="baobaa-float-card absolute bottom-20 left-0 rounded-2xl bg-[#07152f] px-3.5 py-2.5 text-white shadow-xl shadow-[#07152f]/30 sm:-left-10" style="--float-delay: -5s" data-reveal="left">
+                        <span class="block text-[10px] font-bold text-white/60">Votre date</span>
+                        <span class="block text-xs font-extrabold">Samedi 12 · confirmée</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- Bento --}}
+        <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+            <div class="max-w-2xl" data-reveal>
+                <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Pourquoi BAOBAA</p>
+                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-5xl">Organiser, sans <span class="text-[#2f6bff]">mauvaise surprise.</span></h2>
+            </div>
+
+            <div class="mt-10 grid gap-4 lg:grid-cols-12">
+                <article class="relative overflow-hidden rounded-[2rem] bg-[#07152f] p-7 text-white lg:col-span-7 lg:row-span-2" data-reveal>
+                    <h3 class="font-display text-2xl font-extrabold">Les vraies dates libres.</h3>
+                    <p class="mt-2 max-w-md text-sm font-semibold leading-6 text-white/65">Chaque espace affiche son calendrier : dates réservées, bloquées ou libres. Vous ne demandez que ce qui est réellement disponible.</p>
+                    <div class="mx-auto mt-8 max-w-md" data-animate-on-view>
+                        <div class="grid grid-cols-7 gap-2 text-center text-[11px] font-extrabold text-white/40">
+                            @foreach (['L', 'M', 'M', 'J', 'V', 'S', 'D'] as $weekday)
+                                <span>{{ $weekday }}</span>
+                            @endforeach
+                        </div>
+                        <div class="mt-2 grid grid-cols-7 gap-2 text-center text-sm font-extrabold">
+                            @foreach (range(1, 28) as $day)
+                                @php
+                                    $state = in_array($day, [5, 6, 13, 19, 20], true) ? 'booked' : ($day === 21 ? 'chosen' : 'free');
+                                @endphp
+                                <span @class([
+                                    'baobaa-calendar-cell relative grid aspect-square place-items-center rounded-xl',
+                                    'bg-white/5 text-white/25 line-through' => $state === 'booked',
+                                    'bg-[#2f6bff] text-white' => $state === 'chosen',
+                                    'bg-white/10 text-white' => $state === 'free',
+                                ]) style="--cell-delay: {{ $day * 35 }}ms">
+                                    @if ($state === 'chosen')
+                                        <span class="baobaa-pulse-ring absolute inset-0 rounded-xl ring-2 ring-[#2f6bff]"></span>
+                                    @endif
+                                    {{ $day }}
+                                </span>
+                            @endforeach
+                        </div>
+                        <div class="mt-5 flex flex-wrap gap-4 text-xs font-bold text-white/60">
+                            <span class="inline-flex items-center gap-2"><span class="size-3 rounded bg-white/10"></span>Libre</span>
+                            <span class="inline-flex items-center gap-2"><span class="size-3 rounded bg-white/5 ring-1 ring-white/15"></span>Réservée</span>
+                            <span class="inline-flex items-center gap-2"><span class="size-3 rounded bg-[#2f6bff]"></span>Votre date</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="rounded-[2rem] bg-white p-7 ring-1 ring-[#dce6f7] lg:col-span-5" data-reveal>
+                    <div class="flex items-start justify-between gap-6">
+                        <div>
+                            <h3 class="font-display text-2xl font-extrabold">Acompte sécurisé.</h3>
+                            <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Un acompte bloque votre date. Le solde suit la proforma validée avec le propriétaire.</p>
+                        </div>
+                        <svg class="size-28 shrink-0 -rotate-90" viewBox="0 0 100 100" data-reveal style="--gauge-offset: 87" aria-hidden="true">
+                            <circle cx="50" cy="50" r="46" fill="none" stroke="#eef2fb" stroke-width="8"/>
+                            <circle class="baobaa-gauge-value" cx="50" cy="50" r="46" fill="none" stroke="#2f6bff" stroke-width="8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </article>
+
+                <article class="rounded-[2rem] bg-[#e9efff] p-7 lg:col-span-5" data-reveal>
+                    <h3 class="font-display text-2xl font-extrabold">Payez comme vous voulez.</h3>
+                    <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Mobile Money ou virement, selon ce que l’espace accepte.</p>
+                    <div class="mt-5 flex flex-wrap gap-2.5" data-animate-on-view>
+                        @foreach ($paymentLabels as $chipIndex => $paymentLabel)
+                            <span class="baobaa-chip rounded-full px-4 py-2 text-sm font-extrabold text-white shadow-lg" style="--chip-rotate: {{ [-4, 3, -2, 5, -3][$chipIndex % 5] }}deg; --chip-delay: {{ $chipIndex * 110 }}ms; background: {{ ['#1dc8ff', '#ff7a00', '#e8b100', '#1f4fbf', '#0f9f6e'][$chipIndex % 5] }}">{{ $paymentLabel }}</span>
                         @endforeach
-                        <span class="motion-word relative" style="--word-index: {{ count($headlineWords) }}">
-                            <span class="baobaa-rotating-word pb-[.12em]" data-rotating-words="2400">@foreach (['événement', 'mariage', 'séminaire', 'gala', 'anniversaire', 'lancement'] as $rotatingWord)<span class="baobaa-gradient-text">{{ $rotatingWord }}</span>@endforeach</span>
-                            <span class="absolute -bottom-1 left-0 h-1.5 w-full rounded-full bg-[linear-gradient(90deg,#9ab7ff,#c4b5fd,#9ab7ff)] opacity-80"></span>
-                        </span>
-                    </span>
-                </h1>
+                    </div>
+                </article>
 
-                <p class="animate-baobaa-fade-up mt-4 max-w-2xl text-base font-semibold leading-7 text-[#626b7e] sm:text-lg" style="animation-delay: .16s">
-                    Comparez des espaces vérifiés, réservez en ligne avec un acompte sécurisé et complétez votre événement en quelques clics.
-                </p>
+                <article class="rounded-[2rem] bg-white p-7 ring-1 ring-[#dce6f7] lg:col-span-4" data-reveal>
+                    <h3 class="font-display text-2xl font-extrabold">Des lieux vérifiés.</h3>
+                    <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Photos réelles, prix clairs et avis de clients ayant réservé.</p>
+                    <div class="relative mt-6 h-36">
+                        @foreach ($popularListings->take(3)->values() as $stackIndex => $stackVenue)
+                            <img src="{{ $stackVenue['image'] }}" alt="" width="200" height="140" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="absolute left-1/2 top-0 h-32 w-44 rounded-2xl object-cover shadow-xl ring-4 ring-white transition duration-700" style="transform: translateX(calc(-50% + {{ ($stackIndex - 1) * 64 }}px)) rotate({{ ($stackIndex - 1) * 8 }}deg); z-index: {{ $stackIndex === 1 ? 3 : 1 }}">
+                        @endforeach
+                    </div>
+                </article>
 
-                <div class="animate-baobaa-fade-up relative z-[80] mt-7 w-full max-w-[1120px]" style="animation-delay: .24s" data-hero-search>
-                    <div class="mx-auto flex w-max max-w-full gap-1 overflow-x-auto rounded-full bg-white/80 p-1 text-sm font-extrabold shadow-sm ring-1 ring-[#dce6f7] backdrop-blur baobaa-scrollbar-none" role="tablist" aria-label="Que recherchez-vous ?">
-                        @foreach (['venues' => 'Espaces', 'professionals' => 'Professionnels', 'products' => 'Matériel'] as $tab => $label)
-                            <button type="button" role="tab" data-hero-tab="{{ $tab }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" class="shrink-0 rounded-full px-5 py-2 transition aria-selected:bg-[#2f6bff] aria-selected:text-white aria-selected:shadow-lg aria-selected:shadow-[#2f6bff]/25 text-[#52617b] hover:text-[#2f6bff]">{{ $label }}</button>
+                <article class="rounded-[2rem] bg-[#07152f] p-7 text-white lg:col-span-4" data-reveal>
+                    <h3 class="font-display text-2xl font-extrabold">On se parle, simplement.</h3>
+                    <p class="mt-2 text-sm font-semibold leading-6 text-white/65">Échangez avec le propriétaire et négociez depuis votre réservation.</p>
+                    <div class="mt-5 space-y-2" data-animate-on-view>
+                        <p class="baobaa-bubble w-max max-w-[85%] rounded-2xl rounded-bl-md bg-white px-4 py-2.5 text-sm font-bold text-[#07152f]" style="--bubble-delay: 100ms">La salle est libre le 21 ?</p>
+                        <p class="baobaa-bubble ml-auto w-max max-w-[85%] rounded-2xl rounded-br-md bg-[#2f6bff] px-4 py-2.5 text-sm font-bold" style="--bubble-delay: 700ms">Oui ! Je vous envoie la proforma.</p>
+                    </div>
+                </article>
+
+                <article class="rounded-[2rem] bg-white p-7 ring-1 ring-[#dce6f7] lg:col-span-4" data-reveal>
+                    <h3 class="font-display text-2xl font-extrabold">Tout au même endroit.</h3>
+                    <p class="mt-2 text-sm font-semibold leading-6 text-[#52617b]">Le lieu, les professionnels et le matériel, dans un seul dossier.</p>
+                    <div class="mt-5 grid grid-cols-3 gap-2 text-center text-xs font-extrabold" data-reveal-stagger="120" data-reveal-variant="scale">
+                        <a href="{{ route('venues.index') }}" class="rounded-2xl bg-[#eef4ff] px-2 py-4 text-[#2f6bff] transition hover:-translate-y-1">Espaces</a>
+                        <a href="{{ route('service-provider-profiles.index') }}" class="rounded-2xl bg-[#f3efff] px-2 py-4 text-[#7c5cff] transition hover:-translate-y-1">Pros</a>
+                        <a href="{{ route('products.index') }}" class="rounded-2xl bg-[#e8f8f1] px-2 py-4 text-[#0f9f6e] transition hover:-translate-y-1">Matériel</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        {{-- Story --}}
+        <section class="bg-[#07152f] px-5 py-20 text-white sm:px-8 lg:py-28" data-story>
+            <div class="mx-auto max-w-7xl">
+                <div class="max-w-2xl" data-reveal>
+                    <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#8db4ff]"><span class="size-1.5 rounded-full bg-[#8db4ff]"></span>Comment ça marche</p>
+                    <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-5xl">Réserver, c’est quatre gestes.</h2>
+                </div>
+
+                <div class="mt-14 grid gap-10 lg:grid-cols-[1fr_auto_380px]">
+                    <div>
+                        @foreach ([
+                            ['Cherchez.', 'Filtrez par ville, date, nombre d’invités et budget. Seuls les espaces réellement libres à vos dates s’affichent.'],
+                            ['Comparez.', 'Photos, capacité, prix, options et avis : tout ce qu’il faut pour choisir sereinement, sans appel interminable.'],
+                            ['Réservez.', 'Envoyez votre demande, validez la proforma et payez l’acompte par Mobile Money pour bloquer la date.'],
+                            ['Célébrez.', 'Ajoutez des professionnels et le matériel nécessaire, puis profitez. Tout est suivi depuis votre espace client.'],
+                        ] as $stepIndex => [$stepTitle, $stepText])
+                            <div @class(['baobaa-story-step flex min-h-[42vh] flex-col justify-center py-6 lg:min-h-[70vh]', 'is-active' => $stepIndex === 0]) data-story-step>
+                                <p class="text-sm font-extrabold text-[#8db4ff]">Étape 0{{ $stepIndex + 1 }}</p>
+                                <h3 class="mt-2 font-display text-5xl font-extrabold tracking-[-0.045em] sm:text-6xl">{{ $stepTitle }}</h3>
+                                <p class="mt-4 max-w-md text-base font-semibold leading-7 text-white/65">{{ $stepText }}</p>
+                            </div>
                         @endforeach
                     </div>
 
-                    <form method="GET" action="{{ route('venues.index') }}" data-hero-panel="venues" class="relative mt-3 rounded-[2rem] border border-white/80 bg-white/95 p-3 text-left shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df] backdrop-blur-xl" data-home-search-form>
-                        <div class="grid items-center gap-0 lg:grid-cols-[1.1fr_.85fr_.95fr_.9fr_auto]">
-                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quoi</span>
-                                <input type="text" name="q" autocomplete="off" data-search-input placeholder="Salle de mariage, rooftop…" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
-                            </label>
-                            <label class="relative border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5" data-city-autocomplete>
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Où</span>
-                                <input type="text" name="city" autocomplete="off" data-city-input placeholder="Ville ou quartier" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
-                                <div data-city-list class="absolute left-2 right-2 top-[calc(100%+8px)] z-[90] hidden rounded-2xl border border-[#dce6f7] bg-white p-2 text-left shadow-2xl shadow-[#173e7a]/16 lg:left-4 lg:right-4"></div>
-                            </label>
-                            <div class="relative border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5" data-date-range>
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quand</span>
-                                <button type="button" data-date-toggle class="mt-1 w-full bg-transparent text-left text-base font-semibold text-[#9a9ca3] outline-none">Choisir une date</button>
-                                <div data-date-panel class="absolute left-2 right-2 top-[calc(100%+8px)] z-[90] hidden rounded-3xl border border-[#dce6f7] bg-white p-4 shadow-2xl shadow-[#173e7a]/16 lg:left-4 lg:right-4 lg:min-w-[360px]">
-                                    <div class="grid gap-3 sm:grid-cols-2">
-                                        <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
-                                            <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date début</span>
-                                            <input type="date" name="start_date" min="{{ now()->toDateString() }}" data-start-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
-                                        </label>
-                                        <label class="rounded-2xl bg-[#f7faff] px-3 py-2.5 ring-1 ring-[#dce6f7]">
-                                            <span class="block text-[11px] font-extrabold uppercase text-[#8a94aa]">Date fin</span>
-                                            <input type="date" name="end_date" min="{{ now()->toDateString() }}" data-end-date class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#151821] outline-none">
-                                        </label>
+                    <div class="relative hidden lg:block" aria-hidden="true">
+                        <div class="sticky top-[30vh] h-[40vh] w-0.5 rounded-full bg-white/10">
+                            <div class="baobaa-timeline-fill absolute inset-0 rounded-full bg-[#2f6bff]" style="transform: scaleY(var(--story-progress, .25))"></div>
+                            @foreach (range(0, 3) as $dotIndex)
+                                <span data-story-dot class="absolute left-1/2 grid size-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white/25 bg-[#07152f] transition [&.is-reached]:border-[#2f6bff] [&.is-reached]:bg-[#2f6bff]" style="top: {{ $dotIndex * 33.33 }}%"></span>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="relative hidden lg:block" aria-hidden="true">
+                        <div class="sticky top-[12vh] grid place-items-center">
+                            <div class="absolute size-[340px] rounded-full bg-[#2f6bff]/25 blur-3xl"></div>
+                            <div class="baobaa-phone">
+                                <div class="baobaa-phone-notch"></div>
+                                <div class="baobaa-phone-screen">
+                                    <div class="baobaa-story-screen is-active px-4 pt-12" data-story-screen>
+                                        <p class="font-display text-lg font-extrabold text-[#07152f]">Espaces à Abidjan</p>
+                                        <p class="text-[10px] font-bold text-[#7d879d]">Samedi · 150 invités</p>
+                                        <div class="mt-3 space-y-2">
+                                            @foreach ($storyVenues as $storyVenue)
+                                                <div class="flex gap-2 rounded-xl bg-white p-2 ring-1 ring-[#e4ebf8]">
+                                                    <img src="{{ $storyVenue['image'] }}" alt="" width="64" height="64" loading="lazy" referrerpolicy="no-referrer" class="size-14 rounded-lg object-cover">
+                                                    <div class="min-w-0">
+                                                        <p class="line-clamp-1 text-[11px] font-extrabold text-[#07152f]">{{ $storyVenue['title'] }}</p>
+                                                        <p class="text-[9px] font-bold text-[#7d879d]">{{ $storyVenue['city'] }}</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold text-[#2f6bff]">{{ $storyVenue['price'] }}</p>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
-                                    <button type="button" data-date-apply class="mt-3 w-full rounded-full bg-[#2f6bff] px-4 py-2.5 text-sm font-extrabold text-white">Valider les dates</button>
+                                    <div class="baobaa-story-screen" data-story-screen>
+                                        @if ($heroVenue)
+                                            <img src="{{ $heroVenue['image'] }}" alt="" width="270" height="200" loading="lazy" referrerpolicy="no-referrer" class="h-48 w-full object-cover">
+                                            <div class="px-4 pt-3">
+                                                <p class="font-display text-lg font-extrabold leading-tight text-[#07152f]">{{ $heroVenue['title'] }}</p>
+                                                <p class="text-[10px] font-bold text-[#7d879d]">{{ $heroVenue['city'] }}</p>
+                                                <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] font-extrabold text-[#38445c]">
+                                                    <span class="rounded-full bg-[#eef4ff] px-2.5 py-1">{{ $heroVenue['guests'] }}</span>
+                                                    <span class="rounded-full bg-[#eef4ff] px-2.5 py-1">{{ $heroVenue['category'] }}</span>
+                                                    @if ($heroVenue['verified'])
+                                                        <span class="rounded-full bg-[#e8f8f1] px-2.5 py-1 text-[#0f9f6e]">Vérifié</span>
+                                                    @endif
+                                                </div>
+                                                <p class="mt-4 text-[10px] font-bold text-[#7d879d]">À partir de</p>
+                                                <p class="font-display text-xl font-extrabold text-[#2f6bff]">{{ $heroVenue['price'] }}</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="baobaa-story-screen px-4 pt-12" data-story-screen>
+                                        <p class="font-display text-lg font-extrabold text-[#07152f]">Récapitulatif</p>
+                                        <div class="mt-3 space-y-2 rounded-xl bg-white p-3 text-[11px] font-bold text-[#52617b] ring-1 ring-[#e4ebf8]">
+                                            <p class="flex justify-between"><span>Date</span><span class="text-[#07152f]">Samedi 21</span></p>
+                                            <p class="flex justify-between"><span>Invités</span><span class="text-[#07152f]">150</span></p>
+                                            <p class="flex justify-between"><span>Proforma</span><span class="text-[#0f9f6e]">Validée</span></p>
+                                        </div>
+                                        <p class="mt-4 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#7d879d]">Payer l’acompte</p>
+                                        <div class="mt-2 grid grid-cols-2 gap-2 text-[11px] font-extrabold">
+                                            <span class="rounded-xl bg-[#1dc8ff] px-3 py-3 text-white ring-2 ring-[#07152f]">Wave</span>
+                                            <span class="rounded-xl bg-white px-3 py-3 text-[#ff7a00] ring-1 ring-[#e4ebf8]">Orange Money</span>
+                                        </div>
+                                        <span class="mt-4 block rounded-xl bg-[#2f6bff] py-3 text-center text-xs font-extrabold text-white">Payer et bloquer la date</span>
+                                    </div>
+                                    <div class="baobaa-story-screen grid place-items-center px-6 text-center" data-story-screen>
+                                        <div>
+                                            <span class="relative mx-auto grid size-20 place-items-center rounded-full bg-[#12b76a] text-white shadow-xl shadow-[#12b76a]/40">
+                                                <span class="baobaa-pulse-ring absolute inset-0 rounded-full bg-[#12b76a]"></span>
+                                                <svg class="relative size-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </span>
+                                            <p class="mt-5 font-display text-2xl font-extrabold text-[#07152f]">C’est réservé&nbsp;!</p>
+                                            <p class="mt-1 text-[11px] font-bold text-[#7d879d]">Votre date est bloquée. Bonne fête&nbsp;!</p>
+                                            <div class="mt-5 space-y-1.5 text-left text-[10px] font-extrabold">
+                                                <p class="rounded-lg bg-white px-3 py-2 text-[#38445c] ring-1 ring-[#e4ebf8]">+ Sonorisation ajoutée</p>
+                                                <p class="rounded-lg bg-white px-3 py-2 text-[#38445c] ring-1 ring-[#e4ebf8]">+ 150 chaises louées</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Invités</span>
-                                <input type="number" min="1" name="capacity" inputmode="numeric" placeholder="Nombre" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
-                            </label>
-                            <button class="mt-3 inline-flex items-center justify-center gap-2 rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0">
-                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                                Rechercher
-                            </button>
                         </div>
-                        <div data-search-results class="relative z-[85] mt-3 hidden rounded-3xl border border-[#dce6f7] bg-[#f8fbff] p-3 text-left shadow-2xl shadow-[#173e7a]/12"></div>
-                    </form>
-
-                    <form method="GET" action="{{ route('service-provider-profiles.index') }}" data-hero-panel="professionals" hidden class="mt-3 rounded-[2rem] border border-white/80 bg-white/95 p-3 text-left shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df]">
-                        <div class="grid items-center gap-0 lg:grid-cols-[1.4fr_1fr_auto]">
-                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quel professionnel ?</span>
-                                <input type="text" name="q" placeholder="Sonorisation, photographe, décoration…" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
-                            </label>
-                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Ville</span>
-                                <select name="city" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none">
-                                    <option value="">Toutes les villes</option>
-                                    @foreach ($citySuggestions as $citySuggestion)
-                                        <option value="{{ $citySuggestion }}">{{ $citySuggestion }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <button class="mt-3 inline-flex items-center justify-center gap-2 rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0">Trouver un professionnel</button>
-                        </div>
-                    </form>
-
-                    <form method="GET" action="{{ route('products.index') }}" data-hero-panel="products" hidden class="mt-3 rounded-[2rem] border border-white/80 bg-white/95 p-3 text-left shadow-[0_18px_55px_rgba(18,30,75,.15)] ring-1 ring-[#cfd3df]">
-                        <div class="grid items-center gap-0 lg:grid-cols-[1.4fr_1fr_auto]">
-                            <label class="border-b border-[#e5e7ee] px-3 py-2.5 lg:border-b-0 lg:border-r lg:px-5">
-                                <span class="block text-xs font-extrabold uppercase tracking-[0.04em] text-[#73757b]">Quel matériel ?</span>
-                                <input type="text" name="q" placeholder="Chaises, tente, enceinte…" class="mt-1 w-full bg-transparent text-base font-semibold text-[#25262b] outline-none placeholder:font-semibold placeholder:text-[#9a9ca3]">
-                            </label>
-                            <div class="flex items-center gap-2 border-b border-[#e5e7ee] px-3 py-3 lg:border-b-0 lg:border-r lg:px-5">
-                                @foreach (['rental' => 'Louer', 'sale' => 'Acheter'] as $mode => $label)
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="mode" value="{{ $mode }}" class="peer sr-only" @checked($loop->first)>
-                                        <span class="block rounded-full px-4 py-2 text-sm font-extrabold text-[#52617b] ring-1 ring-[#dce6f7] peer-checked:bg-[#eef4ff] peer-checked:text-[#2f6bff] peer-checked:ring-[#2f6bff]">{{ $label }}</span>
-                                    </label>
-                                @endforeach
-                            </div>
-                            <button class="mt-3 inline-flex items-center justify-center gap-2 rounded-[1.6rem] bg-[#2f6bff] px-7 py-3.5 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(47,107,255,.26)] transition hover:-translate-y-0.5 hover:bg-[#2258df] lg:mt-0">Voir le matériel</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="animate-baobaa-fade-up mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-extrabold text-[#506079] sm:text-sm" style="animation-delay: .3s">
-                    @foreach (['Prix clairs avant de réserver', 'Acompte sécurisé', 'Réponse du propriétaire sur la plateforme'] as $promise)
-                        <span class="inline-flex items-center gap-1.5">
-                            <svg class="size-4 text-[#2f6bff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                            {{ $promise }}
-                        </span>
-                    @endforeach
+        {{-- Popular venues --}}
+        <section id="espaces" class="mx-auto max-w-7xl px-5 py-20 sm:px-8" data-carousel-section>
+            <div class="mb-8 flex flex-wrap items-end justify-between gap-5" data-reveal>
+                <div>
+                    <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Tendances</p>
+                    <h2 class="mt-3 font-display text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl">Les espaces les plus demandés.</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" data-carousel-prev class="grid size-11 place-items-center rounded-full bg-white text-[#07152f] ring-1 ring-[#dce6f7] transition hover:bg-[#07152f] hover:text-white" aria-label="Espaces précédents">
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" data-carousel-next class="grid size-11 place-items-center rounded-full bg-white text-[#07152f] ring-1 ring-[#dce6f7] transition hover:bg-[#07152f] hover:text-white" aria-label="Espaces suivants">
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                    <a href="{{ route('venues.index') }}" class="rounded-full bg-[#07152f] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#2f6bff]">Tous les espaces</a>
+                </div>
+            </div>
+
+            <div data-carousel class="baobaa-scrollbar-none overflow-x-auto scroll-smooth px-1 pb-4">
+                <div class="baobaa-venue-carousel-grid grid grid-rows-1 gap-5" data-reveal-stagger="70">
+                    @forelse ($popularListings as $listing)
+                        <x-venues.carousel-card :listing="$listing" :badge="$listing['category']" />
+                    @empty
+                        <div class="rounded-[1.5rem] bg-white p-6 text-sm font-semibold text-[#6b7b99] ring-1 ring-[#dce6f7]">Aucun espace publié pour le moment.</div>
+                    @endforelse
                 </div>
             </div>
 
             @if ($categories->isNotEmpty())
-                <div id="categories" class="relative z-10 mx-auto mt-10 max-w-[1240px]">
-                    <button type="button" data-category-prev class="absolute -left-2 top-4 z-20 hidden size-10 place-items-center rounded-full bg-white text-[#2f6bff] shadow-lg ring-1 ring-[#d8dce9] transition hover:bg-[#eef3ff] disabled:opacity-0 md:grid" aria-label="Catégories précédentes">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    </button>
-                    <button type="button" data-category-next class="absolute -right-2 top-4 z-20 hidden size-10 place-items-center rounded-full bg-white text-[#2f6bff] shadow-lg ring-1 ring-[#d8dce9] transition hover:bg-[#eef3ff] disabled:opacity-0 md:grid" aria-label="Catégories suivantes">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-
-                    <div data-category-scroll class="baobaa-scrollbar-none overflow-x-auto scroll-smooth px-1 pb-3 md:px-10">
-                        <div class="mx-auto flex w-max gap-6">
-                            @foreach ($categories as $index => $category)
-                                <a href="{{ route('venues.index', ['category' => $category->slug]) }}" class="group flex w-[88px] shrink-0 flex-col items-center gap-2 text-center">
-                                    <span class="grid size-14 place-items-center rounded-full bg-white shadow-[0_2px_10px_rgba(38,48,75,.12)] ring-1 ring-[#d8dce9] transition group-hover:-translate-y-1 group-hover:shadow-[0_8px_22px_rgba(47,107,255,.2)]">
-                                        <span class="grid size-9 place-items-center rounded-xl" style="background-color: {{ $categoryColors[$index % count($categoryColors)] }}22; color: {{ $categoryColors[$index % count($categoryColors)] }}">
-                                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $categoryIcon($category->icon ?? null) !!}</svg>
-                                        </span>
-                                    </span>
-                                    <span class="line-clamp-2 min-h-9 text-[13px] font-extrabold leading-[1.15] text-[#333b4f] transition group-hover:text-[#2f6bff]">{{ $category->name }}</span>
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
+                <div class="mt-8 flex flex-wrap gap-2" data-reveal-stagger="50" data-reveal-variant="scale">
+                    @foreach ($categories as $category)
+                        <a href="{{ route('venues.index', ['category' => $category->slug]) }}" class="rounded-full bg-white px-4 py-2 text-sm font-extrabold text-[#38445c] ring-1 ring-[#dce6f7] transition hover:bg-[#2f6bff] hover:text-white hover:ring-[#2f6bff]">{{ $category->name }} <span class="text-[#9aa3b5]">{{ $category->published_venues_count }}</span></a>
+                    @endforeach
                 </div>
             @endif
         </section>
 
-        @if ($popularListings->isNotEmpty())
-            @php
-                $bandTiles = $popularListings->values();
-                while ($bandTiles->count() < 8) {
-                    $bandTiles = $bandTiles->concat($popularListings);
-                }
-                $bandRows = [$bandTiles->take(10), $bandTiles->reverse()->take(10)];
-            @endphp
-            <section class="baobaa-photo-band relative overflow-hidden py-6" aria-label="Aperçu des espaces publiés">
-                <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#eef3ff] to-transparent sm:w-32"></div>
-                <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#eef3ff] to-transparent sm:w-32"></div>
-                <div class="space-y-4">
-                    @foreach ($bandRows as $rowIndex => $row)
-                        <div class="baobaa-photo-track" @if ($rowIndex === 1) data-direction="reverse" @endif style="--track-duration: {{ $rowIndex === 0 ? 70 : 85 }}s">
-                            @foreach ([$row, $row] as $copyIndex => $copy)
-                                @foreach ($copy as $tile)
-                                    <a href="{{ route('venues.show', $tile['slug']) }}" @if ($copyIndex === 1) aria-hidden="true" tabindex="-1" @endif class="group relative block h-36 w-56 shrink-0 overflow-hidden rounded-[1.4rem] shadow-lg shadow-[#173e7a]/10 ring-1 ring-white sm:h-44 sm:w-72">
-                                        <img src="{{ $tile['image'] }}" alt="{{ $copyIndex === 0 ? $tile['title'] : '' }}" width="288" height="176" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="h-full w-full object-cover transition duration-700 group-hover:scale-110">
-                                        <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#07152f]/80 to-transparent p-3 text-left">
-                                            <span class="block truncate text-sm font-extrabold text-white">{{ $tile['title'] }}</span>
-                                            <span class="block truncate text-[11px] font-bold text-white/75">{{ $tile['city'] }}</span>
-                                        </span>
-                                    </a>
-                                @endforeach
-                            @endforeach
-                        </div>
-                    @endforeach
-                </div>
-            </section>
-        @endif
-
-        <section class="mx-auto max-w-7xl px-5 py-14 sm:px-8" data-reveal>
-            <div class="text-center">
-                <p class="text-sm font-extrabold uppercase tracking-[0.2em] text-[#2f6bff]">Comment ça marche</p>
-                <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#07152f] sm:text-4xl">Votre événement en trois étapes</h2>
+        {{-- Audiences --}}
+        <section class="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+            <div class="max-w-2xl" data-reveal>
+                <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Pour tout le monde</p>
+                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-5xl">Organisez, louez ou proposez vos services.</h2>
             </div>
-            <div class="relative mt-10 grid gap-6 md:grid-cols-3">
-                <div class="baobaa-step-line pointer-events-none absolute left-[16%] right-[16%] top-8 hidden h-0.5 rounded-full bg-[linear-gradient(90deg,#2f6bff,#7c5cff,#00a3ff)] md:block" aria-hidden="true"></div>
+
+            <div class="baobaa-audience-group mt-10 flex flex-col gap-3 lg:h-[420px] lg:flex-row" data-reveal>
                 @foreach ([
-                    ['Trouvez le bon lieu', 'Filtrez par ville, date, capacité et budget, puis comparez photos, prix et avis réels.', 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.3-4.3'],
-                    ['Réservez en sécurité', 'Échangez avec le propriétaire, validez la proforma et bloquez la date avec un acompte.', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Zm-3-10 2 2 4-4'],
-                    ['Complétez votre événement', 'Ajoutez des professionnels et louez le matériel nécessaire, au même endroit.', 'M12 3l7 4v10l-7 4-7-4V7l7-4Zm0 0v8m7-4-7 4-7-4'],
-                ] as $stepIndex => [$stepTitle, $stepText, $stepIcon])
-                    <div class="relative rounded-[1.6rem] bg-white p-6 text-center shadow-sm ring-1 ring-[#dce6f7] transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#2f6bff]/10" data-reveal style="--reveal-delay: {{ 150 + $stepIndex * 160 }}ms">
-                        <span class="relative mx-auto grid size-16 place-items-center rounded-2xl bg-[#2f6bff] text-white shadow-lg shadow-[#2f6bff]/30">
-                            <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $stepIcon }}"/></svg>
-                            <span class="absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-white text-xs font-extrabold text-[#2f6bff] ring-2 ring-[#2f6bff]">{{ $stepIndex + 1 }}</span>
-                        </span>
-                        <h3 class="mt-5 text-lg font-extrabold text-[#07152f]">{{ $stepTitle }}</h3>
-                        <p class="mt-2 text-sm font-semibold leading-6 text-[#6b7b99]">{{ $stepText }}</p>
-                    </div>
-                @endforeach
-            </div>
-        </section>
-
-        <section id="espaces" class="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:py-18" data-carousel-section>
-            <div class="mb-8 flex flex-wrap items-end justify-between gap-5" data-reveal>
-                <div>
-                    <p class="text-sm font-extrabold uppercase tracking-[0.2em] text-[#2f6bff]">Tendances actuelles</p>
-                    <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#07152f] sm:text-4xl">Annonces les plus populaires</h2>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" data-carousel-prev class="grid size-10 place-items-center rounded-full border border-[#d8dce9] bg-white text-[#2f6bff] shadow-sm transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef3ff]" aria-label="Annonces précédentes">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    </button>
-                    <button type="button" data-carousel-next class="grid size-10 place-items-center rounded-full border border-[#d8dce9] bg-white text-[#2f6bff] shadow-sm transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef3ff]" aria-label="Annonces suivantes">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                    <a href="{{ route('venues.index') }}" class="rounded-full border border-[#c9d8ef] bg-white px-5 py-2.5 text-sm font-extrabold text-[#2f6bff] shadow-sm transition hover:border-[#2f6bff]">Voir tous les espaces</a>
-                </div>
-            </div>
-
-            <div class="relative">
-                <div data-carousel class="baobaa-scrollbar-none overflow-x-auto scroll-smooth px-1 pb-4">
-                    <div class="baobaa-venue-carousel-grid grid grid-rows-2 gap-5" data-reveal-stagger="60">
-                        @forelse ($popularListings as $listing)
-                            <x-venues.carousel-card :listing="$listing" :badge="$listing['category']" />
-                        @empty
-                            <div class="rounded-[1.5rem] bg-white p-6 text-sm font-semibold text-[#6b7b99] ring-1 ring-[#dce6f7]">Aucun espace publié pour le moment.</div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-            <div class="mb-7 flex flex-wrap items-end justify-between gap-4" data-reveal>
-                <div>
-                    <p class="text-sm font-extrabold uppercase tracking-[0.2em] text-[#2f6bff]">Explorer par besoin</p>
-                    <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#07152f] sm:text-4xl">Catégories qui réservent vite</h2>
-                </div>
-                <a href="{{ route('venues.index') }}" class="rounded-full border border-[#c9d8ef] bg-white px-5 py-2.5 text-sm font-extrabold text-[#2f6bff] shadow-sm transition hover:border-[#2f6bff]">Tout explorer</a>
-            </div>
-
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-reveal-stagger="90" data-reveal-variant="scale">
-                @foreach ($categoryHighlights as $index => $category)
-                    <a href="{{ route('venues.index', ['category' => $category->slug]) }}" class="group flex items-center gap-4 rounded-[1.5rem] border border-[#dce6f7] bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12">
-                        <span class="grid size-14 shrink-0 place-items-center rounded-2xl" style="background-color: {{ $categoryColors[$index % count($categoryColors)] }}20; color: {{ $categoryColors[$index % count($categoryColors)] }}">
-                            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">{!! $categoryIcon($category->icon ?? null) !!}</svg>
-                        </span>
-                        <span class="min-w-0 flex-1">
-                            <span class="block truncate text-lg font-extrabold text-[#081225]">{{ $category->name }}</span>
-                            <span class="mt-1 block text-sm font-semibold text-[#6b7b99]">{{ $category->published_venues_count }} espace{{ $category->published_venues_count > 1 ? 's' : '' }} publié{{ $category->published_venues_count > 1 ? 's' : '' }}</span>
-                        </span>
-                        <span class="text-lg font-extrabold text-[#2f6bff] transition group-hover:translate-x-1">→</span>
+                    ['J’organise', 'Mon événement', 'Trouvez le lieu, les professionnels et le matériel, comparez et réservez en ligne avec un acompte sécurisé.', ['Espaces vérifiés et dates libres', 'Paiement Mobile Money', 'Suivi depuis votre espace client'], route('venues.index'), 'Trouver un espace', 'bg-[#2f6bff]', 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'],
+                    ['Je loue', 'Mon espace', 'Publiez votre salle gratuitement, recevez des demandes qualifiées et encaissez des acomptes sécurisés.', ['Inscription gratuite', 'Calendrier et proformas', 'Commission uniquement si vous louez'], route('owner.register'), 'Devenir partenaire', 'bg-[#07152f]', 'M4 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M8 7h2M12 7h2M8 11h2M12 11h2M2 21h20'],
+                    ['Je propose', 'Mes services', 'Son, lumière, photo, décoration, matériel : présentez vos offres aux organisateurs et recevez des devis.', ['Services et matériel', 'Devis et messagerie', 'Livraison par ville'], route('service-provider.register'), 'Devenir professionnel', 'bg-[#0f9f6e]', 'M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm12-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'],
+                ] as [$audienceKicker, $audienceTitle, $audienceText, $audiencePoints, $audienceUrl, $audienceCta, $audienceColor, $audienceIcon])
+                    <a href="{{ $audienceUrl }}" class="baobaa-audience {{ $audienceColor }} group relative flex flex-1 overflow-hidden rounded-[2rem] p-7 text-white">
+                        <svg class="pointer-events-none absolute -bottom-6 -right-6 size-48 text-white/10 transition duration-700 group-hover:rotate-6 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ $audienceIcon }}"/></svg>
+                        <span class="baobaa-audience-label absolute bottom-7 left-7 hidden origin-bottom-left -rotate-90 translate-x-6 whitespace-nowrap font-display text-2xl font-extrabold lg:block">{{ $audienceKicker }}</span>
+                        <div class="baobaa-audience-body relative flex flex-col">
+                            <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-white/70">{{ $audienceKicker }}</p>
+                            <p class="mt-2 font-display text-3xl font-extrabold">{{ $audienceTitle }}</p>
+                            <p class="mt-3 max-w-sm text-sm font-semibold leading-6 text-white/80">{{ $audienceText }}</p>
+                            <ul class="mt-5 space-y-2 text-sm font-bold">
+                                @foreach ($audiencePoints as $audiencePoint)
+                                    <li class="flex items-center gap-2"><span class="grid size-5 place-items-center rounded-full bg-white/20"><svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>{{ $audiencePoint }}</li>
+                                @endforeach
+                            </ul>
+                            <span class="mt-6 inline-flex w-max items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-[#07152f] transition group-hover:gap-3">{{ $audienceCta }} <span aria-hidden="true">→</span></span>
+                        </div>
                     </a>
                 @endforeach
             </div>
         </section>
 
-        <section class="mx-auto max-w-7xl px-5 pb-18 sm:px-8">
-            <div class="overflow-hidden rounded-[2rem] border border-[#dce6f7] bg-white shadow-2xl shadow-[#173e7a]/8" data-reveal="scale">
-                <div class="grid lg:grid-cols-[1fr_1.05fr]">
-                    <div class="bg-[#07152f] p-7 text-white sm:p-9">
-                        <p class="text-sm font-extrabold uppercase tracking-[0.2em] text-[#8dc1ff]">Où organiser ?</p>
-                        <h2 class="mt-3 text-4xl font-extrabold leading-tight tracking-[-0.04em]">Les villes les plus demandées sur BAOBAA.</h2>
-                        <p class="mt-4 text-sm font-semibold leading-7 text-white/68">Retrouvez rapidement les espaces disponibles dans les marchés événementiels actifs de la plateforme.</p>
+        {{-- Figures --}}
+        <section class="border-y border-[#dce6f7] bg-white">
+            <div class="mx-auto grid max-w-7xl sm:grid-cols-2 lg:grid-cols-4" data-reveal-stagger="100">
+                @foreach ([
+                    [$publishedVenuesCount, 'espaces', 'Publiés et vérifiés'],
+                    [$publishedCitiesCount, 'villes', 'Où organiser votre événement'],
+                    [$professionalsCount, 'pros', 'Professionnels de l’événement'],
+                    [count($paymentLabels), 'moyens', 'De paiement acceptés'],
+                ] as [$figureValue, $figureUnit, $figureLabel])
+                    <div class="border-[#dce6f7] px-5 py-10 sm:px-8 [&:not(:last-child)]:border-b sm:[&:nth-child(odd)]:border-r lg:border-b-0 lg:[&:not(:last-child)]:border-r">
+                        <p class="font-display text-6xl font-extrabold tracking-[-0.05em] text-[#07152f]"><span data-count-to="{{ $figureValue }}">{{ $figureValue }}</span><span class="ml-1 text-2xl text-[#2f6bff]">{{ $figureUnit }}</span></p>
+                        <p class="mt-2 text-sm font-semibold text-[#52617b]">{{ $figureLabel }}</p>
                     </div>
-
-                    <div class="grid gap-3 p-5 sm:grid-cols-2 sm:p-7" data-reveal-stagger="80" data-reveal-variant="right">
-                        @foreach ($cityHighlights as $city)
-                            <a href="{{ route('venues.index', ['city' => $city->city]) }}" class="rounded-[1.25rem] border border-[#edf2fb] bg-[#f7faff] p-4 transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-white">
-                                <p class="text-xl font-extrabold tracking-[-0.03em] text-[#151821]">{{ $city->city }}</p>
-                                <p class="mt-2 text-sm font-semibold text-[#6b7b99]"><span data-count-to="{{ $city->venues_count }}">{{ $city->venues_count }}</span> espace{{ $city->venues_count > 1 ? 's' : '' }} · dès {{ number_format($city->starting_price, 0, ',', ' ') }} XOF</p>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
+                @endforeach
             </div>
         </section>
 
-        <section class="mx-auto max-w-7xl space-y-12 px-5 pb-18 sm:px-8 ">
-            @foreach ([
-                ['eyebrow' => 'Populaire dans cette catégorie', 'title' => 'Des espaces à découvrir par type d’événement', 'items' => $categoryListings, 'badge' => 'category', 'url' => route('venues.index')],
-                ['eyebrow' => 'Populaire dans cette ville', 'title' => 'Les lieux qui montent dans les villes actives', 'items' => $cityListings, 'badge' => 'city', 'url' => route('venues.index')],
-                ['eyebrow' => 'Populaire dans cette commune', 'title' => 'Les adresses locales qui attirent les réservations', 'items' => $districtListings, 'badge' => 'district', 'url' => route('venues.index')],
-            ] as $rail)
-                <div data-carousel-section>
-                    <div class="mb-5 flex flex-wrap items-end justify-between gap-4" data-reveal>
-                        <div>
-                            <p class="text-sm font-extrabold uppercase tracking-[0.2em] text-[#2f6bff]">{{ $rail['eyebrow'] }}</p>
-                            <h2 class="mt-2 max-w-3xl text-2xl font-extrabold tracking-[-0.03em] text-[#07152f] sm:text-3xl">{{ $rail['title'] }}</h2>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" data-carousel-prev class="grid size-10 place-items-center rounded-full border border-[#d8dce9] bg-white text-[#2f6bff] shadow-sm transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef3ff]" aria-label="Précédent">
-                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                            </button>
-                            <button type="button" data-carousel-next class="grid size-10 place-items-center rounded-full border border-[#d8dce9] bg-white text-[#2f6bff] shadow-sm transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:bg-[#eef3ff]" aria-label="Suivant">
-                                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                            </button>
-                            <a href="{{ $rail['url'] }}" class="rounded-full border border-[#c9d8ef] bg-white px-5 py-2.5 text-sm font-extrabold text-[#2f6bff] shadow-sm transition hover:border-[#2f6bff]">Explorer</a>
-                        </div>
-                    </div>
-
-                    <div class="relative">
-                        <div data-carousel class="baobaa-scrollbar-none overflow-x-auto scroll-smooth px-1 pb-4">
-                            <div class="baobaa-venue-carousel-grid grid grid-rows-1 gap-5" data-reveal-stagger="70">
-                                @forelse ($rail['items'] as $listing)
-                                    @php
-                                        $badge = $listing[$rail['badge']] ?: $listing['category'];
-                                    @endphp
-                                    <x-venues.carousel-card :listing="$listing" :badge="$badge" />
-                                @empty
-                                    <div class="rounded-[1.5rem] bg-white p-6 text-sm font-semibold text-[#6b7b99] ring-1 ring-[#dce6f7]">Aucun espace disponible dans cette sélection.</div>
-                                @endforelse
-                            </div>
-                        </div>
+        {{-- FAQ --}}
+        <section class="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[.8fr_1.2fr]">
+            <div data-reveal="left">
+                <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>FAQ</p>
+                <h2 class="mt-3 font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.045em]">Questions fréquentes.</h2>
+                <div class="mt-8 rounded-[2rem] bg-[#07152f] p-7 text-white">
+                    <p class="font-display text-xl font-extrabold">Une autre question&nbsp;?</p>
+                    <p class="mt-1 text-sm font-semibold text-white/65">Notre équipe vous répond.</p>
+                    <div class="mt-5 grid gap-2">
+                        @if (filled($contact['whatsapp']))
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $contact['whatsapp']) }}" target="_blank" rel="noopener" class="rounded-full bg-[#25d366] px-5 py-3 text-sm font-extrabold text-white">WhatsApp · {{ $contact['whatsapp'] }}</a>
+                        @endif
+                        @if (filled($contact['email']))
+                            <a href="mailto:{{ $contact['email'] }}" class="rounded-full bg-white/10 px-5 py-3 text-sm font-extrabold text-white">{{ $contact['email'] }}</a>
+                        @endif
+                        <a href="{{ route('pages.contact') }}" class="rounded-full bg-white px-5 py-3 text-center text-sm font-extrabold text-[#07152f]">Nous contacter</a>
                     </div>
                 </div>
-            @endforeach
+            </div>
+
+            <div class="divide-y divide-[#dce6f7] border-y border-[#dce6f7]" data-reveal-stagger="70">
+                @foreach ($faqs as $faqIndex => [$question, $answer])
+                    <details class="baobaa-faq group" @if ($faqIndex === 0) open @endif>
+                        <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6">
+                            <span class="font-display text-xl font-extrabold tracking-[-0.02em]">{{ $question }}</span>
+                            <span class="baobaa-faq-icon grid size-10 shrink-0 place-items-center rounded-full bg-[#eef2fb] text-xl font-bold text-[#07152f] group-open:rotate-45 group-open:bg-[#2f6bff] group-open:text-white" aria-hidden="true">+</span>
+                        </summary>
+                        <p class="baobaa-faq-answer max-w-2xl pb-6 text-base font-semibold leading-7 text-[#52617b]">{{ $answer }}</p>
+                    </details>
+                @endforeach
+            </div>
+        </section>
+
+        {{-- Final call to action --}}
+        <section class="px-5 pb-20 sm:px-8">
+            <div class="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-[linear-gradient(135deg,#2f6bff,#5b4dff)] px-7 py-14 text-white sm:px-14 sm:py-20" data-reveal="scale">
+                <div class="baobaa-aurora pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-white/15 blur-2xl" data-aurora="30" aria-hidden="true"></div>
+                <div class="relative max-w-2xl">
+                    <h2 class="font-display text-4xl font-extrabold leading-[1] tracking-[-0.045em] sm:text-6xl">Votre prochain événement commence ici.</h2>
+                    <p class="mt-4 text-base font-semibold text-white/80">Trouvez le lieu idéal en quelques minutes, ou publiez votre espace gratuitement.</p>
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="{{ route('venues.index') }}" class="rounded-full bg-white px-6 py-3.5 text-sm font-extrabold text-[#07152f] transition hover:-translate-y-0.5">Trouver un espace</a>
+                        <a href="{{ route('owner.register') }}" class="rounded-full bg-[#07152f] px-6 py-3.5 text-sm font-extrabold text-white transition hover:-translate-y-0.5">Publier mon espace</a>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <x-navigation.public-footer />

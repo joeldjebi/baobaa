@@ -5,6 +5,7 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
+    --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
     --font-sans: 'Plus Jakarta Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
@@ -254,12 +255,12 @@
 
     .baobaa-rotating-word > span:not(.is-active) {
         opacity: 0;
-        transform: translate3d(0, 90%, 0);
+        transform: translate3d(0, 115%, 0);
     }
 
     .baobaa-rotating-word > span.is-leaving {
         opacity: 0;
-        transform: translate3d(0, -90%, 0);
+        transform: translate3d(0, -115%, 0);
     }
 
     .baobaa-photo-track {
@@ -356,6 +357,242 @@
 
         .baobaa-step-line {
             transform: scaleX(1);
+            transition: none;
+        }
+    }
+}
+
+/* Homepage storytelling components */
+@layer components {
+    .baobaa-venue-carousel-grid {
+        grid-auto-flow: column;
+        grid-auto-columns: min(78vw, 292px);
+    }
+
+    @media (min-width: 768px) {
+        .baobaa-venue-carousel-grid {
+            grid-auto-columns: calc((100% - 80px) / 3.35);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .baobaa-venue-carousel-grid {
+            grid-auto-columns: calc((100% - 80px) / 4.35);
+        }
+    }
+
+    .baobaa-scroll-progress {
+        position: fixed;
+        inset: 0 auto auto 0;
+        z-index: 60;
+        height: 3px;
+        width: 100%;
+        transform: scaleX(var(--scroll-progress, 0));
+        transform-origin: left;
+        background: linear-gradient(90deg, #2f6bff, #7c5cff);
+        pointer-events: none;
+    }
+
+    .baobaa-phone {
+        position: relative;
+        width: 290px;
+        aspect-ratio: 290 / 600;
+        border-radius: 46px;
+        padding: 10px;
+        background: #0b1426;
+        box-shadow: 0 40px 90px rgba(7, 21, 47, .35), inset 0 0 0 2px #1d2a44;
+    }
+
+    .baobaa-phone-screen {
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 37px;
+        background: #f7f9ff;
+    }
+
+    .baobaa-phone-notch {
+        position: absolute;
+        left: 50%;
+        top: 9px;
+        z-index: 5;
+        height: 24px;
+        width: 92px;
+        transform: translateX(-50%);
+        border-radius: 999px;
+        background: #0b1426;
+    }
+
+    .baobaa-orbit {
+        animation: baobaa-spin 60s linear infinite;
+    }
+
+    .baobaa-float-card {
+        animation: baobaa-float 6s ease-in-out infinite;
+        animation-delay: var(--float-delay, 0s);
+    }
+
+    .baobaa-gauge-value {
+        stroke-dasharray: 289;
+        stroke-dashoffset: 289;
+        transition: stroke-dashoffset 1.8s cubic-bezier(.22, 1, .36, 1) .3s;
+    }
+
+    .is-visible .baobaa-gauge-value,
+    html:not(.motion-ready) .baobaa-gauge-value {
+        stroke-dashoffset: var(--gauge-offset, 87);
+    }
+
+    .baobaa-chip {
+        transform: rotate(var(--chip-rotate, 0deg));
+        transition:
+            transform .9s cubic-bezier(.34, 1.56, .64, 1),
+            opacity .5s ease;
+        transition-delay: var(--chip-delay, 0ms);
+    }
+
+    .motion-ready .is-pending .baobaa-chip {
+        opacity: 0;
+        transform: translate3d(0, -60px, 0) rotate(calc(var(--chip-rotate, 0deg) * -3));
+    }
+
+    .baobaa-bubble {
+        transition:
+            transform .6s cubic-bezier(.34, 1.56, .64, 1),
+            opacity .4s ease;
+        transition-delay: var(--bubble-delay, 0ms);
+    }
+
+    .motion-ready .is-pending .baobaa-bubble {
+        opacity: 0;
+        transform: translate3d(0, 16px, 0) scale(.92);
+    }
+
+    .baobaa-calendar-cell {
+        transition:
+            transform .45s cubic-bezier(.34, 1.56, .64, 1),
+            opacity .35s ease;
+        transition-delay: var(--cell-delay, 0ms);
+    }
+
+    .motion-ready .is-pending .baobaa-calendar-cell {
+        opacity: 0;
+        transform: scale(.6);
+    }
+
+    .baobaa-pulse-ring {
+        animation: baobaa-pulse 2.2s ease-out infinite;
+    }
+
+    .baobaa-story-screen {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transform: translate3d(0, 24px, 0) scale(.98);
+        transition:
+            opacity .6s ease,
+            transform .7s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .baobaa-story-screen.is-active {
+        opacity: 1;
+        transform: none;
+    }
+
+    .baobaa-story-step {
+        transition: opacity .5s ease;
+    }
+
+    .motion-ready .baobaa-story-step:not(.is-active) {
+        opacity: .28;
+    }
+
+    .baobaa-timeline-fill {
+        transform: scaleY(var(--story-progress, 0));
+        transform-origin: top;
+        transition: transform .6s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .baobaa-audience {
+        transition: flex-grow .7s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .baobaa-audience-body {
+        transition: opacity .4s ease .15s;
+    }
+
+    @media (min-width: 1024px) {
+        .baobaa-audience-group:hover .baobaa-audience:not(:hover) {
+            flex-grow: 1;
+        }
+
+        .baobaa-audience-group:hover .baobaa-audience:not(:hover) .baobaa-audience-body {
+            opacity: 0;
+            transition-delay: 0s;
+        }
+
+        .baobaa-audience-group:hover .baobaa-audience:hover,
+        .baobaa-audience-group:not(:hover) .baobaa-audience:first-child {
+            flex-grow: 3.2;
+        }
+
+        .baobaa-audience-group:not(:hover) .baobaa-audience:not(:first-child) .baobaa-audience-body {
+            opacity: 0;
+        }
+
+        .baobaa-audience-group .baobaa-audience-label {
+            transition: opacity .3s ease;
+        }
+
+        .baobaa-audience-group:not(:hover) .baobaa-audience:first-child .baobaa-audience-label,
+        .baobaa-audience-group:hover .baobaa-audience:hover .baobaa-audience-label {
+            opacity: 0;
+        }
+    }
+
+    .baobaa-faq summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .baobaa-faq-icon {
+        transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), background-color .3s ease, color .3s ease;
+    }
+
+    .baobaa-faq[open] .baobaa-faq-answer {
+        animation: baobaa-fade-up .5s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    @keyframes baobaa-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes baobaa-pulse {
+        0% {
+            opacity: .7;
+            transform: scale(.85);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(1.9);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .baobaa-orbit,
+        .baobaa-float-card,
+        .baobaa-pulse-ring {
+            animation: none;
+        }
+
+        .baobaa-story-screen,
+        .baobaa-timeline-fill,
+        .baobaa-audience,
+        .baobaa-chip,
+        .baobaa-bubble,
+        .baobaa-calendar-cell {
             transition: none;
         }
     }

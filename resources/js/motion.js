@@ -183,6 +183,84 @@ const tilt = () => {
     });
 };
 
+const scrollProgress = () => {
+    const bar = document.querySelector('[data-scroll-progress]');
+
+    if (! bar) {
+        return;
+    }
+
+    let frame = null;
+    const update = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        bar.style.setProperty('--scroll-progress', max > 0 ? (window.scrollY / max).toFixed(4) : 0);
+        frame = null;
+    };
+
+    window.addEventListener('scroll', () => {
+        frame ??= requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+};
+
+/**
+ * Elements marked data-animate-on-view keep the "is-pending" class until they enter the viewport,
+ * which lets CSS animate their children (chips, bubbles, calendar cells).
+ */
+const animateOnView = () => {
+    const elements = document.querySelectorAll('[data-animate-on-view]');
+
+    if (! ('IntersectionObserver' in window)) {
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.remove('is-pending');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.35 });
+
+    elements.forEach((element) => {
+        element.classList.add('is-pending');
+        observer.observe(element);
+    });
+};
+
+/**
+ * Scroll-told steps: the step closest to the middle of the screen drives the sticky phone screen and the timeline.
+ */
+const story = () => {
+    document.querySelectorAll('[data-story]').forEach((root) => {
+        const steps = [...root.querySelectorAll('[data-story-step]')];
+        const screens = [...root.querySelectorAll('[data-story-screen]')];
+
+        if (! steps.length) {
+            return;
+        }
+
+        const activate = (index) => {
+            steps.forEach((step, stepIndex) => step.classList.toggle('is-active', stepIndex === index));
+            screens.forEach((screen, screenIndex) => screen.classList.toggle('is-active', screenIndex === index));
+            root.style.setProperty('--story-progress', ((index + 1) / steps.length).toFixed(3));
+            root.querySelectorAll('[data-story-dot]').forEach((dot, dotIndex) => dot.classList.toggle('is-reached', dotIndex <= index));
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    activate(steps.indexOf(entry.target));
+                }
+            });
+        }, { rootMargin: '-45% 0px -45% 0px' });
+
+        steps.forEach((step) => observer.observe(step));
+        activate(0);
+    });
+};
+
 if (! prefersReducedMotion) {
     document.documentElement.classList.add('motion-ready');
     reveal();
@@ -190,6 +268,10 @@ if (! prefersReducedMotion) {
     rotatingWords();
     auroraParallax();
     tilt();
+    scrollProgress();
+    animateOnView();
 } else {
     document.documentElement.classList.remove('motion-ready');
 }
+
+story();

@@ -272,7 +272,9 @@ test('homepage shows real counters instead of marketing placeholders', function 
 
     $this->get('/')
         ->assertOk()
-        ->assertSeeText('2 espaces dans 2 villes')
+        ->assertSee('data-count-to="2"', false)
+        ->assertSeeText('Publiés et vérifiés')
+        ->assertSeeText('Où organiser votre événement')
         ->assertDontSeeText('2 000+ espaces vérifiés')
         ->assertDontSeeText('40+ villes servies');
 });

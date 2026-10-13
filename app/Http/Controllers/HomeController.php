@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\VenueStatus;
+use App\Models\Product;
+use App\Models\ServiceProviderProfile;
 use App\Models\Venue;
 use App\Models\VenueCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,6 +44,8 @@ class HomeController extends Controller
             'categories' => $categories,
             'publishedVenuesCount' => Venue::query()->published()->count(),
             'publishedCitiesCount' => Venue::query()->published()->distinct()->count('city'),
+            'professionalsCount' => ServiceProviderProfile::query()->publiclyListed()->whereHas('services', fn (Builder $query) => $query->where('status', VenueStatus::Published))->count(),
+            'productsCount' => Product::query()->publiclyAvailable()->count(),
             'heroThumbnails' => $featuredVenues->take(4)->map(fn (Venue $venue): string => $venue->cover_image_url)->values(),
             'featuredVenues' => $featuredVenues,
             'categoryCarouselVenues' => $discoveryVenues->filter(fn (Venue $venue): bool => $venue->category !== null)->take(12)->values(),

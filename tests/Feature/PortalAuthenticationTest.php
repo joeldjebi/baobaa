@@ -23,7 +23,7 @@ uses(RefreshDatabase::class);
 test('public home targets final clients without exposing internal portals', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('Le lieu, les professionnels et le matériel')
+        ->assertSee('Le lieu parfait pour votre événement')
         ->assertSee(route('venues.index'))
         ->assertDontSee('Portail SAP')
         ->assertDontSee('Proprietaire');
