@@ -22,6 +22,8 @@
         $links['client-reservations'] = ['Mes réservations', route('client.reservations')];
     } elseif ($isOwner) {
         $links['owner-dashboard'] = ['Mon espace pro', route('owner.dashboard')];
+    } elseif ($user?->hasPortal(UserRole::ServiceProvider)) {
+        $links['provider-dashboard'] = ['Mon espace pro', route('service-provider.dashboard')];
     }
 @endphp
 

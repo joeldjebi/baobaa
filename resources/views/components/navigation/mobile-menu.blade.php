@@ -19,6 +19,8 @@
         $links['cart'] = ['label' => 'Mon panier', 'url' => route('cart.show')];
     } elseif ($user?->hasPortal(UserRole::Owner)) {
         $links['owner-dashboard'] = ['label' => 'Mon espace pro', 'url' => route('owner.dashboard')];
+    } elseif ($user?->hasPortal(UserRole::ServiceProvider)) {
+        $links['provider-dashboard'] = ['label' => 'Mon espace pro', 'url' => route('service-provider.dashboard')];
     }
 
     $links['contact'] = ['label' => 'Contact', 'url' => route('pages.contact')];

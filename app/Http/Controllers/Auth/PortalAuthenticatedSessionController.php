@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\PortalLoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,7 +56,7 @@ class PortalAuthenticatedSessionController extends Controller
             $request->hitRateLimiter();
 
             throw ValidationException::withMessages([
-                'email' => 'Ce compte ne correspond pas à cet espace BAOBAA.',
+                'email' => $this->wrongPortalMessage($user),
             ]);
         }
 
@@ -76,6 +77,20 @@ class PortalAuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('portal.login', ['portal' => $portal ?? 'client']);
+    }
+
+    private function wrongPortalMessage(User $user): string
+    {
+        $accountLabel = match (true) {
+            $user->hasPortal(UserRole::ServiceProvider) => ['un compte professionnel', 'Professionnel'],
+            $user->hasPortal(UserRole::Owner) => ['un compte propriétaire', 'Propriétaire'],
+            $user->hasPortal(UserRole::Client) => ['un compte client', 'Client'],
+            default => null,
+        };
+
+        return $accountLabel === null
+            ? 'Ce compte ne correspond pas à cet espace BAOBAA.'
+            : 'Ce compte est '.$accountLabel[0].' : connectez-vous depuis l’onglet « '.$accountLabel[1].' ».';
     }
 
     private function roleForPortal(string $portal): ?UserRole

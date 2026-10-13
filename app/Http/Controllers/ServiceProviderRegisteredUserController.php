@@ -48,8 +48,8 @@ class ServiceProviderRegisteredUserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'role' => UserRole::Client,
-            'portal_roles' => [UserRole::Client->value],
+            'role' => UserRole::ServiceProvider,
+            'portal_roles' => [UserRole::ServiceProvider->value],
             'status' => UserStatus::Active,
             'password' => $validated['password'],
             'terms_accepted_at' => now(),
@@ -87,6 +87,6 @@ class ServiceProviderRegisteredUserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('client.dashboard')->with('portal_status', 'Votre dossier prestataire événementiel est en cours de validation par le SAP.');
+        return redirect()->route('service-provider.dashboard')->with('pse_status', 'Bienvenue ! Votre compte professionnel est créé. Préparez vos prestations : elles seront visibles par les clients dès que notre équipe aura validé votre profil.');
     }
 }

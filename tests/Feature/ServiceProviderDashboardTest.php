@@ -37,15 +37,46 @@ test('guest can request a service provider account and waits for SAP approval', 
         'service_area' => 'Grand Abidjan',
         'description' => 'Sonorisation, lumière et régie technique pour événements.',
     ])
-        ->assertRedirect(route('client.dashboard'));
+        ->assertRedirect(route('service-provider.dashboard'));
 
     $user = User::query()->where('email', 'pse.son@baobaa.local')->firstOrFail();
 
-    expect($user->hasPortal(UserRole::Client))->toBeTrue()
-        ->and($user->hasPortal(UserRole::ServiceProvider))->toBeFalse()
+    expect($user->hasPortal(UserRole::Client))->toBeFalse()
+        ->and($user->hasPortal(UserRole::ServiceProvider))->toBeTrue()
         ->and($user->serviceProviderProfile)->not->toBeNull()
         ->and($user->serviceProviderProfile->verification_status)->toBe(VerificationStatus::Pending)
         ->and(PortalAccessRequest::query()->where('user_id', $user->id)->where('requested_role', UserRole::ServiceProvider)->where('status', 'pending')->exists())->toBeTrue();
+});
+
+test('a professional account cannot sign in as a client and sees its pending validation', function () {
+    $this->post(route('service-provider.register.store'), [
+        'name' => 'Awa Lumière',
+        'email' => 'awa.pro@baobaa.local',
+        'phone' => '+2250101010102',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'accept_terms' => '1',
+        'business_name' => 'Awa Lumière Events',
+        'country_code' => 'CI',
+        'city' => 'Abidjan',
+    ]);
+
+    $this->get(route('service-provider.dashboard'))
+        ->assertOk()
+        ->assertSeeText('Votre profil est en cours de validation');
+
+    $this->get(route('client.dashboard'))->assertForbidden();
+
+    auth()->logout();
+
+    $this->from(route('portal.login', ['portal' => 'client']))
+        ->post(route('portal.login.store', ['portal' => 'client']), ['email' => 'awa.pro@baobaa.local', 'password' => 'password'])
+        ->assertSessionHasErrors(['email' => 'Ce compte est un compte professionnel : connectez-vous depuis l’onglet « Professionnel ».']);
+
+    $this->assertGuest();
+
+    $this->post(route('portal.login.store', ['portal' => 'prestataire']), ['email' => 'awa.pro@baobaa.local', 'password' => 'password'])
+        ->assertRedirect(route('service-provider.dashboard'));
 });
 
 test('SAP validates a service provider request and grants the PSE portal', function () {

@@ -21,18 +21,17 @@
                 <a href="{{ route('client.reservations') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Historique des réservations</a>
                 <a href="{{ route('client.payments') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Historique des paiements</a>
                 <a href="{{ route('client.profile') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Profil et sécurité</a>
-            @else
-                <form method="POST" action="{{ route('portals.client.enable') }}">
-                    @csrf
-                    <button class="w-full rounded-xl px-3 py-2 text-left text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Demander l’accès client</button>
-                </form>
+            @endif
+
+            @if ($user->hasPortal(UserRole::ServiceProvider))
+                <a href="{{ route('service-provider.dashboard') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Mon espace professionnel</a>
             @endif
 
             @if ($user->hasPortal(UserRole::Owner))
                 <a href="{{ route('owner.dashboard') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Dashboard propriétaire</a>
                 <a href="{{ route('owner.sponsorships') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Sponsoriser mes espaces</a>
-            @else
-                <a href="{{ auth()->check() ? route('portals.owner.request.form') : route('owner.register') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Devenir partenaire vérifié</a>
+            @elseif ($user->hasPortal(UserRole::Client) && ! $user->hasPortal(UserRole::ServiceProvider))
+                <a href="{{ route('portals.owner.request.form') }}" class="block rounded-xl px-3 py-2 text-[#52617b] hover:bg-[#f2f7ff] hover:text-[#2f6bff]">Devenir partenaire vérifié</a>
             @endif
 
             @if ($user->hasPortal(UserRole::Sap))

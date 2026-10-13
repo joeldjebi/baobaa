@@ -71,6 +71,15 @@
                 </header>
 
                 <div class="px-5 py-6 sm:px-7">
+                    @php
+                        $providerVerification = auth()->user()?->serviceProviderProfile?->verification_status;
+                    @endphp
+                    @if ($providerVerification === \App\Enums\VerificationStatus::Rejected)
+                        <div class="mb-5 rounded-2xl border border-[#ffd0d0] bg-[#fff6f6] px-4 py-3 text-sm font-semibold text-[#b42318]">Votre profil n’a pas été validé par l’équipe BAOBAA : vos prestations ne sont pas visibles par les clients. Contactez-nous pour en savoir plus.</div>
+                    @elseif ($providerVerification !== null && $providerVerification !== \App\Enums\VerificationStatus::Verified)
+                        <div class="mb-5 rounded-2xl border border-[#fde3a7] bg-[#fffaf0] px-4 py-3 text-sm font-semibold text-[#92400e]">Votre profil est en cours de validation par l’équipe BAOBAA. Vous pouvez déjà préparer vos prestations : elles seront visibles par les clients dès la validation.</div>
+                    @endif
+
                     @if (session('pse_status'))
                         <div class="mb-5 rounded-2xl border border-[#b9d3ff] bg-white px-4 py-3 text-sm font-extrabold text-[#2f6bff] shadow-sm">{{ session('pse_status') }}</div>
                     @endif
