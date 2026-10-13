@@ -16,19 +16,19 @@
             <div class="overflow-hidden rounded-[34px] bg-[#07162f] text-white shadow-2xl shadow-[#07162f]/18">
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
-                        <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Services événementiels</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Réservez les prestataires qui donnent vie à votre événement.</h1>
-                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Son, lumière, photo, vidéo, podium ou mobilier : choisissez uniquement les services dont vous avez besoin, sans réserver d’espace.</p>
+                        <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Prestations à la carte</p>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Les pros qui donnent vie à votre événement.</h1>
+                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Son, lumière, photo, vidéo, podium ou mobilier : choisissez uniquement les prestations dont vous avez besoin, même sans réserver de lieu.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
                         <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ number_format($providers->count(), 0, ',', ' ') }}</p>
-                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Prestataires</p>
+                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Pros</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }}</p>
-                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Services</p>
+                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Prestations</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">Billets</p>
@@ -54,7 +54,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 1</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Informations de l’événement</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Votre événement</h2>
                             </div>
                             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">Aucun espace obligatoire</span>
                         </div>
@@ -135,15 +135,15 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Choisir les prestataires événementiels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les prestations de nos pros</h2>
                             </div>
-                            <p class="text-xs font-extrabold text-[#7d879d]">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }} services disponibles</p>
+                            <p class="text-xs font-extrabold text-[#7d879d]">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }} prestations disponibles</p>
                         </div>
 
                         @error('event_service_ids') <div class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{{ $message }}</div> @enderror
 
                         @if ($providers->isNotEmpty())
-                            <div class="mt-5 flex gap-2 overflow-x-auto pb-2 baobaa-scrollbar-none" role="tablist" aria-label="Prestataires événementiels">
+                            <div class="mt-5 flex gap-2 overflow-x-auto pb-2 baobaa-scrollbar-none" role="tablist" aria-label="Professionnels">
                                 @foreach ($providers as $provider)
                                     <button type="button" data-provider-tab="{{ $provider->id }}" class="shrink-0 rounded-full px-4 py-2 text-sm font-extrabold transition {{ (int) $selectedProviderId === (int) $provider->id ? 'bg-[#2f6bff] text-white shadow-lg shadow-[#2f6bff]/20' : 'bg-[#f2f6ff] text-[#52617b] hover:bg-white hover:text-[#2f6bff]' }}">
                                         {{ $provider->business_name }}
@@ -159,7 +159,7 @@
                                                 <p class="text-lg font-extrabold text-[#07152f]">{{ $provider->business_name }}</p>
                                                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">{{ $provider->city }}{{ $provider->district ? ' · '.$provider->district : '' }}</p>
                                             </div>
-                                            <span class="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">{{ $provider->services->count() }} service(s)</span>
+                                            <span class="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">{{ $provider->services->count() }} prestation{{ $provider->services->count() > 1 ? 's' : '' }}</span>
                                         </div>
 
                                         <div class="grid gap-3 md:grid-cols-2">
@@ -169,7 +169,7 @@
                                                     <img src="{{ $service->cover_image_url }}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="size-16 shrink-0 rounded-2xl object-cover ring-1 ring-[#dce6f7]">
                                                     <span class="min-w-0">
                                                         <span class="block text-sm font-extrabold text-[#07152f]">{{ $service->name }}</span>
-                                                        <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">{{ $service->type?->name ?? 'Service événementiel' }} · {{ $service->service_area ?: $service->city }}</span>
+                                                        <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">{{ $service->type?->name ?? 'Prestation événementielle' }} · {{ $service->service_area ?: $service->city }}</span>
                                                         <span class="mt-3 inline-flex rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">À partir de {{ number_format($service->starting_price, 0, ',', ' ') }} {{ $service->currency }}</span>
                                                     </span>
                                                 </label>
@@ -180,7 +180,7 @@
                             </div>
                         @else
                             <div class="mt-5 rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-8 text-center">
-                                <p class="text-lg font-extrabold text-[#07152f]">Aucun service événementiel publié pour le moment.</p>
+                                <p class="text-lg font-extrabold text-[#07152f]">Aucune prestation disponible pour le moment.</p>
                                 <p class="mt-2 text-sm font-semibold text-[#6f7890]">Les types de services doivent être configurés, puis les prestataires peuvent publier leurs offres.</p>
                             </div>
                         @endif
@@ -190,7 +190,7 @@
                 <aside class="lg:sticky lg:top-24 lg:self-start">
                     <div class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/12 ring-1 ring-[#dce6f7]">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Résumé de services</h2>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Récapitulatif</h2>
 
                         <label class="mt-5 flex cursor-pointer items-start gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f4f8ff] p-4 transition hover:border-[#2f6bff]">
                             <input type="checkbox" name="ticketing_requested" value="1" data-ticketing-checkbox class="mt-1 size-5 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(old('ticketing_requested'))>
@@ -202,7 +202,7 @@
 
                         <div class="mt-5 rounded-[20px] bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                             <div class="flex justify-between gap-3 text-sm font-extrabold">
-                                <span class="text-[#6f7890]">Services sélectionnés</span>
+                                <span class="text-[#6f7890]">Prestations choisies</span>
                                 <span id="composer-services-count" class="text-[#07152f]">0</span>
                             </div>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
@@ -218,7 +218,7 @@
                         @else
                             @if (auth()->user()?->hasPortal(\App\Enums\UserRole::Client))
                                 <x-forms.terms-acceptance class="mt-5" />
-                                <button class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande de services</button>
+                                <button class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande</button>
                             @else
                                 <p class="mt-5 rounded-2xl bg-[#fff8e8] p-4 text-sm font-bold leading-6 text-[#8a5b00]">Vous devez disposer du portail client pour composer un événement.</p>
                             @endif

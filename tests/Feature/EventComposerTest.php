@@ -36,7 +36,7 @@ test('event composer page displays PSE providers and SAP ticketing', function ()
 
     $this->get(route('event-services.index'))
         ->assertOk()
-        ->assertSeeText('Réservez les prestataires qui donnent vie à votre événement.')
+        ->assertSeeText('Les pros qui donnent vie à votre événement.')
         ->assertSeeText('Conférence / Séminaire')
         ->assertSeeText('Côte d’Ivoire')
         ->assertSeeText('Abidjan')
@@ -52,7 +52,7 @@ test('legacy event composer route still opens the dedicated PSE service booking 
 
     $this->get(route('event-composer.create'))
         ->assertOk()
-        ->assertSeeText('Réservez les prestataires qui donnent vie à votre événement.')
+        ->assertSeeText('Les pros qui donnent vie à votre événement.')
         ->assertSeeText('Aucun espace obligatoire');
 });
 

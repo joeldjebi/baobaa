@@ -53,7 +53,7 @@
         'inclusions' => $includedItems !== [] ? 'Ce qui est inclus' : null,
         'commodites' => $configurations->isNotEmpty() || $amenities->isNotEmpty() ? 'Espace et commodités' : null,
         'visite-virtuelle' => $virtualTourUrl ? 'Visite 360°' : null,
-        'modules' => count($reservationAddOns) > 0 ? 'Services additionnels' : null,
+        'modules' => count($reservationAddOns) > 0 ? 'Options du lieu' : null,
         'disponibilites' => 'Disponibilités',
         'lieu' => 'Lieu',
         'conditions' => $policies->isNotEmpty() || $faqs->isNotEmpty() ? 'À savoir' : null,
@@ -315,7 +315,7 @@
 
                 @if (count($reservationAddOns) > 0)
                     <section id="modules" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
-                        <h2 class="text-xl font-extrabold text-[#151821]">Services additionnels</h2>
+                        <h2 class="text-xl font-extrabold text-[#151821]">Options du lieu</h2>
                         <p class="mt-1 text-sm font-semibold text-[#6f7890]">Options proposées par le propriétaire, à sélectionner lors de votre demande de réservation.</p>
                         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ($reservationAddOns as $addOn)
@@ -571,7 +571,7 @@
                         <div class="rounded-[18px] bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">
                             <p class="text-xs font-extrabold uppercase tracking-[0.12em] text-[#2f6bff]">Comment se passe le paiement ?</p>
                             <ul class="mt-3 space-y-2 text-xs font-semibold leading-5 text-[#52617b]">
-                                <li><strong class="text-[#151821]">Prix affiché :</strong> {{ $price }}, hors options et services additionnels.</li>
+                                <li><strong class="text-[#151821]">Prix affiché :</strong> {{ $price }}, hors options du lieu et prestations des pros.</li>
                                 <li><strong class="text-[#151821]">Acompte :</strong> {{ $depositDescription }}@if ($reservation) Exemple sur le prix de départ : {{ $reservation }}.@endif</li>
                                 <li><strong class="text-[#151821]">Prix final :</strong> confirmé sur la proforma après échange avec le propriétaire.</li>
                             </ul>

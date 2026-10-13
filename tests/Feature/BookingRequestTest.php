@@ -87,8 +87,8 @@ test('client can open a full page reservation flow for a venue', function () {
     $this->actingAs($client)
         ->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Composez votre événement avec les bons prestataires.')
-        ->assertSeeText('Package événementiel');
+        ->assertSeeText('Composez votre événement sur mesure.')
+        ->assertSeeText('Votre événement clé en main');
 });
 
 test('venue package page lets client select published event services outside venue city', function () {
@@ -122,7 +122,7 @@ test('venue package page lets client select published event services outside ven
     $this->actingAs($client)
         ->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Choisir les prestataires événementiels')
+        ->assertSeeText('Les prestations de nos pros')
         ->assertSeeText('Studio Son Signature')
         ->assertSeeText('Pack audio conférence')
         ->assertDontSeeText('PSE');
@@ -158,7 +158,7 @@ test('venue package page recovers active owner modules when venue modules were n
 
     $this->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Ajouter des services additionnels')
+        ->assertSeeText('Les options du lieu')
         ->assertSeeText('Sonorisation premium')
         ->assertSee('selected_module_template_ids[]', false);
 });
@@ -251,9 +251,9 @@ test('public venue flow lets clients choose a service provider before its servic
 
     $this->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Choisir les prestataires événementiels')
+        ->assertSeeText('Les prestations de nos pros')
         ->assertSeeText('Studio Lumière Signature')
-        ->assertSeeText('Services du prestataire');
+        ->assertSeeText('Ses prestations');
 });
 
 test('client can save a booking request and gets an initiated deposit payment', function () {

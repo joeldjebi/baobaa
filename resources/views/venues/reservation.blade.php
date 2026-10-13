@@ -16,19 +16,19 @@
             <div class="overflow-hidden rounded-[34px] bg-[#07162f] text-white shadow-2xl shadow-[#07162f]/18">
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
-                        <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Package événementiel</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Composez votre événement avec les bons prestataires.</h1>
-                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Choisissez les dates, les options du lieu, les services événementiels et la billetterie pour lancer une demande claire et complète.</p>
+                        <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Votre événement clé en main</p>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Composez votre événement sur mesure.</h1>
+                        <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Réservez le lieu, ajoutez ses options et confiez le reste à nos pros : son, lumière, décor, photo… Une seule demande, un seul suivi.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
                         <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ $venue->max_capacity }}</p>
-                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Invités</p>
+                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Invités max.</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">{{ count($reservationAddOns) }}</p>
-                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Options</p>
+                                <p class="mt-1 text-[11px] font-extrabold text-[#6f7890]">Options du lieu</p>
                             </div>
                             <div class="rounded-2xl bg-white px-3 py-4 text-[#07152f]">
                                 <p class="text-2xl font-extrabold">Billets</p>
@@ -55,7 +55,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 1</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Informations de l’événement</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Votre événement</h2>
                             </div>
                             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $venue->name }}</span>
                         </div>
@@ -102,7 +102,7 @@
                                 </select>
                             </label>
                             <label class="md:col-span-2">
-                                <span class="text-xs font-extrabold uppercase text-[#7d879d]">Message au partenaire</span>
+                                <span class="text-xs font-extrabold uppercase text-[#7d879d]">Message au propriétaire</span>
                                 <textarea name="client_notes" rows="4" placeholder="Décrivez l’ambiance, les contraintes, le budget ou les attentes." class="mt-2 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('client_notes') }}</textarea>
                             </label>
                         </div>
@@ -112,9 +112,10 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Ajouter des services additionnels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les options du lieu</h2>
+                                <p class="mt-1 text-sm font-medium text-[#6f7890]">Proposées par le propriétaire : traiteur, décoration, équipements…</p>
                             </div>
-                            <p class="text-xs font-extrabold text-[#7d879d]">{{ count($reservationAddOns) }} option(s)</p>
+                            <p class="text-xs font-extrabold text-[#7d879d]">{{ count($reservationAddOns) }} option{{ count($reservationAddOns) > 1 ? 's' : '' }}</p>
                         </div>
 
                         @if (count($reservationAddOns) > 0)
@@ -134,8 +135,8 @@
                             </div>
                         @else
                             <div class="mt-5 rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-8 text-center">
-                                <p class="text-lg font-extrabold text-[#07152f]">Aucun service additionnel n’est proposé pour cet espace.</p>
-                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Vous pouvez continuer avec la réservation de l’espace et les services événementiels disponibles.</p>
+                                <p class="text-lg font-extrabold text-[#07152f]">Ce lieu ne propose pas d’option supplémentaire.</p>
+                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Passez à l’étape suivante pour ajouter les prestations de nos pros.</p>
                             </div>
                         @endif
                     </div>
@@ -144,13 +145,14 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Choisir les prestataires événementiels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les prestations de nos pros</h2>
+                                <p class="mt-1 text-sm font-medium text-[#6f7890]">Son, lumière, décor, photo… Ajoutez les pros qui feront la différence.</p>
                             </div>
-                            <p class="text-xs font-extrabold text-[#7d879d]"><span data-services-selected-count>0</span> / {{ $maxEventServices }} services sélectionnés</p>
+                            <p class="text-xs font-extrabold text-[#7d879d]"><span data-services-selected-count>0</span> / {{ $maxEventServices }} prestations choisies</p>
                         </div>
 
                         @if (($publicEventProviders ?? collect())->isNotEmpty())
-                            <div class="mt-5 flex gap-2 overflow-x-auto pb-2 baobaa-scrollbar-none" role="tablist" aria-label="Prestataires événementiels">
+                            <div class="mt-5 flex gap-2 overflow-x-auto pb-2 baobaa-scrollbar-none" role="tablist" aria-label="Professionnels">
                                 @foreach ($publicEventProviders as $providerGroup)
                                     @php $provider = $providerGroup['provider']; @endphp
                                     <button type="button" data-provider-tab="{{ $provider->id }}" class="shrink-0 rounded-full px-4 py-2 text-sm font-extrabold transition {{ $loop->first ? 'bg-[#2f6bff] text-white shadow-lg shadow-[#2f6bff]/20' : 'bg-[#f2f6ff] text-[#52617b] hover:bg-white hover:text-[#2f6bff]' }}">
@@ -168,10 +170,10 @@
                                                 <p class="text-lg font-extrabold text-[#07152f]">{{ $provider->business_name }}</p>
                                                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">{{ $provider->city }}{{ $provider->district ? ' · '.$provider->district : '' }}</p>
                                             </div>
-                                            <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">{{ $providerGroup['services']->count() }} service(s)</span>
+                                            <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">{{ $providerGroup['services']->count() }} prestation{{ $providerGroup['services']->count() > 1 ? 's' : '' }}</span>
                                         </div>
 
-                                        <p class="mb-3 text-xs font-extrabold uppercase tracking-[0.12em] text-[#7d879d]">Services du prestataire</p>
+                                        <p class="mb-3 text-xs font-extrabold uppercase tracking-[0.12em] text-[#7d879d]">Ses prestations</p>
                                         <div class="grid gap-3 md:grid-cols-2">
                                             @foreach ($providerGroup['services'] as $service)
                                                 <label class="group flex cursor-pointer gap-3 rounded-[22px] border border-[#e2eaf8] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#2f6bff] hover:shadow-xl hover:shadow-[#173e7a]/8">
@@ -179,7 +181,7 @@
                                                     <img src="{{ $service->cover_image_url }}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="size-16 shrink-0 rounded-2xl object-cover ring-1 ring-[#dce6f7]">
                                                     <span class="min-w-0">
                                                         <span class="block text-sm font-extrabold text-[#07152f]">{{ $service->name }}</span>
-                                                        <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">{{ $service->type?->name ?? 'Service événementiel' }} · {{ $service->service_area ?: $service->city }}</span>
+                                                        <span class="mt-1 block text-xs font-bold leading-5 text-[#6f7890]">{{ $service->type?->name ?? 'Prestation événementielle' }} · {{ $service->service_area ?: $service->city }}</span>
                                                         <span class="mt-3 inline-flex rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">À partir de {{ number_format($service->starting_price, 0, ',', ' ') }} {{ $service->currency }}</span>
                                                     </span>
                                                 </label>
@@ -190,7 +192,7 @@
                             </div>
                         @else
                             <div class="mt-5 rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-8 text-center">
-                                <p class="text-lg font-extrabold text-[#07152f]">Aucun service événementiel publié pour le moment.</p>
+                                <p class="text-lg font-extrabold text-[#07152f]">Aucune prestation disponible pour le moment.</p>
                             </div>
                         @endif
                     </div>
@@ -199,11 +201,11 @@
                 <aside class="lg:sticky lg:top-24 lg:self-start">
                     <div class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/12 ring-1 ring-[#dce6f7]">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 4</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Résumé</h2>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Récapitulatif</h2>
 
                         <div class="mt-5 rounded-[20px] bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                             <div class="flex justify-between gap-3 text-sm font-extrabold">
-                                <span class="text-[#6f7890]">Prix de base</span>
+                                <span class="text-[#6f7890]">Prix du lieu</span>
                                 <span class="text-right text-[#07152f]">{{ number_format($venue->starting_price, 0, ',', ' ') }} {{ $venue->currency }}<span class="block text-[11px] font-bold text-[#6f7890]">{{ ($venue->price_unit ?? \App\Enums\PriceUnit::Event)->label() }}</span></span>
                             </div>
                             @if ($venue->minimumDurationLabel())
@@ -215,11 +217,11 @@
                             </div>
                             <p class="mt-1 text-[11px] font-semibold leading-4 text-[#8a94aa]">{{ $depositDescription }} Il est recalculé sur la proforma avec les options choisies.</p>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
-                                <span class="text-[#6f7890]">Options sélectionnées</span>
+                                <span class="text-[#6f7890]">Options du lieu</span>
                                 <span id="composer-addons-count" class="text-[#07152f]">0</span>
                             </div>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
-                                <span class="text-[#6f7890]">Services sélectionnés</span>
+                                <span class="text-[#6f7890]">Prestations des pros</span>
                                 <span id="composer-services-count" class="text-[#07152f]">0</span>
                             </div>
                             <div class="mt-3 flex justify-between gap-3 text-sm font-extrabold">
@@ -251,7 +253,7 @@
                             <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Connexion client obligatoire avant la proforma et le paiement de l’acompte.</p>
                         @else
                             <x-forms.terms-acceptance class="mt-5" />
-                            <button type="submit" class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Valider la demande</button>
+                            <button type="submit" class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande</button>
                         @endguest
                     </div>
                 </aside>
