@@ -1,61 +1,59 @@
 <x-layouts.baobaa title="Créer un compte client - BAOBAA">
     <x-navigation.public-header />
-    <main class="grid min-h-[calc(100vh-64px)] bg-[#f6f8fc] lg:grid-cols-[1fr_0.95fr]">
-        <section class="relative hidden min-h-[38vh] flex-col justify-between overflow-hidden bg-[#07152f] px-6 py-8 text-white sm:px-10 lg:flex lg:min-h-[calc(100vh-64px)] lg:px-14">
-            <div class="absolute inset-0">
-                <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=80" alt="" class="h-full w-full object-cover opacity-24">
-                <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.96),rgba(47,107,255,.74))]"></div>
+    <main class="grid bg-[#eef3ff] lg:h-[calc(100vh-64px)] lg:min-h-[640px] lg:grid-cols-[0.85fr_1.15fr]">
+        <section class="relative hidden items-center overflow-hidden bg-[#07152f] px-14 text-white lg:flex">
+            <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.98),rgba(47,107,255,.72))]" aria-hidden="true"></div>
+
+            <div class="relative z-10 max-w-md">
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#8dc1ff]">Compte client</p>
+                <h1 class="mt-3 text-4xl font-extrabold leading-tight">Organisez votre événement, sans stress.</h1>
+                <p class="mt-3 text-sm font-medium leading-6 text-white/75">Un seul compte pour réserver le lieu, ajouter les prestations des pros et suivre vos paiements.</p>
+
+                <ol class="mt-6 grid gap-2.5 text-sm font-semibold text-white/85">
+                    @foreach (['Vous trouvez le lieu libre à vos dates.', 'Vous ajoutez options et prestations.', 'Vous payez l’acompte et la date est bloquée.'] as $stepIndex => $step)
+                        <li class="flex items-center gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full bg-white/15 text-xs font-extrabold">{{ $stepIndex + 1 }}</span>{{ $step }}</li>
+                    @endforeach
+                </ol>
             </div>
-
-            <div class="relative z-10"></div>
-
-            <div class="relative z-10 max-w-2xl py-14 lg:py-0">
-                <p class="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-[#7dd3fc]">Compte client</p>
-                <h1 class="max-w-xl text-4xl font-semibold leading-tight sm:text-6xl">Réservez vos espaces avec un suivi clair.</h1>
-                <p class="mt-5 max-w-lg text-base leading-7 text-white/72">Créez votre compte pour enregistrer vos réservations, suivre vos paiements et publier vos avis après événement.</p>
-            </div>
-
-            <div class="relative z-10"></div>
         </section>
 
-        <section class="flex items-center justify-center px-6 py-10 sm:px-10">
-            <div class="w-full max-w-md">
-                <x-navigation.account-switcher mode="register" current="client" class="mb-6" />
-                <div class="mb-8">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#0d47a1]">Inscription</p>
-                    <h2 class="mt-3 text-4xl font-semibold text-[#081225]">Créer mon compte</h2>
-                    <p class="mt-3 text-sm leading-6 text-[#5d6d89]">Vous pourrez devenir partenaire plus tard depuis votre espace client.</p>
-                </div>
+        <section class="flex items-center justify-center px-5 py-4 sm:px-8">
+            <div class="w-full max-w-xl">
+                <x-navigation.account-switcher mode="register" current="client" class="mb-3 max-w-md" />
 
-                <form method="POST" action="{{ route('client.register.store') }}" class="space-y-5 rounded-2xl bg-white p-6 shadow-xl shadow-[#0d47a1]/8 ring-1 ring-[#dce6f7]">
+                <h2 class="text-2xl font-extrabold text-[#07152f]">Créer mon compte client</h2>
+
+                <form method="POST" action="{{ route('client.register.store') }}" class="mt-3 rounded-[24px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7]">
                     @csrf
-                    <label class="block">
-                        <span class="mb-2 block text-sm font-semibold text-[#17233f]">Nom complet</span>
-                        <input name="name" value="{{ old('name') }}" required autocomplete="name" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
-                        @error('name')<span class="mt-2 block text-sm font-medium text-red-700">{{ $message }}</span>@enderror
-                    </label>
-                    <label class="block">
-                        <span class="mb-2 block text-sm font-semibold text-[#17233f]">Adresse email</span>
-                        <input name="email" type="email" value="{{ old('email') }}" required autocomplete="email" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
-                        @error('email')<span class="mt-2 block text-sm font-medium text-red-700">{{ $message }}</span>@enderror
-                    </label>
-                    <label class="block">
-                        <span class="mb-2 block text-sm font-semibold text-[#17233f]">Téléphone</span>
-                        <input name="phone" value="{{ old('phone') }}" autocomplete="tel" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
-                    </label>
-                    <x-forms.client-type-fields />
-                    <label class="block">
-                        <span class="mb-2 block text-sm font-semibold text-[#17233f]">Mot de passe</span>
-                        <input name="password" type="password" required autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
-                        @error('password')<span class="mt-2 block text-sm font-medium text-red-700">{{ $message }}</span>@enderror
-                    </label>
-                    <label class="block">
-                        <span class="mb-2 block text-sm font-semibold text-[#17233f]">Confirmer le mot de passe</span>
-                        <input name="password_confirmation" type="password" required autocomplete="new-password" class="h-12 w-full rounded-xl border border-[#c9d8ef] bg-[#f8fbff] px-4 text-sm font-medium outline-none focus:border-[#0d47a1] focus:bg-white">
-                    </label>
-                    <x-forms.terms-acceptance />
-                    <button class="h-12 w-full rounded-xl bg-[#0d47a1] px-5 text-sm font-semibold text-white shadow-lg shadow-[#0d47a1]/24 transition hover:-translate-y-0.5 hover:bg-[#0b3b86]">Créer mon compte client</button>
-                    <p class="text-center text-sm font-semibold text-[#5d6d89]">Déjà inscrit ? <a href="{{ route('portal.login', ['portal' => 'client']) }}" class="font-extrabold text-[#0d47a1] hover:underline">Se connecter</a></p>
+                    <x-forms.validation-errors class="mb-4" />
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="col-span-2 block sm:col-span-1">
+                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Nom et prénom</span>
+                            <input name="name" value="{{ old('name') }}" required autocomplete="name" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
+                        </label>
+                        <label class="col-span-2 block sm:col-span-1">
+                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Téléphone <span class="font-medium text-[#8a94aa]">(facultatif)</span></span>
+                            <input name="phone" value="{{ old('phone') }}" autocomplete="tel" placeholder="+225 07 00 00 00 00" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
+                        </label>
+                        <label class="col-span-2 block">
+                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Adresse email</span>
+                            <input name="email" type="email" value="{{ old('email') }}" required autocomplete="email" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
+                        </label>
+                        <x-forms.client-type-fields class="col-span-2 gap-3 sm:grid-cols-2" label-class="mb-1 block text-xs font-bold text-[#17233f]" input-class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white" />
+                        <label class="block">
+                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Mot de passe</span>
+                            <input name="password" type="password" required autocomplete="new-password" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
+                        </label>
+                        <label class="block">
+                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Confirmation</span>
+                            <input name="password_confirmation" type="password" required autocomplete="new-password" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
+                        </label>
+                    </div>
+
+                    <x-forms.terms-acceptance class="mt-4" />
+                    <button class="mt-4 h-11 w-full rounded-xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Créer mon compte</button>
+                    <p class="mt-3 text-center text-sm font-semibold text-[#5d6d89]">Déjà inscrit ? <a href="{{ route('portal.login', ['portal' => 'client']) }}" class="font-extrabold text-[#2f6bff] hover:underline">Se connecter</a></p>
                 </form>
             </div>
         </section>

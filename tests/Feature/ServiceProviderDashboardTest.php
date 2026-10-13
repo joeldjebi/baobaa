@@ -18,7 +18,7 @@ uses(RefreshDatabase::class);
 test('guest can request a service provider account and waits for SAP approval', function () {
     $this->get(route('service-provider.register'))
         ->assertOk()
-        ->assertSeeText('Prestataire événementiel');
+        ->assertSeeText('Créer mon compte professionnel');
 
     $this->post(route('service-provider.register.store'), [
         'name' => 'Prestataire Son',

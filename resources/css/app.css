@@ -705,7 +705,10 @@
  */
 @layer components {
     .baobaa-site-header {
-        padding-block: .75rem;
+        display: grid;
+        align-content: center;
+        box-sizing: border-box;
+        height: 64px;
         border-bottom: 1px solid rgb(226 233 248 / .7);
         background: rgb(255 255 255 / .94);
         transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease;

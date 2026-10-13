@@ -318,7 +318,6 @@ test('partner signup page explains commission and subscription plans in simple w
         ->assertSeeText('Formule Pro')
         ->assertSeeText('25 000 XOF / mois')
         ->assertSeeText('Commission réduite à 7 %')
-        ->assertSeeText('Parlez-nous de vos espaces')
         ->assertDontSee('images.unsplash.com', false);
 });
 

@@ -1,148 +1,104 @@
 @php
     $isAuthenticatedMode = ($mode ?? 'guest') === 'authenticated';
     $action = $isAuthenticatedMode ? route('portals.service-provider.request') : route('service-provider.register.store');
+    $countryOptions = app(\App\Services\LocationOptionsService::class)->countries();
+    $selectedCountry = strtoupper(old('country_code', $serviceProviderProfile?->country_code ?? 'CI'));
+    $labelClass = 'mb-1 block text-xs font-bold text-[#17233f]';
+    $inputClass = 'h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white';
 @endphp
 
 <x-layouts.baobaa title="Devenir prestataire événementiel - BAOBAA">
     <x-navigation.public-header active="event-services" />
-    <main class="min-h-[calc(100vh-64px)] bg-[#eef3ff] text-[#151821]">
-        <section class="grid min-h-[calc(100vh-64px)] lg:grid-cols-[0.95fr_1.05fr]">
-            <div class="relative order-2 overflow-hidden bg-[#07152f] px-6 py-8 text-white sm:px-10 lg:order-1 lg:px-14">
-                <div class="absolute inset-0">
-                    <img src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1600&q=80" alt="" class="h-full w-full object-cover opacity-28">
-                    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.98),rgba(47,107,255,.70))]"></div>
-                </div>
+    <main class="bg-[#eef3ff] text-[#151821] lg:h-[calc(100vh-64px)] lg:min-h-[640px]">
+        <section class="grid h-full lg:grid-cols-[0.85fr_1.15fr]">
+            <div class="relative hidden overflow-hidden bg-[#07152f] px-14 text-white lg:flex lg:items-center">
+                <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.98),rgba(47,107,255,.72))]" aria-hidden="true"></div>
 
-                <div class="relative z-10 flex h-full min-h-[48vh] flex-col justify-between">
-                    <span></span>
+                <div class="relative z-10 max-w-md">
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-[#8dc1ff]">Professionnel de l’événement</p>
+                    <h1 class="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl">Proposez vos prestations aux organisateurs.</h1>
+                    <p class="mt-3 text-sm font-medium leading-6 text-white/75">Son, lumière, décor, photo, matériel… Inscription gratuite, profil vérifié par notre équipe.</p>
 
-                    <div class="max-w-2xl py-14">
-                        <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Prestataire événementiel</p>
-                        <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-6xl">Proposez vos services aux bons organisateurs.</h1>
-                        <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">Son, lumière, podium, photo, vidéo, mobilier ou services terrain : l’équipe BAOBAA vérifie les profils pour garder une marketplace fiable et premium.</p>
-                    </div>
-
-                    <div class="grid gap-3 sm:grid-cols-3">
-                        @foreach (['Profil vérifié', 'Services catalogués', 'Demandes qualifiées'] as $item)
-                            <div class="rounded-2xl border border-white/12 bg-white/10 px-4 py-3 text-sm font-extrabold backdrop-blur">{{ $item }}</div>
+                    <ol class="mt-6 grid gap-2.5 text-sm font-semibold text-white/85">
+                        @foreach (['Vous créez votre compte (1 minute).', 'Notre équipe vérifie votre profil.', 'Vous publiez vos prestations et recevez des demandes.'] as $stepIndex => $step)
+                            <li class="flex items-center gap-3"><span class="grid size-6 shrink-0 place-items-center rounded-full bg-white/15 text-xs font-extrabold">{{ $stepIndex + 1 }}</span>{{ $step }}</li>
                         @endforeach
-                    </div>
+                    </ol>
                 </div>
             </div>
 
-            <div class="order-1 flex items-center justify-center px-5 py-8 sm:px-8 lg:order-2 lg:py-10">
-                <div class="w-full max-w-2xl">
-                    <x-navigation.account-switcher mode="register" current="prestataire" class="mb-6 max-w-md" />
+            <div class="flex items-center justify-center px-5 py-4 sm:px-8 lg:order-2">
+                <div class="w-full max-w-xl">
+                    <x-navigation.account-switcher mode="register" current="prestataire" class="mb-3 max-w-md" />
+
                     @if ($pendingRequest)
-                        <div class="mb-5 rounded-[22px] border border-[#b9d3ff] bg-white p-5 shadow-xl shadow-[#173e7a]/8">
-                            <p class="text-sm font-extrabold text-[#2f6bff]">Votre demande prestataire est déjà en cours de validation.</p>
-                            <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">L’équipe BAOBAA analysera vos informations avant d’activer votre portail prestataire.</p>
-                        </div>
+                        <p class="mb-4 rounded-xl border border-[#b9d3ff] bg-white px-4 py-3 text-sm font-semibold text-[#2f6bff]">Votre demande est déjà en cours de validation par notre équipe.</p>
                     @endif
 
-                    <div class="mb-7">
-                        <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">{{ $isAuthenticatedMode ? 'Compte connecté' : 'Nouveau prestataire' }}</p>
-                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.01em] text-[#07152f]">Demande d’accès prestataire</h2>
-                        <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Renseignez vos informations professionnelles. Les familles de services disponibles sont configurées par BAOBAA.</p>
-                    </div>
+                    <h2 class="text-2xl font-extrabold text-[#07152f]">Créer mon compte professionnel</h2>
 
-                    <form method="POST" action="{{ $action }}" class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">
+                    <form method="POST" action="{{ $action }}" class="mt-3 rounded-[24px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7]">
                         @csrf
-                        <x-forms.validation-errors class="mb-5" />
+                        <x-forms.validation-errors class="mb-4" />
 
+                        <div class="grid grid-cols-2 gap-3">
+                            @unless ($isAuthenticatedMode)
+                                <label class="col-span-2 block sm:col-span-1">
+                                    <span class="{{ $labelClass }}">Nom et prénom</span>
+                                    <input name="name" value="{{ old('name') }}" required autocomplete="name" class="{{ $inputClass }}">
+                                </label>
+                            @endunless
+                            <label class="col-span-2 block sm:col-span-1">
+                                <span class="{{ $labelClass }}">Nom commercial</span>
+                                <input name="business_name" value="{{ old('business_name', $serviceProviderProfile?->business_name) }}" required autocomplete="organization" placeholder="Ex : Studio Son Lagune" class="{{ $inputClass }}">
+                            </label>
+                            <label class="col-span-2 block sm:col-span-1">
+                                <span class="{{ $labelClass }}">Téléphone WhatsApp</span>
+                                @if ($isAuthenticatedMode)
+                                    <input name="whatsapp_phone" value="{{ old('whatsapp_phone', $serviceProviderProfile?->whatsapp_phone ?? auth()->user()->phone) }}" required autocomplete="tel" class="{{ $inputClass }}">
+                                @else
+                                    <input name="phone" value="{{ old('phone') }}" required autocomplete="tel" placeholder="+225 07 00 00 00 00" class="{{ $inputClass }}">
+                                @endif
+                            </label>
+                            @unless ($isAuthenticatedMode)
+                                <label class="col-span-2 block sm:col-span-1">
+                                    <span class="{{ $labelClass }}">Adresse email</span>
+                                    <input name="email" type="email" value="{{ old('email') }}" required autocomplete="email" class="{{ $inputClass }}">
+                                </label>
+                            @endunless
+                            <label class="block">
+                                <span class="{{ $labelClass }}">Pays</span>
+                                @if (count($countryOptions) > 0)
+                                    <select name="country_code" required class="{{ $inputClass }}">
+                                        @foreach ($countryOptions as $code => $countryName)
+                                            <option value="{{ $code }}" @selected($selectedCountry === $code)>{{ $countryName }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <input name="country_code" value="{{ $selectedCountry }}" required maxlength="2" class="{{ $inputClass }} uppercase">
+                                @endif
+                            </label>
+                            <label class="block">
+                                <span class="{{ $labelClass }}">Ville</span>
+                                <input name="city" value="{{ old('city', $serviceProviderProfile?->city) }}" required autocomplete="address-level2" placeholder="Ex : Abidjan" class="{{ $inputClass }}">
+                            </label>
+                            @unless ($isAuthenticatedMode)
+                                <label class="block">
+                                    <span class="{{ $labelClass }}">Mot de passe</span>
+                                    <input name="password" type="password" required autocomplete="new-password" class="{{ $inputClass }}">
+                                </label>
+                                <label class="block">
+                                    <span class="{{ $labelClass }}">Confirmation</span>
+                                    <input name="password_confirmation" type="password" required autocomplete="new-password" class="{{ $inputClass }}">
+                                </label>
+                            @endunless
+                        </div>
+
+                        <x-forms.terms-acceptance class="mt-4" />
+                        <button class="mt-4 h-11 w-full rounded-xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Créer mon compte</button>
                         @unless ($isAuthenticatedMode)
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <label class="block">
-                                    <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Nom du responsable</span>
-                                    <input name="name" value="{{ old('name') }}" required autocomplete="name" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                    @error('name')<span class="mt-2 block text-sm font-semibold text-red-700">{{ $message }}</span>@enderror
-                                </label>
-                                <label class="block">
-                                    <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Téléphone WhatsApp</span>
-                                    <input name="phone" value="{{ old('phone') }}" required autocomplete="tel" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                    @error('phone')<span class="mt-2 block text-sm font-semibold text-red-700">{{ $message }}</span>@enderror
-                                </label>
-                            </div>
-
-                            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                                <label class="block">
-                                    <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Adresse email</span>
-                                    <input name="email" type="email" value="{{ old('email') }}" required autocomplete="email" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                    @error('email')<span class="mt-2 block text-sm font-semibold text-red-700">{{ $message }}</span>@enderror
-                                </label>
-                                <div class="grid gap-4 sm:grid-cols-2">
-                                    <label class="block">
-                                        <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Mot de passe</span>
-                                        <input name="password" type="password" required autocomplete="new-password" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                    </label>
-                                    <label class="block">
-                                        <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Confirmation</span>
-                                        <input name="password_confirmation" type="password" required autocomplete="new-password" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                    </label>
-                                </div>
-                            </div>
-                            @error('password')<span class="mt-2 block text-sm font-semibold text-red-700">{{ $message }}</span>@enderror
+                            <p class="mt-3 text-center text-sm font-semibold text-[#5d6d89]">Déjà inscrit ? <a href="{{ route('portal.login', ['portal' => 'prestataire']) }}" class="font-extrabold text-[#2f6bff] hover:underline">Se connecter</a></p>
                         @endunless
-
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Nom commercial</span>
-                                <input name="business_name" value="{{ old('business_name', $serviceProviderProfile?->business_name) }}" required class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                @error('business_name')<span class="mt-2 block text-sm font-semibold text-red-700">{{ $message }}</span>@enderror
-                            </label>
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Zone d’intervention</span>
-                                <input name="service_area" value="{{ old('service_area', $serviceProviderProfile?->service_area) }}" required placeholder="Abidjan, Grand-Bassam, intérieur du pays..." class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                                @error('service_area')<span class="mt-2 block text-sm font-semibold text-red-700">{{ $message }}</span>@enderror
-                            </label>
-                        </div>
-
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Nom légal</span>
-                                <input name="legal_name" value="{{ old('legal_name', $serviceProviderProfile?->legal_name) }}" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                            </label>
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Identifiant fiscal ou RCCM</span>
-                                <input name="tax_identifier" value="{{ old('tax_identifier', $serviceProviderProfile?->tax_identifier) }}" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                            </label>
-                        </div>
-
-                        <div class="mt-4 grid gap-4 sm:grid-cols-[110px_1fr_1fr]">
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Pays</span>
-                                <input name="country_code" value="{{ old('country_code', $serviceProviderProfile?->country_code ?? 'CI') }}" required maxlength="2" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold uppercase outline-none focus:border-[#2f6bff]">
-                            </label>
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Ville</span>
-                                <input name="city" value="{{ old('city', $serviceProviderProfile?->city) }}" required class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                            </label>
-                            <label class="block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Commune</span>
-                                <input name="district" value="{{ old('district', $serviceProviderProfile?->district) }}" class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                            </label>
-                        </div>
-
-                        @if ($isAuthenticatedMode)
-                            <label class="mt-4 block">
-                                <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Téléphone WhatsApp</span>
-                                <input name="whatsapp_phone" value="{{ old('whatsapp_phone', $serviceProviderProfile?->whatsapp_phone ?? auth()->user()->phone) }}" required class="h-12 w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 text-sm font-bold outline-none focus:border-[#2f6bff]">
-                            </label>
-                        @endif
-
-                        <label class="mt-4 block">
-                            <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Présentation de vos services</span>
-                            <textarea name="description" rows="4" placeholder="Décrivez vos spécialités, votre équipe, votre matériel et vos zones couvertes." class="w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('description', $serviceProviderProfile?->description) }}</textarea>
-                        </label>
-
-                        <label class="mt-4 block">
-                            <span class="mb-2 block text-sm font-extrabold text-[#17233f]">Message à l’équipe BAOBAA</span>
-                            <textarea name="motivation" rows="3" class="w-full rounded-2xl border border-[#dce6f7] bg-[#f8fbff] px-4 py-3 text-sm font-bold leading-6 outline-none focus:border-[#2f6bff]">{{ old('motivation') }}</textarea>
-                        </label>
-
-                        <x-forms.terms-acceptance class="mt-5" />
-                        <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer ma demande</button>
-                        <p class="mt-4 text-center text-sm font-semibold text-[#5d6d89]">Déjà inscrit ? <a href="{{ route('portal.login', ['portal' => 'prestataire']) }}" class="font-extrabold text-[#2f6bff] hover:underline">Se connecter</a></p>
                     </form>
                 </div>
             </div>

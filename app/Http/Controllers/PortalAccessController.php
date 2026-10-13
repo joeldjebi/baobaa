@@ -138,7 +138,7 @@ class PortalAccessController extends Controller
                 'city' => $validated['city'],
                 'district' => $validated['district'] ?? null,
                 'whatsapp_phone' => $validated['whatsapp_phone'],
-                'service_area' => $validated['service_area'],
+                'service_area' => $validated['service_area'] ?? $validated['city'],
                 'description' => $validated['description'] ?? null,
                 'billing_preference' => 'commission',
             ],
@@ -162,7 +162,7 @@ class PortalAccessController extends Controller
             'city' => ['required', 'string', 'max:255'],
             'district' => ['nullable', 'string', 'max:255'],
             'whatsapp_phone' => ['required', 'string', 'max:32'],
-            'service_area' => ['required', 'string', 'max:255'],
+            'service_area' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1200'],
             'motivation' => ['nullable', 'string', 'max:1200'],
         ]);

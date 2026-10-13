@@ -169,7 +169,7 @@ test('legal and contact pages are publicly available', function (string $routeNa
 test('owner can register himself but waits for SAP approval', function () {
     $this->get(route('owner.register'))
         ->assertOk()
-        ->assertSeeText('Demande d’accès partenaire')
+        ->assertSeeText('Inscrire mon espace')
         ->assertDontSeeText('Envoyer au SAP');
 
     $this->post(route('owner.register.store'), [
