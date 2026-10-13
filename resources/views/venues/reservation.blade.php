@@ -6,6 +6,10 @@
     $selectedAddOnIds = collect(old('selected_add_on_ids', []))->map(fn ($id) => (int) $id)->all();
     $selectedModuleTemplateIds = collect(old('selected_module_template_ids', []))->map(fn ($id) => (int) $id)->all();
     $maxEventServices = 6;
+    $requestedStartDate = old('start_date', request('start_date'));
+    $requestedEndDate = old('end_date', request('end_date')) ?: $requestedStartDate;
+    $eventStart = old('event_start', filled($requestedStartDate) ? $requestedStartDate.'T'.(old('starts_at') ?: '10:00') : '');
+    $eventEnd = old('event_end', filled($requestedEndDate) ? $requestedEndDate.'T'.(old('ends_at') ?: '18:00') : '');
 @endphp
 
 <x-layouts.baobaa :title="$title.' - BAOBAA'">
@@ -62,20 +66,12 @@
 
                         <div class="mt-5 grid gap-4 md:grid-cols-2">
                             <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
-                                <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Date de début</span>
-                                <input type="date" name="start_date" value="{{ old('start_date', request('start_date')) }}" min="{{ now()->toDateString() }}" data-start-date class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
+                                <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Début de l’événement</span>
+                                <input type="datetime-local" name="event_start" value="{{ $eventStart }}" min="{{ now()->format('Y-m-d\TH:i') }}" step="900" data-event-start class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
                             </label>
                             <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
-                                <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure</span>
-                                <input type="time" name="starts_at" value="{{ old('starts_at') }}" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
-                            </label>
-                            <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
-                                <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Date de fin</span>
-                                <input type="date" name="end_date" value="{{ old('end_date', request('end_date')) }}" min="{{ now()->toDateString() }}" data-end-date class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none">
-                            </label>
-                            <label class="block rounded-[16px] border border-[#dce6f7] bg-[#fbfcff] px-3 py-2.5">
-                                <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Heure de fin</span>
-                                <input type="time" name="ends_at" value="{{ old('ends_at') }}" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
+                                <span class="block text-[10px] font-extrabold uppercase text-[#8a94aa]">Fin de l’événement</span>
+                                <input type="datetime-local" name="event_end" value="{{ $eventEnd }}" min="{{ now()->format('Y-m-d\TH:i') }}" step="900" data-event-end class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none" required>
                             </label>
                             @if ($venue->openingHoursLabel())
                                 <p class="text-xs font-semibold text-[#6f7890] md:col-span-2">Cet espace accueille les événements de {{ $venue->openingHoursLabel() }}.</p>
@@ -276,23 +272,23 @@
             const formatter = new Intl.NumberFormat('fr-FR');
             const servicesSelectedCount = document.querySelectorAll('[data-services-selected-count]');
             const maxEventServices = @json($maxEventServices);
-            const startDate = document.querySelector('[data-start-date]');
-            const endDate = document.querySelector('[data-end-date]');
+            const eventStart = document.querySelector('[data-event-start]');
+            const eventEnd = document.querySelector('[data-event-end]');
 
-            const syncEndDateMinimum = () => {
-                if (! startDate || ! endDate) {
+            const syncEventEndMinimum = () => {
+                if (! eventStart || ! eventEnd) {
                     return;
                 }
 
-                endDate.min = startDate.value || startDate.min;
+                eventEnd.min = eventStart.value || eventStart.min;
 
-                if (endDate.value && startDate.value && endDate.value < startDate.value) {
-                    endDate.value = startDate.value;
+                if (eventStart.value && (! eventEnd.value || eventEnd.value < eventStart.value)) {
+                    eventEnd.value = eventStart.value;
                 }
             };
 
-            startDate?.addEventListener('change', syncEndDateMinimum);
-            syncEndDateMinimum();
+            eventStart?.addEventListener('change', syncEventEndMinimum);
+            syncEventEndMinimum();
 
             const updateSummary = () => {
                 const selected = [...serviceCheckboxes].filter((checkbox) => checkbox.checked);

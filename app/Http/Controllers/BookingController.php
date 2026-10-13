@@ -32,6 +32,7 @@ class BookingController extends Controller
     {
         abort_unless($venue->status === VenueStatus::Published, 404);
         $allowedPaymentMethods = $this->allowedPaymentMethods($venue);
+        $this->splitEventSchedule($request);
 
         $validated = $request->validate([
             'start_date' => ['required', 'date', 'after_or_equal:today'],
@@ -246,5 +247,18 @@ class BookingController extends Controller
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * The booking form sends one date-and-time field for the start and one for the end
+     * (event_start / event_end, "Y-m-d\TH:i"); split them into the date and time fields used below.
+     */
+    private function splitEventSchedule(Request $request): void
+    {
+        foreach (['event_start' => ['start_date', 'starts_at'], 'event_end' => ['end_date', 'ends_at']] as $field => [$dateKey, $timeKey]) {
+            if (preg_match('/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/', (string) $request->input($field), $parts) === 1) {
+                $request->merge([$dateKey => $parts[1], $timeKey => $parts[2]]);
+            }
+        }
     }
 }

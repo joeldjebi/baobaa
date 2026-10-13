@@ -278,12 +278,19 @@ test('client can save a booking request and gets an initiated deposit payment', 
     ]);
 
     $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSee('name="event_start"', false)
+        ->assertSee('name="event_end"', false)
+        ->assertDontSee('name="starts_at"', false);
+
+    $eventDay = now()->addDays(14)->toDateString();
+
+    $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'start_date' => now()->addDays(14)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
-            'starts_at' => '09:00',
-            'ends_at' => '18:00',
+            'event_start' => $eventDay.'T09:00',
+            'event_end' => $eventDay.'T18:00',
             'event_type' => 'conference',
             'guests_count' => 120,
             'payment_method' => 'wave',
@@ -297,7 +304,10 @@ test('client can save a booking request and gets an initiated deposit payment', 
         ->and($booking->client_id)->toBe($client->id)
         ->and($booking->venue_id)->toBe($venue->id)
         ->and($booking->status)->toBe(BookingStatus::PendingPayment)
-        ->and($booking->reservation_amount)->toBe(135000);
+        ->and($booking->reservation_amount)->toBe(135000)
+        ->and($booking->event_date->toDateString())->toBe($eventDay)
+        ->and(substr((string) $booking->starts_at, 0, 5))->toBe('09:00')
+        ->and(substr((string) $booking->ends_at, 0, 5))->toBe('18:00');
 
     $payment = Payment::query()->first();
 
@@ -419,12 +429,19 @@ test('client can include venue optional modules in a package reservation', funct
     ]);
 
     $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSee('name="event_start"', false)
+        ->assertSee('name="event_end"', false)
+        ->assertDontSee('name="starts_at"', false);
+
+    $eventDay = now()->addDays(14)->toDateString();
+
+    $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'start_date' => now()->addDays(14)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
-            'starts_at' => '09:00',
-            'ends_at' => '18:00',
+            'event_start' => $eventDay.'T09:00',
+            'event_end' => $eventDay.'T18:00',
             'event_type' => 'conference',
             'guests_count' => 120,
             'payment_method' => 'baobaa_checkout',
@@ -494,12 +511,19 @@ test('client can include recovered owner module templates in a package reservati
     ]);
 
     $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSee('name="event_start"', false)
+        ->assertSee('name="event_end"', false)
+        ->assertDontSee('name="starts_at"', false);
+
+    $eventDay = now()->addDays(14)->toDateString();
+
+    $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'start_date' => now()->addDays(14)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
-            'starts_at' => '09:00',
-            'ends_at' => '18:00',
+            'event_start' => $eventDay.'T09:00',
+            'event_end' => $eventDay.'T18:00',
             'event_type' => 'conference',
             'guests_count' => 120,
             'payment_method' => 'baobaa_checkout',
@@ -579,12 +603,19 @@ test('client can update package modules and services before deposit payment', fu
     ]);
 
     $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSee('name="event_start"', false)
+        ->assertSee('name="event_end"', false)
+        ->assertDontSee('name="starts_at"', false);
+
+    $eventDay = now()->addDays(14)->toDateString();
+
+    $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'start_date' => now()->addDays(14)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
-            'starts_at' => '09:00',
-            'ends_at' => '18:00',
+            'event_start' => $eventDay.'T09:00',
+            'event_end' => $eventDay.'T18:00',
             'event_type' => 'conference',
             'guests_count' => 120,
             'payment_method' => 'baobaa_checkout',
@@ -803,12 +834,19 @@ test('booking deposit falls back to venue reservation amount when sap rule is mi
     ]);
 
     $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSee('name="event_start"', false)
+        ->assertSee('name="event_end"', false)
+        ->assertDontSee('name="starts_at"', false);
+
+    $eventDay = now()->addDays(14)->toDateString();
+
+    $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'start_date' => now()->addDays(14)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
-            'starts_at' => '09:00',
-            'ends_at' => '18:00',
+            'event_start' => $eventDay.'T09:00',
+            'event_end' => $eventDay.'T18:00',
             'event_type' => 'conference',
             'guests_count' => 120,
             'payment_method' => 'baobaa_checkout',
@@ -836,12 +874,19 @@ test('client cannot choose a payment method disabled for the venue', function ()
     ]);
 
     $this->actingAs($client)
+        ->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertSee('name="event_start"', false)
+        ->assertSee('name="event_end"', false)
+        ->assertDontSee('name="starts_at"', false);
+
+    $eventDay = now()->addDays(14)->toDateString();
+
+    $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'start_date' => now()->addDays(14)->toDateString(),
-            'end_date' => now()->addDays(14)->toDateString(),
-            'starts_at' => '09:00',
-            'ends_at' => '18:00',
+            'event_start' => $eventDay.'T09:00',
+            'event_end' => $eventDay.'T18:00',
             'event_type' => 'conference',
             'guests_count' => 120,
             'payment_method' => 'bank_transfer',
