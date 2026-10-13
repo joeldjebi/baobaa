@@ -698,3 +698,56 @@
         }
     }
 }
+
+/*
+ * Public header and main navigation.
+ * The header keeps a constant 64px height because sticky sub-bars (venue tabs) sit at top-[64px].
+ */
+@layer components {
+    .baobaa-site-header {
+        padding-block: .75rem;
+        border-bottom: 1px solid rgb(226 233 248 / .7);
+        background: rgb(255 255 255 / .94);
+        transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease;
+    }
+
+    .baobaa-site-header.is-scrolled {
+        border-color: rgb(220 230 247 / .9);
+        background: rgb(255 255 255 / .8);
+        box-shadow: 0 10px 30px rgb(23 62 122 / .08);
+        -webkit-backdrop-filter: blur(16px) saturate(1.6);
+        backdrop-filter: blur(16px) saturate(1.6);
+    }
+
+    .baobaa-nav-indicator {
+        position: absolute;
+        top: 4px;
+        left: 0;
+        height: calc(100% - 8px);
+        width: var(--nav-width, 0);
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgb(7 21 47 / .06), 0 6px 16px rgb(47 107 255 / .12);
+        opacity: var(--nav-opacity, 0);
+        transform: translateX(var(--nav-x, 0));
+        pointer-events: none;
+    }
+
+    .baobaa-nav.is-ready .baobaa-nav-indicator {
+        transition:
+            transform .38s cubic-bezier(.22, 1, .36, 1),
+            width .38s cubic-bezier(.22, 1, .36, 1),
+            opacity .2s ease;
+    }
+
+    .baobaa-nav:not(.has-indicator) a[aria-current='page'] {
+        background: #fff;
+        box-shadow: 0 1px 2px rgb(7 21 47 / .06), 0 6px 16px rgb(47 107 255 / .12);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .baobaa-nav.is-ready .baobaa-nav-indicator {
+            transition: none;
+        }
+    }
+}

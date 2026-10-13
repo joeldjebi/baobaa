@@ -9,20 +9,25 @@
     $user = auth()->user();
     $isClient = $user?->hasPortal(UserRole::Client) ?? false;
     $isOwner = $user?->hasPortal(UserRole::Owner) ?? false;
-    $linkBase = 'rounded-full px-4 py-2 transition hover:bg-white hover:text-[#2f6bff]';
-    $activeClass = 'rounded-full bg-white px-4 py-2 text-[#2f6bff] shadow-sm';
+
+    $links = [
+        'explore' => ['Explorer', url('/')],
+        'venues' => ['Espaces', route('venues.index')],
+        'partners' => ['Partenaires', route('owner-profiles.index')],
+        'event-services' => ['Professionnels', route('service-provider-profiles.index')],
+        'products' => ['Location et vente', route('products.index')],
+    ];
+
+    if ($isClient) {
+        $links['client-reservations'] = ['Mes réservations', route('client.reservations')];
+    } elseif ($isOwner) {
+        $links['owner-dashboard'] = ['Mon espace pro', route('owner.dashboard')];
+    }
 @endphp
 
-<nav {{ $attributes->merge(['class' => 'hidden items-center rounded-full border border-[#e2e9f8] bg-[#f8fbff]/90 px-2 py-1 text-sm font-extrabold text-[#4d5872] lg:flex']) }}>
-    <a href="{{ url('/') }}" class="{{ $active === 'explore' ? $activeClass : $linkBase }}">Explorer</a>
-    <a href="{{ route('venues.index') }}" class="{{ $active === 'venues' ? $activeClass : $linkBase }}">Espaces</a>
-    <a href="{{ route('owner-profiles.index') }}" class="{{ $active === 'partners' ? $activeClass : $linkBase }}">Partenaires</a>
-    <a href="{{ route('service-provider-profiles.index') }}" class="{{ $active === 'event-services' ? $activeClass : $linkBase }}">Professionnels</a>
-    <a href="{{ route('products.index') }}" class="{{ $active === 'products' ? $activeClass : $linkBase }}">Location et vente</a>
-
-    @if ($isClient)
-        <a href="{{ route('client.reservations') }}" class="{{ $active === 'client-reservations' ? $activeClass : $linkBase }}">Mes réservations</a>
-    @elseif ($isOwner)
-        <a href="{{ route('owner.dashboard') }}" class="{{ $active === 'owner-dashboard' ? $activeClass : $linkBase }}">Mon espace pro</a>
-    @endif
+<nav {{ $attributes->merge(['class' => 'baobaa-nav relative hidden items-center rounded-full border border-[#e2e9f8] bg-[#f6f8fd] p-1 text-sm font-semibold text-[#4d5872] lg:flex']) }} data-nav aria-label="Navigation principale">
+    <span class="baobaa-nav-indicator" data-nav-indicator aria-hidden="true"></span>
+    @foreach ($links as $key => [$label, $url])
+        <a href="{{ $url }}" @if ($active === $key) aria-current="page" @endif class="relative z-10 whitespace-nowrap rounded-full px-3.5 py-2 transition-colors duration-200 hover:text-[#07152f] aria-[current=page]:text-[#2f6bff] xl:px-4">{{ $label }}</a>
+    @endforeach
 </nav>

@@ -272,6 +272,66 @@ const story = () => {
     });
 };
 
+/**
+ * Public header: gets a frosted, bordered look once the page is scrolled.
+ */
+const headerScroll = () => {
+    const header = document.querySelector('[data-site-header]');
+
+    if (! header) {
+        return;
+    }
+
+    const update = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+};
+
+/**
+ * Main navigation: a pill slides under the hovered or focused link and returns to the current page.
+ */
+const navIndicator = () => {
+    document.querySelectorAll('[data-nav]').forEach((nav) => {
+        const indicator = nav.querySelector('[data-nav-indicator]');
+        const links = [...nav.querySelectorAll('a')];
+
+        if (! indicator || ! links.length) {
+            return;
+        }
+
+        const currentLink = () => nav.querySelector('a[aria-current="page"]');
+        const moveTo = (link) => {
+            if (! link || ! link.offsetWidth) {
+                indicator.style.setProperty('--nav-opacity', '0');
+
+                return;
+            }
+
+            indicator.style.setProperty('--nav-x', `${link.offsetLeft}px`);
+            indicator.style.setProperty('--nav-width', `${link.offsetWidth}px`);
+            indicator.style.setProperty('--nav-opacity', '1');
+        };
+
+        nav.classList.add('has-indicator');
+        moveTo(currentLink());
+        requestAnimationFrame(() => nav.classList.add('is-ready'));
+
+        links.forEach((link) => {
+            link.addEventListener('pointerenter', () => moveTo(link));
+            link.addEventListener('focus', () => moveTo(link));
+        });
+        nav.addEventListener('pointerleave', () => moveTo(currentLink()));
+        nav.addEventListener('focusout', (event) => {
+            if (! nav.contains(event.relatedTarget)) {
+                moveTo(currentLink());
+            }
+        });
+        window.addEventListener('resize', () => moveTo(currentLink()));
+        document.fonts?.ready.then(() => moveTo(currentLink()));
+    });
+};
+
 if (! prefersReducedMotion) {
     document.documentElement.classList.add('motion-ready');
     reveal();
@@ -287,3 +347,5 @@ if (! prefersReducedMotion) {
 }
 
 story();
+headerScroll();
+navIndicator();

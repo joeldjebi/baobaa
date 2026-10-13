@@ -109,8 +109,8 @@
                                     <div data-city-list class="absolute left-0 right-0 top-[calc(100%+8px)] z-[90] hidden rounded-2xl border border-[#dce6f7] bg-white p-2 text-left shadow-2xl shadow-[#173e7a]/16"></div>
                                 </label>
                             </div>
-                            <div class="mt-1 grid grid-cols-2 gap-1 border-t border-[#edf2fb] pt-1 sm:grid-cols-[1.2fr_1fr_auto]">
-                                <div class="relative rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]" data-date-range>
+                            <div class="mt-1 grid grid-cols-2 gap-1 border-t border-[#edf2fb] pt-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                                <div class="relative min-w-0 rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]" data-date-range>
                                     <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Période</span>
                                     <button type="button" data-date-toggle aria-haspopup="dialog" class="mt-0.5 block w-full truncate text-left text-sm font-bold text-[#9aa3b5]">Choisir une date</button>
                                     <div data-date-panel class="absolute left-0 top-[calc(100%+8px)] z-[90] hidden w-[min(300px,calc(100vw-48px))] rounded-2xl border border-[#dce6f7] bg-white p-3 text-left shadow-2xl shadow-[#173e7a]/16">
@@ -123,15 +123,40 @@
                                         <button type="button" data-date-apply class="mt-3 w-full rounded-xl bg-[#07152f] py-2.5 text-sm font-extrabold text-white">Valider</button>
                                     </div>
                                 </div>
-                                <label class="rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]">
+                                <div class="relative min-w-0 rounded-2xl px-4 py-2.5 transition hover:bg-[#f5f7ff]" data-budget-range>
                                     <span class="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Budget</span>
-                                    <select name="max_price" class="mt-0.5 w-full bg-transparent text-sm font-bold text-[#151821] outline-none">
-                                        <option value="">Tout budget</option>
-                                        @foreach ([100000, 250000, 500000, 1000000] as $budget)
-                                            <option value="{{ $budget }}">Jusqu’à {{ number_format($budget, 0, ',', ' ') }} XOF</option>
-                                        @endforeach
-                                    </select>
-                                </label>
+                                    <button type="button" data-budget-toggle aria-haspopup="dialog" class="mt-0.5 block w-full truncate text-left text-sm font-bold text-[#9aa3b5]">Tout budget</button>
+                                    <input type="hidden" name="min_price" data-budget-min-value>
+                                    <input type="hidden" name="max_price" data-budget-max-value>
+                                    <div data-budget-panel class="absolute right-0 top-[calc(100%+8px)] z-[90] hidden w-[min(320px,calc(100vw-48px))] rounded-2xl border border-[#dce6f7] bg-white p-3 text-left shadow-2xl shadow-[#173e7a]/16 sm:left-0 sm:right-auto">
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#7d879d]">Budget en XOF</p>
+                                        <div class="mt-2 grid grid-cols-2 gap-2">
+                                            <label class="block text-[11px] font-extrabold text-[#6f7890]">Entre
+                                                <input type="text" inputmode="numeric" autocomplete="off" data-budget-min placeholder="0" class="mt-1 w-full min-w-0 rounded-xl border border-[#dce6f7] px-3 py-2 text-sm font-bold tabular-nums text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5] focus:border-[#2f6bff]">
+                                            </label>
+                                            <label class="block text-[11px] font-extrabold text-[#6f7890]">et
+                                                <input type="text" inputmode="numeric" autocomplete="off" data-budget-max placeholder="Sans limite" class="mt-1 w-full min-w-0 rounded-xl border border-[#dce6f7] px-3 py-2 text-sm font-bold tabular-nums text-[#151821] outline-none placeholder:font-semibold placeholder:text-[#9aa3b5] focus:border-[#2f6bff]">
+                                            </label>
+                                        </div>
+                                        <div class="mt-3 flex flex-wrap gap-1.5">
+                                            @foreach ([[null, 250000], [250000, 500000], [500000, 1000000], [1000000, null]] as [$presetMin, $presetMax])
+                                                <button type="button" data-budget-preset data-min="{{ $presetMin }}" data-max="{{ $presetMax }}" class="rounded-full bg-[#f2f6ff] px-3 py-1.5 text-xs font-bold text-[#38445c] transition hover:bg-[#2f6bff] hover:text-white">
+                                                    @if ($presetMin === null)
+                                                        Moins de {{ number_format($presetMax, 0, ',', ' ') }}
+                                                    @elseif ($presetMax === null)
+                                                        Plus de {{ number_format($presetMin, 0, ',', ' ') }}
+                                                    @else
+                                                        {{ number_format($presetMin, 0, ',', ' ') }} – {{ number_format($presetMax, 0, ',', ' ') }}
+                                                    @endif
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                        <div class="mt-3 grid grid-cols-[auto_1fr] gap-2">
+                                            <button type="button" data-budget-clear class="rounded-xl px-3 py-2.5 text-sm font-bold text-[#52617b] hover:text-[#2f6bff]">Effacer</button>
+                                            <button type="button" data-budget-apply class="rounded-xl bg-[#07152f] py-2.5 text-sm font-extrabold text-white">Valider</button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button class="col-span-2 inline-flex items-center justify-center gap-2 rounded-[1.2rem] bg-[#2f6bff] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/30 transition hover:-translate-y-0.5 hover:bg-[#2258df] sm:col-span-1">
                                     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                                     Rechercher
@@ -793,6 +818,59 @@
 
             const formatDate = (value) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' })
                 .format(new Date(`${value}T00:00:00`));
+            const amountFormatter = new Intl.NumberFormat('fr-FR');
+            const compactAmount = (value) => value >= 1000000
+                ? `${amountFormatter.format(Math.round(value / 100000) / 10)} M`
+                : (value >= 1000 ? `${amountFormatter.format(Math.round(value / 1000))} k` : amountFormatter.format(value));
+            const budgetToggle = document.querySelector('[data-budget-toggle]');
+            const budgetPanel = document.querySelector('[data-budget-panel]');
+            const budgetMin = document.querySelector('[data-budget-min]');
+            const budgetMax = document.querySelector('[data-budget-max]');
+            const budgetMinValue = document.querySelector('[data-budget-min-value]');
+            const budgetMaxValue = document.querySelector('[data-budget-max-value]');
+            const readAmount = (input) => Number((input?.value || '').replace(/\D/g, '')) || 0;
+
+            /* Keeps typed amounts readable with thousands separators (1 000 000 instead of 1000000). */
+            const formatAmountInput = (input) => {
+                const amount = readAmount(input);
+                input.value = amount ? amountFormatter.format(amount) : '';
+            };
+
+            const setFieldLabel = (toggle, label, isEmpty) => {
+                toggle.textContent = label;
+                toggle.title = isEmpty ? '' : label;
+                toggle.classList.toggle('text-[#9aa3b5]', isEmpty);
+                toggle.classList.toggle('text-[#151821]', !isEmpty);
+            };
+
+            /* Swapping an inverted range only happens on validation, never while the visitor is typing. */
+            const updateBudget = (normalize = true) => {
+                if (!budgetToggle) {
+                    return;
+                }
+
+                let min = readAmount(budgetMin);
+                let max = readAmount(budgetMax);
+
+                if (normalize && min && max && min > max) {
+                    [min, max] = [max, min];
+                    budgetMin.value = amountFormatter.format(min);
+                    budgetMax.value = amountFormatter.format(max);
+                }
+
+                budgetMinValue.value = min || '';
+                budgetMaxValue.value = max || '';
+
+                if (min && max) {
+                    setFieldLabel(budgetToggle, `${compactAmount(min)} – ${compactAmount(max)} XOF`, false);
+                } else if (min) {
+                    setFieldLabel(budgetToggle, `Dès ${compactAmount(min)} XOF`, false);
+                } else if (max) {
+                    setFieldLabel(budgetToggle, `Jusqu’à ${compactAmount(max)} XOF`, false);
+                } else {
+                    setFieldLabel(budgetToggle, 'Tout budget', true);
+                }
+            };
 
             const updateDateLabel = () => {
                 if (!dateToggle) {
@@ -807,33 +885,58 @@
                     }
                 }
 
-                if (startDate?.value && endDate?.value) {
-                    dateToggle.textContent = `${formatDate(startDate.value)} - ${formatDate(endDate.value)}`;
-                    dateToggle.classList.remove('text-[#9aa3b5]');
-                    dateToggle.classList.add('text-[#151821]');
+                if (startDate?.value && endDate?.value && endDate.value !== startDate.value) {
+                    const sameMonth = startDate.value.slice(0, 7) === endDate.value.slice(0, 7);
+                    const startLabel = sameMonth ? Number(startDate.value.slice(8, 10)) : formatDate(startDate.value);
+                    setFieldLabel(dateToggle, `${startLabel} – ${formatDate(endDate.value)}`, false);
+
                     return;
                 }
 
                 if (startDate?.value) {
-                    dateToggle.textContent = `Le ${formatDate(startDate.value)}`;
-                    dateToggle.classList.remove('text-[#9aa3b5]');
-                    dateToggle.classList.add('text-[#151821]');
+                    setFieldLabel(dateToggle, `Le ${formatDate(startDate.value)}`, false);
+
                     return;
                 }
 
-                dateToggle.textContent = 'Choisir une date';
-                dateToggle.classList.add('text-[#9aa3b5]');
-                dateToggle.classList.remove('text-[#151821]');
+                setFieldLabel(dateToggle, 'Choisir une date', true);
             };
 
             searchInput?.addEventListener('input', renderSearchResults);
             searchInput?.addEventListener('focus', renderSearchResults);
             cityInput?.addEventListener('input', renderCityList);
             cityInput?.addEventListener('focus', renderCityList);
-            dateToggle?.addEventListener('click', () => datePanel?.classList.toggle('hidden'));
+            dateToggle?.addEventListener('click', () => {
+                budgetPanel?.classList.add('hidden');
+                datePanel?.classList.toggle('hidden');
+            });
+            budgetToggle?.addEventListener('click', () => {
+                datePanel?.classList.add('hidden');
+                budgetPanel?.classList.toggle('hidden');
+            });
+            [budgetMin, budgetMax].forEach((input) => input?.addEventListener('input', () => {
+                formatAmountInput(input);
+                updateBudget(false);
+            }));
+            document.querySelectorAll('[data-budget-preset]').forEach((preset) => preset.addEventListener('click', () => {
+                budgetMin.value = preset.dataset.min ? amountFormatter.format(Number(preset.dataset.min)) : '';
+                budgetMax.value = preset.dataset.max ? amountFormatter.format(Number(preset.dataset.max)) : '';
+                updateBudget();
+                budgetPanel.classList.add('hidden');
+            }));
+            document.querySelector('[data-budget-clear]')?.addEventListener('click', () => {
+                budgetMin.value = '';
+                budgetMax.value = '';
+                updateBudget();
+            });
+            document.querySelector('[data-budget-apply]')?.addEventListener('click', () => {
+                updateBudget();
+                budgetPanel.classList.add('hidden');
+            });
             startDate?.addEventListener('change', updateDateLabel);
             endDate?.addEventListener('change', updateDateLabel);
             searchForm?.addEventListener('submit', () => {
+                updateBudget();
                 searchForm.querySelectorAll('input[name], select[name]').forEach((field) => {
                     field.disabled = field.value === '';
                 });
@@ -851,6 +954,7 @@
                     hideSearchResults();
                     hideCityList();
                     datePanel?.classList.add('hidden');
+                    budgetPanel?.classList.add('hidden');
                 }
 
                 if (cityRoot && !cityRoot.contains(event.target)) {
