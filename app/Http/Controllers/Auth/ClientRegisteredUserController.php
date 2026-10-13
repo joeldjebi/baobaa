@@ -26,7 +26,7 @@ class ClientRegisteredUserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:32'],
+            'phone' => ['required', 'string', 'max:32'],
             'client_type' => ['required', Rule::enum(ClientType::class)],
             'organization_name' => ['nullable', 'string', 'max:255', Rule::requiredIf(fn (): bool => ClientType::tryFrom((string) $request->input('client_type'))?->requiresOrganizationName() ?? false)],
             'password' => ['required', 'confirmed', Password::defaults()],
@@ -36,7 +36,7 @@ class ClientRegisteredUserController extends Controller
         $user = User::query()->create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
+            'phone' => $validated['phone'],
             'client_type' => $validated['client_type'],
             'organization_name' => ClientType::from($validated['client_type'])->requiresOrganizationName() ? $validated['organization_name'] : null,
             'role' => UserRole::Client,

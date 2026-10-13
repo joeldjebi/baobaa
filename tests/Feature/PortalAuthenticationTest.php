@@ -145,6 +145,7 @@ test('client registration requires accepting the terms of use', function () {
         ->post(route('client.register.store'), [
             'name' => 'Client Sans CGU',
             'email' => 'sans.cgu@example.com',
+            'phone' => '+2250102030406',
             'password' => 'password',
             'password_confirmation' => 'password',
         ])
@@ -194,6 +195,42 @@ test('owner can register himself but waits for SAP approval', function () {
     expect($user->hasPortal(UserRole::Client))->toBeTrue()
         ->and($user->hasPortal(UserRole::Owner))->toBeFalse()
         ->and(PortalAccessRequest::query()->where('user_id', $user->id)->where('status', 'pending')->exists())->toBeTrue();
+});
+
+test('owner company must give a company name while an individual owner uses their own name', function () {
+    $payload = [
+        'name' => 'Aya Kouassi',
+        'email' => 'aya.proprietaire@baobaa.local',
+        'phone' => '+2250707070708',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'accept_terms' => '1',
+        'country_code' => 'CI',
+        'city' => 'Abidjan',
+    ];
+
+    $this->post(route('owner.register.store'), [...$payload, 'applicant_type' => 'company'])
+        ->assertSessionHasErrors(['business_name' => 'Indiquez la raison sociale de votre entreprise.']);
+
+    $this->post(route('owner.register.store'), [...$payload, 'applicant_type' => 'individual'])
+        ->assertRedirect(route('client.dashboard'));
+
+    $user = User::query()->where('email', 'aya.proprietaire@baobaa.local')->firstOrFail();
+
+    expect(OwnerProfile::query()->where('user_id', $user->id)->value('business_name'))->toBe('Aya Kouassi');
+});
+
+test('client registration requires a phone number', function () {
+    $this->post(route('client.register.store'), [
+        'name' => 'Client Sans Téléphone',
+        'email' => 'sans.telephone@example.com',
+        'client_type' => 'individual',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'accept_terms' => '1',
+    ])->assertSessionHasErrors('phone');
+
+    expect(User::query()->where('email', 'sans.telephone@example.com')->exists())->toBeFalse();
 });
 
 test('public venues index lists published spaces and supports filters', function () {

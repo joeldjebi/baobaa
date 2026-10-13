@@ -71,14 +71,19 @@ class PortalAccessController extends Controller
 
         $validated = $request->validate([
             'applicant_type' => ['required', 'in:individual,company'],
-            'business_name' => ['required', 'string', 'max:255'],
+            'business_name' => ['nullable', 'required_if:applicant_type,company', 'string', 'max:255'],
             'legal_name' => ['nullable', 'string', 'max:255'],
             'tax_identifier' => ['nullable', 'string', 'max:120'],
             'country_code' => ['required', 'string', 'size:2'],
             'city' => ['required', 'string', 'max:255'],
             'whatsapp_phone' => ['required', 'string', 'max:32'],
             'motivation' => ['nullable', 'string', 'max:1200'],
+        ], [
+            'business_name.required_if' => 'Indiquez la raison sociale de votre entreprise.',
         ]);
+
+        // Individuals have no company name: their own name is used as the public business name.
+        $validated['business_name'] = $validated['applicant_type'] === 'company' ? $validated['business_name'] : $user->name;
 
         OwnerProfile::query()->updateOrCreate(
             ['user_id' => $user->id],

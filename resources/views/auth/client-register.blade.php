@@ -33,8 +33,8 @@
                             <input name="name" value="{{ old('name') }}" required autocomplete="name" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
                         </label>
                         <label class="col-span-2 block sm:col-span-1">
-                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Téléphone <span class="font-medium text-[#8a94aa]">(facultatif)</span></span>
-                            <input name="phone" value="{{ old('phone') }}" autocomplete="tel" placeholder="+225 07 00 00 00 00" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
+                            <span class="mb-1 block text-xs font-bold text-[#17233f]">Téléphone</span>
+                            <input name="phone" value="{{ old('phone') }}" required autocomplete="tel" placeholder="+225 07 00 00 00 00" class="h-11 w-full rounded-xl border border-[#dce6f7] bg-[#f8fbff] px-3.5 text-sm font-semibold text-[#07152f] outline-none transition focus:border-[#2f6bff] focus:bg-white">
                         </label>
                         <label class="col-span-2 block">
                             <span class="mb-1 block text-xs font-bold text-[#17233f]">Adresse email</span>

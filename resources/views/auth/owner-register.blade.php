@@ -68,14 +68,14 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             @unless ($isAuthenticatedMode)
-                                <label class="col-span-2 block sm:col-span-1">
+                                <label @class(['col-span-2 block', 'sm:col-span-1' => $selectedApplicantType === 'company']) data-person-name>
                                     <span class="{{ $labelClass }}">Nom et prénom</span>
                                     <input name="name" value="{{ old('name') }}" required autocomplete="name" class="{{ $inputClass }}">
                                 </label>
                             @endunless
-                            <label class="col-span-2 block sm:col-span-1">
-                                <span class="{{ $labelClass }}">Nom de l’établissement</span>
-                                <input name="business_name" value="{{ old('business_name', $ownerProfile?->business_name) }}" required autocomplete="organization" placeholder="Ex : Villa Lagune" class="{{ $inputClass }}">
+                            <label @class(['col-span-2 block sm:col-span-1', 'hidden' => $selectedApplicantType !== 'company']) data-company-only>
+                                <span class="{{ $labelClass }}">Raison sociale</span>
+                                <input name="business_name" value="{{ old('business_name', $ownerProfile?->business_name) }}" @required($selectedApplicantType === 'company') autocomplete="organization" placeholder="Ex : Lagune Events SARL" class="{{ $inputClass }}">
                             </label>
                             <label class="col-span-2 block sm:col-span-1">
                                 <span class="{{ $labelClass }}">Téléphone WhatsApp</span>
@@ -129,4 +129,21 @@
             </div>
         </section>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const companyField = document.querySelector('[data-company-only]');
+            const personField = document.querySelector('[data-person-name]');
+            const sync = () => {
+                const isCompany = document.querySelector('input[name="applicant_type"]:checked')?.value === 'company';
+
+                companyField?.classList.toggle('hidden', ! isCompany);
+                companyField?.querySelector('input')?.toggleAttribute('required', isCompany);
+                personField?.classList.toggle('sm:col-span-1', isCompany);
+            };
+
+            document.querySelectorAll('input[name="applicant_type"]').forEach((radio) => radio.addEventListener('change', sync));
+            sync();
+        });
+    </script>
 </x-layouts.baobaa>

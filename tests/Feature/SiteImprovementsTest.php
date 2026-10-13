@@ -286,6 +286,7 @@ test('client registration records the client type and requires an organization n
     $this->post(route('client.register.store'), [
         'name' => 'Awa Koné',
         'email' => 'awa.entreprise@example.com',
+        'phone' => '+2250102030407',
         'client_type' => 'company',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -295,6 +296,7 @@ test('client registration records the client type and requires an organization n
     $this->post(route('client.register.store'), [
         'name' => 'Awa Koné',
         'email' => 'awa.entreprise@example.com',
+        'phone' => '+2250102030407',
         'client_type' => 'company',
         'organization_name' => 'Koné Events SARL',
         'password' => 'password',
