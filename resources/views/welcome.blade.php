@@ -35,6 +35,7 @@
     $categoryListings = $mapVenueCards($categoryCarouselVenues);
     $cityListings = $mapVenueCards($cityCarouselVenues);
     $districtListings = $mapVenueCards($districtCarouselVenues);
+    $spotlightListings = $cityListings->take(8)->values();
 @endphp
 
 @php
@@ -331,6 +332,43 @@
                 </article>
             </div>
         </section>
+
+        {{-- Venue spotlight: two rows of randomly picked published venues --}}
+        @if ($spotlightListings->isNotEmpty())
+            <section class="mx-auto max-w-7xl px-5 pb-12 sm:px-8 sm:pb-20">
+                <div class="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8" data-reveal>
+                    <div>
+                        <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>À découvrir</p>
+                        <h2 class="mt-3 font-display text-3xl font-extrabold leading-[1.05] tracking-[-0.01em] sm:text-5xl">Des lieux pour chaque occasion.</h2>
+                    </div>
+                    <a href="{{ route('venues.index') }}" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-[#07152f] ring-1 ring-[#dce6f7] transition hover:bg-[#07152f] hover:text-white">
+                        Voir les {{ number_format($publishedVenuesCount, 0, ',', ' ') }} espaces <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-reveal-stagger="60" data-reveal-variant="scale">
+                    @foreach ($spotlightListings as $spotlightIndex => $spotlight)
+                        <a href="{{ route('venues.show', ['slug' => $spotlight['slug']]) }}" @class([
+                            'group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-[#07152f] shadow-sm ring-1 ring-[#dce6f7] transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/15 sm:aspect-[4/4.4]',
+                            'hidden sm:block' => $spotlightIndex >= 4 && $spotlightIndex < 6,
+                            'hidden lg:block' => $spotlightIndex >= 6,
+                        ])>
+                            <img src="{{ $spotlight['image'] }}" alt="{{ $spotlight['title'] }}" width="400" height="440" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='{{ \App\Models\Venue::placeholderImageUrl() }}';" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                            <span class="absolute inset-0 bg-gradient-to-t from-[#07152f]/90 via-[#07152f]/25 to-transparent" aria-hidden="true"></span>
+                            <span class="absolute left-3 top-3 max-w-[calc(100%-24px)] truncate rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-[#07152f] sm:text-[11px]">{{ $spotlight['category'] }}</span>
+                            <span class="absolute inset-x-0 bottom-0 p-3 text-white sm:p-4">
+                                <span class="line-clamp-2 text-sm font-bold leading-snug sm:text-base">{{ $spotlight['title'] }}</span>
+                                <span class="mt-1 block truncate text-[11px] font-medium text-white/75 sm:text-xs">{{ $spotlight['city'] ?: 'Adresse sur demande' }}</span>
+                                <span class="mt-2 flex items-center justify-between gap-2">
+                                    <span class="truncate text-xs font-extrabold text-[#9cc0ff] sm:text-sm">dès {{ $spotlight['price'] }}</span>
+                                    <span class="hidden size-8 shrink-0 place-items-center rounded-full bg-white text-[#07152f] transition group-hover:bg-[#2f6bff] group-hover:text-white sm:grid" aria-hidden="true">→</span>
+                                </span>
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         {{-- Story --}}
         <section class="bg-[#07152f] px-5 py-14 text-white sm:px-8 lg:py-20" data-story>
