@@ -65,11 +65,32 @@ test('public home only displays categories with published spaces', function () {
         ->assertDontSee('Catégorie vide');
 });
 
-test('public owner call to action redirects directly to owner registration', function () {
+test('public header offers login and registration to clients, venue owners and professionals', function () {
     $this->get('/')
         ->assertOk()
+        ->assertSee(route('portal.login', ['portal' => 'client']))
+        ->assertSee(route('portal.login', ['portal' => 'proprietaire']))
+        ->assertSee(route('portal.login', ['portal' => 'prestataire']))
+        ->assertSee(route('client.register'))
         ->assertSee(route('owner.register'))
-        ->assertDontSee(route('portal.login', ['portal' => 'proprietaire']));
+        ->assertSee(route('service-provider.register'));
+});
+
+test('login and registration pages show the site header and the account type switcher', function (string $url) {
+    $this->get($url)
+        ->assertOk()
+        ->assertSee('data-site-header', false)
+        ->assertSee(route('portal.login', ['portal' => 'prestataire']))
+        ->assertSee(route('service-provider.register'));
+})->with([
+    'client login' => fn () => route('portal.login', ['portal' => 'client']),
+    'owner login' => fn () => route('portal.login', ['portal' => 'proprietaire']),
+    'client registration' => fn () => route('client.register'),
+    'owner registration' => fn () => route('owner.register'),
+    'professional registration' => fn () => route('service-provider.register'),
+]);
+
+test('legacy list your venue link redirects to owner registration', function () {
 
     $this->get(route('venues.list-venue'))
         ->assertRedirect(route('owner.register'));

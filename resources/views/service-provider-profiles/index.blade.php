@@ -4,7 +4,7 @@
 
 <x-layouts.baobaa title="Professionnels de l’événement - BAOBAA" description="Sonorisation, lumière, photo, vidéo, décoration, traiteur : trouvez des professionnels de l’événement vérifiés, comparez leurs prestations et composez votre événement.">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
-        <x-navigation.public-header active="event-services" cta-label="Devenir professionnel" :cta-url="route('service-provider.register')" />
+        <x-navigation.public-header active="event-services" />
 
         <section class="baobaa-page-hero border-b border-white/80 px-5 py-7 sm:px-8 lg:py-9">
             <div class="baobaa-hero-intro mx-auto max-w-7xl">

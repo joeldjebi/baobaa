@@ -6,18 +6,15 @@
 @endphp
 
 <x-layouts.baobaa title="Devenir partenaire - BAOBAA">
-    <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
-        <section class="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
+    <x-navigation.public-header active="partners" />
+    <main class="min-h-[calc(100vh-64px)] bg-[#eef3ff] text-[#151821]">
+        <section class="grid min-h-[calc(100vh-64px)] lg:grid-cols-[0.95fr_1.05fr]">
             <div class="relative order-2 overflow-hidden bg-[#07152f] px-6 py-10 text-white sm:px-10 lg:order-1 lg:px-14">
                 <div class="absolute inset-0">
                     <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.98),rgba(47,107,255,.72))]"></div>
                 </div>
 
                 <div class="relative z-10 mx-auto flex h-full max-w-xl flex-col justify-center gap-8">
-                    <a href="{{ url('/') }}" class="hidden items-center justify-start lg:flex">
-                        <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-10 w-auto max-w-[160px] rounded-full object-contain bg-white/90 p-1 shadow-lg shadow-[#2f6bff]/20" loading="lazy">
-                    </a>
-
                     <div class="max-w-2xl">
                         <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Devenir partenaire</p>
                         <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Louez votre espace à des organisateurs d’événements.</h1>
@@ -61,10 +58,7 @@
 
             <div class="order-1 flex items-center justify-center px-5 py-8 sm:px-8 lg:order-2 lg:py-10">
                 <div class="w-full max-w-2xl">
-                    <div class="mb-5 flex items-center justify-between lg:hidden">
-                        <a href="{{ url('/') }}"><img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-10 w-auto rounded-xl object-contain"></a>
-                        <a href="{{ url('/') }}" class="text-sm font-extrabold text-[#2f6bff]">← Retour au site</a>
-                    </div>
+                    <x-navigation.account-switcher mode="register" current="proprietaire" class="mb-6 max-w-md" />
                     @if ($pendingRequest)
                         <div class="mb-5 rounded-[22px] border border-[#b9d3ff] bg-white p-5 shadow-xl shadow-[#173e7a]/8">
                             <p class="text-sm font-extrabold text-[#2f6bff]">Votre demande est déjà en cours de validation.</p>
@@ -177,6 +171,7 @@
 
                         <x-forms.terms-acceptance class="mt-5" />
                         <button class="mt-5 h-12 w-full rounded-2xl bg-[#2f6bff] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/24 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Envoyer ma demande</button>
+                        <p class="mt-4 text-center text-sm font-semibold text-[#5d6d89]">Déjà inscrit ? <a href="{{ route('portal.login', ['portal' => 'proprietaire']) }}" class="font-extrabold text-[#2f6bff] hover:underline">Se connecter</a></p>
                     </form>
                 </div>
             </div>

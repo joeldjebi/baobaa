@@ -1,5 +1,5 @@
 @props([
-    'active' => 'explore',
+    'active' => null,
     'tone' => 'light',
 ])
 

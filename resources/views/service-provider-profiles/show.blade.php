@@ -6,7 +6,7 @@
 
 <x-layouts.baobaa :title="$publicName.' - BAOBAA'" :description="\Illuminate\Support\Str::limit($serviceProviderProfile->description ?: 'Découvrez les services événementiels de '.$publicName.' sur BAOBAA.', 160)" :image="$serviceProviderProfile->logo_url">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
-        <x-navigation.public-header active="event-services" cta-label="Devenir professionnel" :cta-url="route('service-provider.register')" />
+        <x-navigation.public-header active="event-services" />
 
         <section class="relative overflow-hidden px-5 py-8 sm:px-8">
             <div class="absolute inset-0 bg-[linear-gradient(180deg,#f8fbff_0%,#eef3ff_62%,#f7f4ff_100%)]"></div>

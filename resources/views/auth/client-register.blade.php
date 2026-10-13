@@ -1,14 +1,13 @@
 <x-layouts.baobaa title="Créer un compte client - BAOBAA">
-    <main class="grid min-h-screen bg-[#f6f8fc] lg:grid-cols-[1fr_0.95fr]">
-        <section class="relative flex min-h-[38vh] flex-col justify-between overflow-hidden bg-[#07152f] px-6 py-8 text-white sm:px-10 lg:min-h-screen lg:px-14">
+    <x-navigation.public-header />
+    <main class="grid min-h-[calc(100vh-64px)] bg-[#f6f8fc] lg:grid-cols-[1fr_0.95fr]">
+        <section class="relative hidden min-h-[38vh] flex-col justify-between overflow-hidden bg-[#07152f] px-6 py-8 text-white sm:px-10 lg:flex lg:min-h-[calc(100vh-64px)] lg:px-14">
             <div class="absolute inset-0">
                 <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=80" alt="" class="h-full w-full object-cover opacity-24">
                 <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(7,21,47,.96),rgba(47,107,255,.74))]"></div>
             </div>
 
-            <a href="{{ url('/') }}" class="relative z-10 flex items-center justify-start">
-                <img src="{{ asset('images/baobaa.jpg') }}" alt="BAOBAA" class="h-10 w-auto max-w-[160px] rounded-full object-contain bg-white/90 p-1 shadow-lg shadow-[#2f6bff]/20" loading="lazy">
-            </a>
+            <div class="relative z-10"></div>
 
             <div class="relative z-10 max-w-2xl py-14 lg:py-0">
                 <p class="mb-5 text-sm font-semibold uppercase tracking-[0.24em] text-[#7dd3fc]">Compte client</p>
@@ -21,6 +20,7 @@
 
         <section class="flex items-center justify-center px-6 py-10 sm:px-10">
             <div class="w-full max-w-md">
+                <x-navigation.account-switcher mode="register" current="client" class="mb-6" />
                 <div class="mb-8">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#0d47a1]">Inscription</p>
                     <h2 class="mt-3 text-4xl font-semibold text-[#081225]">Créer mon compte</h2>

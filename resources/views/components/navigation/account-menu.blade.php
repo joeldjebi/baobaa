@@ -47,31 +47,51 @@
         </div>
     </details>
 
-    @once
-        <script>
-            document.addEventListener('click', (event) => {
-                document.querySelectorAll('.baobaa-account-menu[open]').forEach((menu) => {
-                    if (! menu.contains(event.target)) {
-                        menu.removeAttribute('open');
-                    }
-                });
-            });
-
-            document.addEventListener('toggle', (event) => {
-                if (! event.target.matches('.baobaa-account-menu') || ! event.target.open) {
-                    return;
-                }
-
-                document.querySelectorAll('.baobaa-account-menu[open]').forEach((menu) => {
-                    if (menu !== event.target) {
-                        menu.removeAttribute('open');
-                    }
-                });
-            }, true);
-        </script>
-    @endonce
 @else
-    <a href="{{ route('portal.login', ['portal' => 'client']) }}" {{ $attributes->merge(['class' => 'grid size-11 place-items-center rounded-full bg-white text-[#151821] shadow-sm ring-1 ring-[#e2e9f8] transition hover:bg-[#f4f7ff]']) }} aria-label="Compte client">
-        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-    </a>
+    <div {{ $attributes->merge(['class' => 'flex items-center gap-2']) }}>
+        <details class="baobaa-account-menu relative z-[1000]">
+            <summary class="inline-flex h-11 cursor-pointer list-none items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-[#151821] shadow-sm ring-1 ring-[#e2e9f8] transition hover:bg-[#f4f7ff] focus:outline-none focus:ring-4 focus:ring-[#2f6bff]/15 sm:px-4 [&::-webkit-details-marker]:hidden" aria-label="Connexion">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <span class="hidden sm:inline">Connexion</span>
+            </summary>
+            <div class="absolute right-0 z-[1000] mt-2 w-[min(320px,calc(100vw-40px))] rounded-2xl border border-[#dce6f7] bg-white p-2 shadow-2xl shadow-[#173e7a]/16">
+                <p class="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#7d879d]">Se connecter en tant que</p>
+                <x-navigation.account-actors mode="login" />
+                <p class="mt-1 border-t border-[#edf2fb] px-3 pb-1 pt-3 text-xs font-medium text-[#6f7890]">Pas encore de compte&nbsp;? Choisissez <span class="font-bold text-[#07152f]">Inscription</span>.</p>
+            </div>
+        </details>
+
+        <details class="baobaa-account-menu relative z-[1000] hidden sm:block">
+            <summary class="inline-flex h-11 cursor-pointer list-none items-center rounded-full bg-[#07152f] px-4 text-sm font-semibold text-white transition hover:bg-[#2f6bff] focus:outline-none focus:ring-4 focus:ring-[#2f6bff]/25 [&::-webkit-details-marker]:hidden">Inscription</summary>
+            <div class="absolute right-0 z-[1000] mt-2 w-[min(320px,calc(100vw-40px))] rounded-2xl border border-[#dce6f7] bg-white p-2 shadow-2xl shadow-[#173e7a]/16">
+                <p class="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#7d879d]">Créer un compte</p>
+                <x-navigation.account-actors mode="register" />
+                <p class="mt-1 border-t border-[#edf2fb] px-3 pb-1 pt-3 text-xs font-medium text-[#6f7890]">Inscription gratuite. Les propriétaires et professionnels sont vérifiés par notre équipe.</p>
+            </div>
+        </details>
+    </div>
 @endif
+
+@once
+    <script>
+        document.addEventListener('click', (event) => {
+            document.querySelectorAll('.baobaa-account-menu[open]').forEach((menu) => {
+                if (! menu.contains(event.target)) {
+                    menu.removeAttribute('open');
+                }
+            });
+        });
+
+        document.addEventListener('toggle', (event) => {
+            if (! event.target.matches('.baobaa-account-menu') || ! event.target.open) {
+                return;
+            }
+
+            document.querySelectorAll('.baobaa-account-menu[open]').forEach((menu) => {
+                if (menu !== event.target) {
+                    menu.removeAttribute('open');
+                }
+            });
+        }, true);
+    </script>
+@endonce

@@ -1,5 +1,5 @@
 @props([
-    'active' => 'explore',
+    'active' => null,
 ])
 
 @php
@@ -19,8 +19,6 @@
         $links['cart'] = ['label' => 'Mon panier', 'url' => route('cart.show')];
     } elseif ($user?->hasPortal(UserRole::Owner)) {
         $links['owner-dashboard'] = ['label' => 'Mon espace pro', 'url' => route('owner.dashboard')];
-    } else {
-        $links['list-venue'] = ['label' => 'Devenir partenaire', 'url' => route('venues.list-venue')];
     }
 
     $links['contact'] = ['label' => 'Contact', 'url' => route('pages.contact')];
@@ -42,7 +40,7 @@
                 <button type="button" data-mobile-menu-close class="grid size-10 place-items-center rounded-full text-2xl font-light text-[#4d5872] transition hover:bg-[#f4f7ff]" aria-label="Fermer le menu">&times;</button>
             </div>
 
-            <div class="mt-6 grid gap-1 text-base font-extrabold">
+            <div class="mt-6 grid gap-1 text-base font-semibold">
                 @foreach ($links as $key => $link)
                     <a href="{{ $link['url'] }}" @class([
                         'rounded-2xl px-4 py-3 transition',
@@ -60,10 +58,8 @@
                         <button class="w-full rounded-2xl border border-[#ffd0d0] px-4 py-3 text-sm font-extrabold text-[#b42318]">Déconnexion</button>
                     </form>
                 @else
-                    <div class="grid gap-2">
-                        <a href="{{ route('portal.login', ['portal' => 'client']) }}" class="rounded-2xl bg-[#2f6bff] px-4 py-3 text-center text-sm font-extrabold text-white">Se connecter</a>
-                        <a href="{{ route('client.register') }}" class="rounded-2xl border border-[#dce6f7] px-4 py-3 text-center text-sm font-extrabold text-[#151821]">Créer un compte</a>
-                    </div>
+                    <p class="px-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#7d879d]">Mon compte</p>
+                    <x-navigation.account-actors mode="both" class="mt-2 gap-2" />
                 @endauth
             </div>
         </nav>
