@@ -2,6 +2,13 @@
 
 <x-dashboards.service-provider-shell title="Mes services" subtitle="Créez, publiez et organisez vos offres événementielles." active="services" :profile="$profile" :active-services-count="$activeServicesCount" :draft-services-count="$draftServicesCount" :requests-count="$requestsCount" :gross-revenue="$grossRevenue">
     <section class="rounded-[26px] border border-white/80 bg-white p-4 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7] sm:p-5">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm font-semibold text-[#52617b]">Vos prestations : son, lumière, décor, photo… Publiez-les pour les proposer aux clients.</p>
+            <a href="{{ route('service-provider.services.create') }}" class="inline-flex items-center gap-2 rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">
+                <span aria-hidden="true">+</span> Ajouter un service
+            </a>
+        </div>
+
         <form method="GET" class="grid gap-3 rounded-[22px] bg-[#f7faff] p-3 ring-1 ring-[#dce6f7] md:grid-cols-[minmax(0,1fr)_190px_170px_auto]">
             <input name="q" value="{{ request('q') }}" placeholder="Nom du service" class="min-w-0 rounded-2xl border border-[#dce6f7] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
             <select name="type_id" class="min-w-0 rounded-2xl border border-[#dce6f7] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]">
@@ -43,7 +50,17 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-4 py-10 text-center font-semibold text-[#6f7890]">Aucun service trouvé.</td></tr>
+                        <tr>
+                            <td colspan="6" class="px-4 py-10 text-center">
+                                @if (request()->hasAny(['q', 'type_id', 'status']))
+                                    <p class="font-semibold text-[#6f7890]">Aucun service ne correspond à votre recherche.</p>
+                                @else
+                                    <p class="text-base font-extrabold text-[#07152f]">Vous n’avez pas encore de service.</p>
+                                    <p class="mt-1 text-sm font-semibold text-[#6f7890]">Créez votre première prestation pour la proposer aux organisateurs d’événements.</p>
+                                    <a href="{{ route('service-provider.services.create') }}" class="mt-4 inline-flex rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25">Créer mon premier service</a>
+                                @endif
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

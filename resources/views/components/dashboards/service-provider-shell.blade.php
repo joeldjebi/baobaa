@@ -21,7 +21,7 @@
     ];
 @endphp
 
-<x-layouts.baobaa :title="$title.' - BAOBAA PSE'">
+<x-layouts.baobaa :title="$title.' - BAOBAA Pro'">
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <div class="grid min-h-screen lg:grid-cols-[290px_1fr]">
             <aside class="sticky top-0 hidden h-screen overflow-y-auto border-r border-white/80 bg-white/88 p-5 shadow-2xl shadow-[#173e7a]/8 backdrop-blur-xl lg:block">
@@ -51,7 +51,7 @@
                 <header class="sticky top-0 z-40 border-b border-white/80 bg-white/84 px-5 py-4 shadow-sm shadow-[#173e7a]/5 backdrop-blur-xl sm:px-7">
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="min-w-0">
-                            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Portail PSE</p>
+                            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Espace professionnel</p>
                             <h1 class="mt-1 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f] sm:text-3xl">{{ $title }}</h1>
                             @if ($subtitle)
                                 <p class="mt-1 max-w-2xl text-sm font-semibold text-[#6f7890]">{{ $subtitle }}</p>

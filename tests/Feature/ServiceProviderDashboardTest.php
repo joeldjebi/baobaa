@@ -79,6 +79,23 @@ test('a professional account cannot sign in as a client and sees its pending val
         ->assertRedirect(route('service-provider.dashboard'));
 });
 
+test('a professional without services is invited to create the first one', function () {
+    $providerUser = User::factory()->create(['role' => UserRole::ServiceProvider, 'portal_roles' => [UserRole::ServiceProvider->value]]);
+    ServiceProviderProfile::factory()->verified()->create(['user_id' => $providerUser->id]);
+
+    $this->actingAs($providerUser)
+        ->get(route('service-provider.services'))
+        ->assertOk()
+        ->assertSeeText('Vous n’avez pas encore de service.')
+        ->assertSeeText('Créer mon premier service')
+        ->assertSee(route('service-provider.services.create'), false);
+
+    $this->actingAs($providerUser)
+        ->get(route('service-provider.services.create'))
+        ->assertOk()
+        ->assertSee(route('service-provider.services.store'), false);
+});
+
 test('SAP validates a service provider request and grants the PSE portal', function () {
     $sap = User::factory()->create([
         'role' => UserRole::Sap,
