@@ -4,7 +4,7 @@
             @if (session('profile_status'))
                 <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('profile_status') }}</div>
             @endif
-            <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Informations du profil</h2>
+            <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Informations du profil</h2>
             <form method="POST" action="{{ route('client.profile.update') }}" class="mt-5 grid gap-4">
                 @csrf
                 @method('PATCH')
@@ -31,7 +31,7 @@
             @if (session('password_status'))
                 <div class="mb-4 rounded-2xl border border-[#b9d3ff] bg-[#f2f7ff] px-4 py-3 text-sm font-extrabold text-[#2f6bff]">{{ session('password_status') }}</div>
             @endif
-            <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Mot de passe</h2>
+            <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Mot de passe</h2>
             <form method="POST" action="{{ route('client.password.update') }}" class="mt-5 grid gap-4">
                 @csrf
                 @method('PUT')

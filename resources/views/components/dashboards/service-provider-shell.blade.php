@@ -52,7 +52,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-4">
                         <div class="min-w-0">
                             <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Portail PSE</p>
-                            <h1 class="mt-1 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f] sm:text-3xl">{{ $title }}</h1>
+                            <h1 class="mt-1 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f] sm:text-3xl">{{ $title }}</h1>
                             @if ($subtitle)
                                 <p class="mt-1 max-w-2xl text-sm font-semibold text-[#6f7890]">{{ $subtitle }}</p>
                             @endif
@@ -84,7 +84,7 @@
                         ] as $metric)
                             <div class="rounded-[22px] border border-white/80 bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
                                 <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">{{ $metric['label'] }}</p>
-                                <p class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $metric['value'] }}</p>
+                                <p class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $metric['value'] }}</p>
                                 <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $metric['hint'] }}</p>
                             </div>
                         @endforeach

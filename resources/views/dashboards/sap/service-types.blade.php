@@ -4,7 +4,7 @@
             @csrf
             <div>
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Catalogue SAP</p>
-                <h2 class="mt-2 text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">Ajouter un type de service</h2>
+                <h2 class="mt-2 text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Ajouter un type de service</h2>
                 <p class="mt-2 text-sm font-semibold leading-6 text-[#6f7890]">Ces types structurent les offres PSE : sonorisation, lumière, podium, captation, photographie, décoration.</p>
             </div>
 

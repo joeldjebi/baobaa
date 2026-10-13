@@ -6,13 +6,13 @@
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <x-navigation.public-header active="event-services" cta-label="Devenir professionnel" :cta-url="route('service-provider.register')" />
 
-        <section class="border-b border-white/80 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] px-5 py-7 sm:px-8 lg:py-9">
-            <div class="mx-auto max-w-7xl">
+        <section class="baobaa-page-hero border-b border-white/80 px-5 py-7 sm:px-8 lg:py-9">
+            <div class="baobaa-hero-intro mx-auto max-w-7xl">
                 <nav class="text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane"><a href="{{ url('/') }}" class="hover:text-[#2f6bff]">Accueil</a> / Professionnels</nav>
                 <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-extrabold tracking-[-0.045em] text-[#121722] sm:text-4xl">Professionnels de l’événement</h1>
-                        <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#667088]">Son, lumière, image, décor, scène… Comparez des équipes vérifiées, demandez un devis et suivez tout depuis votre dossier.</p>
+                        <h1 class="text-3xl font-extrabold tracking-[-0.015em] text-[#121722] sm:text-4xl">Professionnels de l’événement</h1>
+                        <p class="mt-2 max-w-2xl text-[15px] font-normal leading-7 text-[#5b6680]">Son, lumière, image, décor, scène… Comparez des équipes vérifiées, demandez un devis et suivez tout depuis votre dossier.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 text-xs font-extrabold text-[#4d5872]">
                         <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">{{ number_format($providersCount, 0, ',', ' ') }} professionnel{{ $providersCount > 1 ? 's' : '' }} vérifié{{ $providersCount > 1 ? 's' : '' }}</span>
@@ -69,7 +69,7 @@
         <section class="mx-auto max-w-7xl px-5 py-8 sm:px-8">
             <p class="mb-4 text-sm font-extrabold text-[#4d5872]">{{ number_format($profiles->total(), 0, ',', ' ') }} professionnel{{ $profiles->total() > 1 ? 's' : '' }} {{ $hasFilters ? 'correspondant'.($profiles->total() > 1 ? 's' : '').' à votre recherche' : 'disponible'.($profiles->total() > 1 ? 's' : '') }}</p>
 
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="70">
                 @foreach ($profiles as $profile)
                     @php
                         $startingPrice = $profile->services->min('starting_price');

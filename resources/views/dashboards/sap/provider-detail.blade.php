@@ -10,22 +10,22 @@
         <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-[22px] border border-white/80 bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
                 <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Ville</p>
-                <p class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $provider->city ?: '–' }}</p>
+                <p class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $provider->city ?: '–' }}</p>
                 <p class="mt-1 text-xs font-bold text-[#6f7890]">Zone de couverture</p>
             </div>
             <div class="rounded-[22px] border border-white/80 bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
                 <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Services publiés</p>
-                <p class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $services->where('status', 'published')->count() }}</p>
+                <p class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $services->where('status', 'published')->count() }}</p>
                 <p class="mt-1 text-xs font-bold text-[#6f7890]">En catalogue public</p>
             </div>
             <div class="rounded-[22px] border border-white/80 bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
                 <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Réservations</p>
-                <p class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $recentReservations->count() }}</p>
+                <p class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $recentReservations->count() }}</p>
                 <p class="mt-1 text-xs font-bold text-[#6f7890]">Dernières demandes</p>
             </div>
             <div class="rounded-[22px] border border-white/80 bg-white p-4 shadow-sm ring-1 ring-[#dce6f7]">
                 <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Contact</p>
-                <p class="mt-2 text-xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $provider->user?->name ?? 'Non renseigné' }}</p>
+                <p class="mt-2 text-xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $provider->user?->name ?? 'Non renseigné' }}</p>
                 <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $provider->user?->email ?? '—' }}</p>
             </div>
         </section>
@@ -33,7 +33,7 @@
         <div class="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
             <section class="rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
                 <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-extrabold tracking-[-0.03em] text-[#07152f]">Services</h2>
+                    <h2 class="text-lg font-extrabold tracking-[-0.015em] text-[#07152f]">Services</h2>
                     <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">{{ $services->count() }} au total</span>
                 </div>
 
@@ -67,7 +67,7 @@
 
             <section class="rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
                 <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-extrabold tracking-[-0.03em] text-[#07152f]">Réservations récentes</h2>
+                    <h2 class="text-lg font-extrabold tracking-[-0.015em] text-[#07152f]">Réservations récentes</h2>
                     <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Suivi</span>
                 </div>
 

@@ -7,7 +7,7 @@
         <x-navigation.public-header active="cart" />
 
         <section class="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-            <h1 class="text-3xl font-extrabold tracking-[-0.04em]">Mon panier</h1>
+            <h1 class="text-3xl font-extrabold tracking-[-0.01em]">Mon panier</h1>
             <p class="mt-2 text-sm font-semibold text-[#6f7890]">Une commande est créée par prestataire. Choisissez pour chacun la livraison ou le retrait.</p>
 
             @if (session('cart_status'))

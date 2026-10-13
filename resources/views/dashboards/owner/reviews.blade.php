@@ -7,7 +7,7 @@
         <div class="grid gap-4 md:grid-cols-[220px_1fr]">
             <div class="rounded-[22px] bg-[#07152f] p-5 text-white">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">Note moyenne</p>
-                <p class="mt-3 text-5xl font-extrabold tracking-[-0.06em]">{{ number_format($averageRating, 1, ',', ' ') }}</p>
+                <p class="mt-3 text-5xl font-extrabold tracking-[-0.01em]">{{ number_format($averageRating, 1, ',', ' ') }}</p>
                 <p class="mt-2 text-sm font-bold text-white/65">{{ $reviewsCount }} avis au total</p>
             </div>
             <div class="grid gap-3">

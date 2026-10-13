@@ -17,7 +17,7 @@
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
                         <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Services événementiels</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Réservez les prestataires qui donnent vie à votre événement.</h1>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Réservez les prestataires qui donnent vie à votre événement.</h1>
                         <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Son, lumière, photo, vidéo, podium ou mobilier : choisissez uniquement les services dont vous avez besoin, sans réserver d’espace.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
@@ -54,7 +54,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 1</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Informations de l’événement</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Informations de l’événement</h2>
                             </div>
                             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">Aucun espace obligatoire</span>
                         </div>
@@ -135,7 +135,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir les prestataires événementiels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Choisir les prestataires événementiels</h2>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }} services disponibles</p>
                         </div>
@@ -190,7 +190,7 @@
                 <aside class="lg:sticky lg:top-24 lg:self-start">
                     <div class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/12 ring-1 ring-[#dce6f7]">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Résumé de services</h2>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Résumé de services</h2>
 
                         <label class="mt-5 flex cursor-pointer items-start gap-3 rounded-[18px] border border-[#cfe0ff] bg-[#f4f8ff] p-4 transition hover:border-[#2f6bff]">
                             <input type="checkbox" name="ticketing_requested" value="1" data-ticketing-checkbox class="mt-1 size-5 shrink-0 rounded border-[#cbd8f4] accent-[#2f6bff]" @checked(old('ticketing_requested'))>

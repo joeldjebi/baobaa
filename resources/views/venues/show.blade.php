@@ -94,6 +94,7 @@
 
     <main class="min-h-screen scroll-smooth bg-white pb-24 text-[#151821] lg:pb-0">
         <x-navigation.public-header active="venues" />
+        <div class="baobaa-scroll-progress" data-scroll-progress aria-hidden="true"></div>
 
         <section class="mx-auto max-w-7xl px-5 py-6 sm:px-8">
             <nav class="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane">
@@ -108,9 +109,9 @@
                 @endif
             </nav>
 
-            <div class="mt-4 flex flex-wrap items-start justify-between gap-5">
+            <div class="baobaa-hero-intro mt-4 flex flex-wrap items-start justify-between gap-5">
                 <div>
-                    <h1 class="max-w-4xl text-3xl font-extrabold leading-tight tracking-[-0.035em] text-[#151821] sm:text-4xl">{{ $title }}</h1>
+                    <h1 class="max-w-4xl text-3xl font-extrabold leading-tight tracking-[-0.015em] text-[#151821] sm:text-4xl">{{ $title }}</h1>
                     <p class="mt-2 text-sm font-semibold text-[#6f7890]">{{ $locationLabel }} · {{ $category }}</p>
                 </div>
                 <div class="flex gap-2">
@@ -119,7 +120,7 @@
                 </div>
             </div>
 
-            <div id="photos" class="mt-5 scroll-mt-28">
+            <div id="photos" class="baobaa-photo-intro mt-5 scroll-mt-28">
                 @if (count($galleryImages) === 0)
                     <div class="overflow-hidden rounded-[18px] ring-1 ring-[#dce6f7]">
                         <img src="{{ \App\Models\Venue::placeholderImageUrl() }}" alt="Photos de {{ $title }} bientôt disponibles" class="h-64 w-full object-cover sm:h-[420px]">
@@ -255,7 +256,7 @@
                 </section>
 
                 @if ($includedItems !== [])
-                    <section id="inclusions" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                    <section id="inclusions" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">Ce qui est inclus dans votre réservation</h2>
                         <div class="mt-4 grid overflow-hidden rounded-2xl border border-[#e4ebf8] bg-white sm:grid-cols-2">
                             @foreach ($includedItems as $item)
@@ -268,7 +269,7 @@
                 @endif
 
                 @if ($configurations->isNotEmpty() || $amenities->isNotEmpty())
-                    <section id="commodites" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                    <section id="commodites" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">Espace et commodités</h2>
                         @if ($configurations->isNotEmpty())
                             <p class="mt-1 text-xs font-extrabold text-[#8a94aa]">Capacité par configuration</p>
@@ -303,7 +304,7 @@
                 @endif
 
                 @if ($virtualTourUrl)
-                    <section id="visite-virtuelle" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                    <section id="visite-virtuelle" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">Visite virtuelle 360°</h2>
                         <p class="mt-1 text-sm font-semibold text-[#6f7890]">Déplacez-vous dans l’espace comme si vous y étiez.</p>
                         <div class="mt-4 overflow-hidden rounded-2xl border border-[#dce6f7] bg-[#07152f]">
@@ -313,7 +314,7 @@
                 @endif
 
                 @if (count($reservationAddOns) > 0)
-                    <section id="modules" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                    <section id="modules" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">Services additionnels</h2>
                         <p class="mt-1 text-sm font-semibold text-[#6f7890]">Options proposées par le propriétaire, à sélectionner lors de votre demande de réservation.</p>
                         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -330,7 +331,7 @@
                     </section>
                 @endif
 
-                <section id="disponibilites" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                <section id="disponibilites" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                     <div class="flex flex-wrap items-end justify-between gap-3">
                         <div>
                             <h2 class="text-xl font-extrabold text-[#151821]">Disponibilités</h2>
@@ -357,7 +358,7 @@
                     </div>
                 </section>
 
-                <section id="lieu" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                <section id="lieu" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                     <h2 class="text-xl font-extrabold text-[#151821]">Emplacement</h2>
                     <div class="mt-4 overflow-hidden rounded-2xl border border-[#dce6f7]">
                         @if ($mapEmbedUrl)
@@ -384,7 +385,7 @@
                 </section>
 
                 @if ($policies->isNotEmpty() || $faqs->isNotEmpty())
-                    <section id="conditions" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                    <section id="conditions" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">À savoir avant de réserver</h2>
                         @if ($policies->isNotEmpty())
                             <div class="mt-4 divide-y divide-[#edf0f7] rounded-2xl border border-[#edf0f7]">
@@ -417,7 +418,7 @@
                     </section>
                 @endif
 
-                <section id="avis" class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
+                <section id="avis" data-reveal class="scroll-mt-32 border-t border-[#edf0f7] pt-7">
                     <div class="flex flex-wrap items-end justify-between gap-3">
                         <div>
                             <h2 class="text-xl font-extrabold text-[#151821]">Avis clients</h2>
@@ -507,7 +508,7 @@
                 @if ($similarVenues->isNotEmpty())
                     <section class="border-t border-[#edf0f7] pt-7">
                         <h2 class="text-xl font-extrabold text-[#151821]">Espaces similaires</h2>
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="80">
                             @foreach ($similarVenues as $similarVenue)
                                 <a href="{{ route('venues.show', $similarVenue->slug) }}" class="group overflow-hidden rounded-2xl border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-[#173e7a]/10">
                                     <div class="relative overflow-hidden">
@@ -534,7 +535,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8a94aa]">À partir de</p>
-                                <p class="text-2xl font-extrabold tracking-[-0.035em] text-[#151821]">{{ $price }}</p>
+                                <p class="text-2xl font-extrabold tracking-[-0.015em] text-[#151821]">{{ $price }}</p>
                                 @if ($minimumDuration)
                                     <p class="mt-0.5 text-[11px] font-bold text-[#6f7890]">{{ $minimumDuration }}</p>
                                 @endif

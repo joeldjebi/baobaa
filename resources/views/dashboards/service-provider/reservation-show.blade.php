@@ -21,7 +21,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div class="min-w-0">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">{{ $reservation->reference }}</p>
-                        <h2 class="mt-2 break-words text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $reservation->name }}</h2>
+                        <h2 class="mt-2 break-words text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $reservation->name }}</h2>
                         <p class="mt-2 text-sm font-semibold leading-6 text-[#6f7890]">Réservation client regroupant {{ number_format($providerItems->count(), 0, ',', ' ') }} service{{ $providerItems->count() > 1 ? 's' : '' }} demandé{{ $providerItems->count() > 1 ? 's' : '' }} à votre organisation.</p>
                     </div>
                     <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $statusLabel }}</span>
@@ -51,7 +51,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Proforma de réservation</p>
-                        <h3 class="mt-1 text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">Services demandés au prestataire</h3>
+                        <h3 class="mt-1 text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Services demandés au prestataire</h3>
                         <p class="mt-1 text-sm font-semibold text-[#6f7890]">Le prix proposé s’applique au total de cette réservation, puis il est réparti sur les services inclus.</p>
                     </div>
                     <span class="rounded-full bg-[#f2f6ff] px-3 py-1 text-xs font-extrabold text-[#52617b]">{{ $providerConfirmed && $clientConfirmed ? 'Confirmée par les deux parties' : 'Validation en cours' }}</span>
@@ -127,7 +127,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Négociation</p>
-                        <h3 class="mt-1 text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">Échanges avec le client</h3>
+                        <h3 class="mt-1 text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Échanges avec le client</h3>
                     </div>
                     <span class="rounded-full bg-[#f2f6ff] px-3 py-1 text-xs font-extrabold text-[#52617b]">{{ $providerMessages->count() }} message(s)</span>
                 </div>
@@ -170,7 +170,7 @@
         <aside class="xl:sticky xl:top-24 xl:self-start">
             <div class="rounded-[28px] bg-[#07162f] p-5 text-white shadow-2xl shadow-[#07162f]/20">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#9fc0ff]">Résumé client</p>
-                <h3 class="mt-2 text-xl font-extrabold tracking-[-0.035em]">{{ $reservation->name }}</h3>
+                <h3 class="mt-2 text-xl font-extrabold tracking-[-0.015em]">{{ $reservation->name }}</h3>
                 <div class="mt-5 space-y-3 text-sm font-semibold text-white/75">
                     <p>{{ $client?->name ?? 'Client BAOBAA' }}</p>
                     <p>{{ $client?->email }}</p>

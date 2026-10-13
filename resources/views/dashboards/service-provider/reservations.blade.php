@@ -14,7 +14,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Pipeline prestataire</p>
-                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demandes de services</h2>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">Demandes de services</h2>
                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">Chaque ligne correspond à une réservation client. Les services demandés sont regroupés à l’intérieur.</p>
             </div>
             <a href="{{ route('service-provider.services.create') }}" class="rounded-2xl bg-[#07152f] px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#07152f]/15 transition hover:-translate-y-0.5 hover:bg-[#2f6bff]">Ajouter un service</a>

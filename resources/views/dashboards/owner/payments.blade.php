@@ -16,7 +16,7 @@
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">Reversements disponibles</p>
-                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.04em]">Demandez votre argent 48h après l’événement.</h2>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.01em]">Demandez votre argent 48h après l’événement.</h2>
                 <p class="mt-2 text-sm font-semibold leading-6 text-white/70">BAOBAA affiche ici les réservations terminées, payées et prêtes à être reversées.</p>
             </div>
             <a href="{{ route('owner.settings') }}" class="rounded-full bg-white px-4 py-2 text-xs font-extrabold text-[#07152f]">Configurer mon compte</a>
@@ -41,7 +41,7 @@
 
     <section class="mb-6 grid gap-4 xl:grid-cols-2">
         <div class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-            <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Historique des paiements à BAOBAA</h2>
+            <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Historique des paiements à BAOBAA</h2>
             <p class="mt-1 text-sm font-semibold text-[#6f7890]">Abonnements payés ou à renouveler.</p>
             <div class="mt-4 space-y-3">
                 @forelse ($baobaaHistory as $subscription)
@@ -62,7 +62,7 @@
         </div>
 
         <div class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-            <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Commissions BAOBAA</h2>
+            <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Commissions BAOBAA</h2>
             <p class="mt-1 text-sm font-semibold text-[#6f7890]">Montants retenus sur les reversements finalisés ou programmés.</p>
             <div class="mt-4 space-y-3">
                 @forelse ($commissionHistory as $payout)

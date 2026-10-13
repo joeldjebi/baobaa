@@ -33,7 +33,7 @@
 
         <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h2 class="text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">Vos projets événementiels</h2>
+                <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Vos projets événementiels</h2>
                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">Espace, services PSE et billetterie réunis dans un seul dossier.</p>
             </div>
             <a href="{{ route('event-composer.create') }}" class="rounded-full bg-[#2f6bff] px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Composer un événement</a>
@@ -56,7 +56,7 @@
                     <div class="flex flex-wrap items-start justify-between gap-4 bg-white p-4">
                         <div class="min-w-0">
                             <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#2f6bff]">{{ $project->reference }}</p>
-                            <h2 class="mt-1 break-words text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">{{ $project->name }}</h2>
+                            <h2 class="mt-1 break-words text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">{{ $project->name }}</h2>
                             <p class="mt-1 text-sm font-semibold text-[#6f7890]">{{ $project->event_date?->format('d/m/Y') ?? 'Date à préciser' }} · {{ $project->city ?? 'Ville à préciser' }}</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">

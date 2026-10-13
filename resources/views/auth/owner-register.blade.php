@@ -20,7 +20,7 @@
 
                     <div class="max-w-2xl">
                         <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Devenir partenaire</p>
-                        <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.05em] sm:text-5xl">Louez votre espace à des organisateurs d’événements.</h1>
+                        <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Louez votre espace à des organisateurs d’événements.</h1>
                         <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">L’inscription est gratuite. Nous vérifions votre profil, puis vous publiez vos espaces et recevez des demandes de réservation.</p>
 
                         <ol class="mt-8 grid gap-3 text-sm font-bold text-white/85">
@@ -74,7 +74,7 @@
 
                     <div class="mb-7">
                         <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">{{ $isAuthenticatedMode ? 'Compte connecté' : 'Nouveau partenaire' }}</p>
-                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demande d’accès partenaire</h2>
+                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.01em] text-[#07152f]">Demande d’accès partenaire</h2>
                         <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Quelques informations suffisent. Les champs facultatifs peuvent être complétés plus tard.</p>
                     </div>
 

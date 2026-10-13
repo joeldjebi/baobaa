@@ -6,7 +6,7 @@
 
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Bibliothèque de modules</h2>
+                <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Bibliothèque de modules</h2>
                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">Créez vos options une fois, puis sélectionnez-les dans chaque fiche espace.</p>
             </div>
         </div>

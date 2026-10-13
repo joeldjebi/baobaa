@@ -30,7 +30,7 @@
                         </div>
                     @endif
 
-                    <h1 class="mt-6 text-3xl font-extrabold tracking-[-0.035em]">{{ $product->name }}</h1>
+                    <h1 class="mt-6 text-3xl font-extrabold tracking-[-0.015em]">{{ $product->name }}</h1>
                     <p class="mt-2 text-sm font-semibold text-[#6f7890]">Proposé par <a href="{{ route('service-provider-profiles.show', $provider) }}" class="font-extrabold text-[#2f6bff]">{{ $provider->business_name }}</a> · {{ $product->city }}</p>
                     @if ($product->short_description)
                         <p class="mt-4 text-sm font-bold leading-7">{{ $product->short_description }}</p>

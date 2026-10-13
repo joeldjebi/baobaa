@@ -26,7 +26,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div class="min-w-0">
                         <a href="{{ route('owner.bookings') }}" class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#2f6bff]">Réservations</a>
-                        <h2 class="mt-2 break-words text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $booking->reference }}</h2>
+                        <h2 class="mt-2 break-words text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $booking->reference }}</h2>
                         <p class="mt-1 break-words text-sm font-semibold text-[#6f7890]">{{ $booking->venue?->name }} · {{ $booking->event_date?->format('d/m/Y') }}</p>
                     </div>
                     <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $bookingStatusLabels[$booking->status->value] ?? 'À suivre' }}</span>

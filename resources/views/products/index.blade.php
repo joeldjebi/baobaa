@@ -6,11 +6,11 @@
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <x-navigation.public-header active="products" />
 
-        <section class="border-b border-white/80 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] px-5 py-7 sm:px-8 lg:py-9">
-            <div class="mx-auto max-w-7xl">
+        <section class="baobaa-page-hero border-b border-white/80 px-5 py-7 sm:px-8 lg:py-9">
+            <div class="baobaa-hero-intro mx-auto max-w-7xl">
                 <nav class="text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane"><a href="{{ url('/') }}" class="hover:text-[#2f6bff]">Accueil</a> / Location et vente</nav>
-                <h1 class="mt-2 text-3xl font-extrabold tracking-[-0.045em] text-[#121722] sm:text-4xl">Location et vente de matériel événementiel</h1>
-                <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#667088]">Chaises, tables, sonorisation, lumière, décoration… Vérifiez le stock à vos dates, puis faites-vous livrer ou retirez le matériel.</p>
+                <h1 class="mt-2 text-3xl font-extrabold tracking-[-0.015em] text-[#121722] sm:text-4xl">Location et vente de matériel événementiel</h1>
+                <p class="mt-2 max-w-2xl text-[15px] font-normal leading-7 text-[#5b6680]">Chaises, tables, sonorisation, lumière, décoration… Vérifiez le stock à vos dates, puis faites-vous livrer ou retirez le matériel.</p>
                 <div class="mt-4 flex flex-wrap gap-2">
                     @foreach ($categories->take(8) as $category)
                         <a href="{{ route('products.index', ['category' => $category->slug]) }}" @class([
@@ -74,7 +74,7 @@
 
                 <div>
                     <p class="mb-4 text-sm font-extrabold text-[#4d5872]">{{ $products->total() }} article{{ $products->total() > 1 ? 's' : '' }}</p>
-                    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-reveal-stagger="70">
                         @forelse ($products as $product)
                             <a href="{{ route('products.show', $product) }}" class="group overflow-hidden rounded-[22px] bg-white shadow-sm ring-1 ring-[#dce6f7] transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#2f6bff]/12">
                                 <div class="relative">

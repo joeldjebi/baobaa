@@ -47,7 +47,7 @@
         </div>
     @endif
 
-    <div class="space-y-4">
+    <div class="space-y-4" data-reveal-stagger="70">
         @forelse ($venues as $venue)
             @php
                 $image = $venue->cover_image_url;
@@ -63,7 +63,7 @@
                 </div>
                 <div class="p-5">
                     <p class="text-sm font-semibold text-[#6b7b99]">{{ collect([$venue->district, $venue->city])->filter()->implode(', ') }}</p>
-                    <h2 class="mt-2 text-xl font-extrabold leading-7 tracking-[-0.025em] text-[#081225]">{{ $venue->name }}</h2>
+                    <h2 class="mt-2 text-xl font-extrabold leading-7 tracking-[-0.01em] text-[#081225]">{{ $venue->name }}</h2>
                     <p class="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[#6b7b99]">{{ $venue->short_description ?: $venue->description }}</p>
                     <div class="mt-4 flex flex-wrap gap-2">
                         <span class="rounded-full bg-[#f4f7ff] px-3 py-1 text-xs font-extrabold text-[#4d5872]">{{ $venue->min_capacity }}-{{ $venue->max_capacity }} invités</span>
@@ -93,7 +93,7 @@
             </a>
         @empty
             <div class="rounded-[28px] border border-dashed border-[#cbd8f4] bg-white p-10 text-center shadow-sm">
-                <p class="text-xl font-extrabold tracking-[-0.03em] text-[#151821]">Aucun espace ne correspond à ces filtres.</p>
+                <p class="text-xl font-extrabold tracking-[-0.015em] text-[#151821]">Aucun espace ne correspond à ces filtres.</p>
                 <p class="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[#6f7890]">Essayez d’élargir la période, le budget ou la capacité pour afficher plus de résultats.</p>
                 <a href="{{ route('venues.index') }}" class="mt-5 inline-flex rounded-full bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white">Réinitialiser la recherche</a>
             </div>

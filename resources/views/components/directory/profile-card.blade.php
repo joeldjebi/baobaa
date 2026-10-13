@@ -33,7 +33,7 @@
                 {{ mb_strtoupper(mb_substr($name, 0, 1)) }}
             @endif
         </span>
-        <h2 class="mt-3 line-clamp-1 text-lg font-extrabold tracking-[-0.03em] text-[#151821]">{{ $name }}</h2>
+        <h2 class="mt-3 line-clamp-1 text-lg font-extrabold tracking-[-0.015em] text-[#151821]">{{ $name }}</h2>
         @if ($location)
             <p class="mt-0.5 text-sm font-bold text-[#6f7890]">{{ $location }}</p>
         @endif

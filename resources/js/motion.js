@@ -8,8 +8,14 @@ const numberFormatter = new Intl.NumberFormat('fr-FR');
 
 window.__baobaaMotion = true;
 
-const reveal = () => {
-    document.querySelectorAll('[data-reveal-stagger]').forEach((group) => {
+let revealObserver = null;
+
+/**
+ * Prepares staggered groups and observes every [data-reveal] element inside root.
+ * Called again on content swapped in by AJAX (window.BaobaaMotion.refresh).
+ */
+const reveal = (root = document) => {
+    root.querySelectorAll('[data-reveal-stagger]').forEach((group) => {
         const step = Number(group.dataset.revealStagger) || 80;
 
         [...group.children].forEach((child, index) => {
@@ -18,7 +24,7 @@ const reveal = () => {
         });
     });
 
-    const elements = document.querySelectorAll('[data-reveal]');
+    const elements = root.querySelectorAll('[data-reveal]:not(.is-visible)');
 
     if (! ('IntersectionObserver' in window)) {
         elements.forEach((element) => element.classList.add('is-visible'));
@@ -26,19 +32,24 @@ const reveal = () => {
         return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
+    revealObserver ??= new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (! entry.isIntersecting) {
                 return;
             }
 
-            entry.target.classList.add('is-visible');
-            entry.target.dispatchEvent(new CustomEvent('baobaa:revealed'));
-            observer.unobserve(entry.target);
+            const element = entry.target;
+
+            element.classList.add('is-visible');
+            element.dispatchEvent(new CustomEvent('baobaa:revealed'));
+            revealObserver.unobserve(element);
+
+            // Once revealed, hover transitions must not inherit the stagger delay.
+            setTimeout(() => element.style.setProperty('--reveal-delay', '0ms'), 1400);
         });
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
 
-    elements.forEach((element) => observer.observe(element));
+    elements.forEach((element) => revealObserver.observe(element));
 };
 
 const animateCounter = (element) => {
@@ -270,6 +281,7 @@ if (! prefersReducedMotion) {
     tilt();
     scrollProgress();
     animateOnView();
+    window.BaobaaMotion = { refresh: (root) => reveal(root) };
 } else {
     document.documentElement.classList.remove('motion-ready');
 }

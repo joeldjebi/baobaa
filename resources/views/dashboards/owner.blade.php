@@ -30,7 +30,7 @@
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Performance</p>
-                    <h2 class="mt-1 text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Revenus confirmés sur 6 mois</h2>
+                    <h2 class="mt-1 text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Revenus confirmés sur 6 mois</h2>
                 </div>
                 <a href="{{ route('owner.payments') }}" class="rounded-full bg-[#eef4ff] px-4 py-2 text-xs font-extrabold text-[#2f6bff]">Voir les paiements</a>
             </div>
@@ -49,7 +49,7 @@
 
         <section class="rounded-[26px] border border-white/80 bg-[#07152f] p-5 text-white shadow-xl shadow-[#07152f]/12">
             <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">Actions rapides</p>
-            <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.04em]">Accélérez vos ventes.</h2>
+            <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.01em]">Accélérez vos ventes.</h2>
             <div class="mt-5 grid gap-3">
                 <a href="{{ route('owner.venues.create') }}" class="rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-[#07152f] transition hover:-translate-y-0.5">Ajouter un espace</a>
                 <a href="{{ route('owner.calendar') }}" class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-extrabold transition hover:bg-white/15">Gérer les disponibilités</a>
@@ -61,7 +61,7 @@
 
     <div class="mt-6 grid gap-6 xl:grid-cols-[.95fr_1.05fr]">
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-            <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Espaces les plus demandés</h2>
+            <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Espaces les plus demandés</h2>
             <div class="mt-4 grid gap-3">
                 @forelse ($topVenues as $venue)
                     <a href="{{ route('venues.show', $venue->slug) }}" class="flex items-center justify-between gap-4 rounded-2xl bg-[#f7faff] p-4 transition hover:bg-[#eef4ff]">
@@ -79,7 +79,7 @@
 
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
             <div class="flex items-center justify-between gap-4">
-                <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Dernières réservations</h2>
+                <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Dernières réservations</h2>
                 <a href="{{ route('owner.bookings') }}" class="text-xs font-extrabold text-[#2f6bff]">Tout voir</a>
             </div>
             <div class="mt-4 overflow-hidden rounded-2xl border border-[#edf2fb]">

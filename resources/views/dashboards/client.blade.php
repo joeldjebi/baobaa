@@ -24,7 +24,7 @@
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Prochains événements</h2>
+                    <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Prochains événements</h2>
                     <p class="mt-1 text-sm font-semibold text-[#6f7890]">Les réservations actives les plus récentes.</p>
                 </div>
                 <a href="{{ route('client.projects') }}" class="rounded-full bg-[#eef4ff] px-4 py-2 text-xs font-extrabold text-[#2f6bff]">Voir mes événements</a>
@@ -56,7 +56,7 @@
         <aside class="space-y-5">
             <div class="rounded-[26px] border border-white/80 bg-[#07152f] p-5 text-white shadow-xl shadow-[#07152f]/15">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">Action rapide</p>
-                <h2 class="mt-3 text-xl font-extrabold tracking-[-0.03em]">Réservez avec un acompte sécurisé.</h2>
+                <h2 class="mt-3 text-xl font-extrabold tracking-[-0.015em]">Réservez avec un acompte sécurisé.</h2>
                 <p class="mt-2 text-sm font-semibold leading-6 text-white/70">Comparez les espaces, préparez vos demandes et gardez chaque projet événementiel au même endroit.</p>
                 <a href="{{ route('venues.index') }}" class="mt-4 inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-[#07152f]">Explorer les espaces</a>
             </div>

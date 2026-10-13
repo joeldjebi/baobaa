@@ -25,7 +25,7 @@
         <aside class="space-y-5">
             <section class="rounded-[28px] bg-[#07152f] p-5 text-white shadow-xl shadow-[#07152f]/15">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">File SAP</p>
-                <h2 class="mt-3 text-2xl font-extrabold tracking-[-0.04em]">{{ number_format($pendingAccessRequestsCount + $pendingSponsorshipsCount, 0, ',', ' ') }} validations</h2>
+                <h2 class="mt-3 text-2xl font-extrabold tracking-[-0.01em]">{{ number_format($pendingAccessRequestsCount + $pendingSponsorshipsCount, 0, ',', ' ') }} validations</h2>
                 <a href="{{ route('sap.portal-requests') }}" class="mt-5 inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-[#07152f]">Traiter maintenant</a>
             </section>
 

@@ -5,7 +5,7 @@
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Services récents</h2>
+                    <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Services récents</h2>
                     <p class="mt-1 text-sm font-semibold text-[#6f7890]">Vos offres prêtes à recevoir des demandes qualifiées.</p>
                 </div>
                 <a href="{{ route('service-provider.services.create') }}" class="rounded-full bg-[#2f6bff] px-4 py-2 text-xs font-extrabold text-white">Ajouter</a>
@@ -36,7 +36,7 @@
         <aside class="space-y-5">
             <div class="rounded-[26px] border border-white/80 bg-[#07152f] p-5 text-white shadow-xl shadow-[#07152f]/15">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">Catalogue SAP</p>
-                <h2 class="mt-3 text-xl font-extrabold tracking-[-0.03em]">{{ number_format($serviceTypesCount, 0, ',', ' ') }} type(s) disponible(s)</h2>
+                <h2 class="mt-3 text-xl font-extrabold tracking-[-0.015em]">{{ number_format($serviceTypesCount, 0, ',', ' ') }} type(s) disponible(s)</h2>
                 <p class="mt-2 text-sm font-semibold leading-6 text-white/70">Les types de services structurent les fiches, les filtres et la comparaison côté client.</p>
             </div>
         </aside>

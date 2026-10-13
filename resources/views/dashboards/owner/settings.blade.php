@@ -4,7 +4,7 @@
     @endif
 
     <section class="mb-6 rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-        <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Vos conditions BAOBAA</h2>
+        <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Vos conditions BAOBAA</h2>
         <p class="mt-1 text-sm font-semibold text-[#6f7890]">Commission, acompte et formule appliqués à vos réservations.</p>
         <div class="mt-4 grid gap-3 md:grid-cols-3">
             <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
@@ -46,7 +46,7 @@
     <form method="POST" action="{{ route('owner.settings.update') }}" enctype="multipart/form-data" class="grid gap-6 xl:grid-cols-[1fr_380px]">
         @csrf
         <section class="rounded-[26px] border border-white/80 bg-white p-5 shadow-xl shadow-[#173e7a]/7 ring-1 ring-[#dce6f7]">
-            <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Informations publiques</h2>
+            <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Informations publiques</h2>
             <div class="mt-5 grid gap-4 rounded-[24px] border border-[#dce6f7] bg-[#f8fbff] p-4 md:grid-cols-[160px_1fr]">
                 <div class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#dce6f7]">
                     <div class="aspect-square">
@@ -85,7 +85,7 @@
             </div>
 
             <div class="mt-7 border-t border-[#edf2fb] pt-5">
-                <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Compte de reversement</h2>
+                <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Compte de reversement</h2>
                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">C’est le compte sur lequel BAOBAA versera vos gains après les réservations terminées.</p>
                 <div class="mt-4 grid gap-4 md:grid-cols-2">
                     <label>
@@ -104,7 +104,7 @@
             </div>
 
             <div class="mt-7 border-t border-[#edf2fb] pt-5">
-                <h2 class="text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">Paiement à BAOBAA</h2>
+                <h2 class="text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Paiement à BAOBAA</h2>
                 <div class="mt-4 grid gap-3 md:grid-cols-3">
                     @foreach (['commission' => 'Commission seulement', 'subscription' => 'Abonnement seulement', 'hybrid' => 'Abonnement + commission'] as $value => $label)
                         <label class="cursor-pointer rounded-2xl border border-[#dce6f7] bg-[#f7faff] p-4 transition has-[:checked]:border-[#2f6bff] has-[:checked]:bg-[#eef4ff]">
@@ -121,7 +121,7 @@
         <aside class="space-y-4">
             <div class="rounded-[26px] border border-white/80 bg-[#07152f] p-5 text-white shadow-xl shadow-[#07152f]/12">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#8dc1ff]">État du compte</p>
-                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.04em]">{{ $ownerProfile->verification_status->value === 'verified' ? 'Profil vérifié' : 'Validation en cours' }}</h2>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.01em]">{{ $ownerProfile->verification_status->value === 'verified' ? 'Profil vérifié' : 'Validation en cours' }}</h2>
                 <p class="mt-3 text-sm font-semibold leading-6 text-white/70">Votre page partenaire utilise un identifiant public sécurisé. Les informations privées ne sont pas affichées aux clients.</p>
             </div>
 

@@ -29,7 +29,7 @@
                                 </span>
                                 <div class="pb-1">
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <h1 class="text-3xl font-extrabold tracking-[-0.055em] text-[#151821] sm:text-5xl">{{ $publicName }}</h1>
+                                        <h1 class="text-3xl font-extrabold tracking-[-0.01em] text-[#151821] sm:text-5xl">{{ $publicName }}</h1>
                                         <span class="rounded-full {{ $isVerified ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fff7ed] text-[#c2410c]' }} px-3 py-1 text-xs font-extrabold">{{ $isVerified ? 'Partenaire vérifié' : 'Vérification en cours' }}</span>
                                     </div>
                                     <p class="mt-2 text-sm font-bold text-[#6f7890]">{{ $ownerProfile->city }}, {{ $ownerProfile->country_code }} · {{ $ownerProfile->published_venues_count }} espaces publics</p>
@@ -59,7 +59,7 @@
                     <div class="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                         <div>
                             <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Catalogue partenaire</p>
-                            <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.045em] text-[#151821]">Espaces disponibles</h2>
+                            <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.01em] text-[#151821]">Espaces disponibles</h2>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             @foreach (['Vérifiés', 'Prix clairs', 'Réservation sécurisée'] as $badge)
@@ -79,7 +79,7 @@
                                     <span class="absolute left-3 top-3 rounded-full bg-white/94 px-3 py-1 text-xs font-extrabold text-[#2f6bff] shadow-sm">{{ $venue->category?->name ?? 'Espace événementiel' }}</span>
                                 </div>
                                 <div class="p-4">
-                                    <h3 class="line-clamp-2 text-lg font-extrabold tracking-[-0.025em] text-[#151821]">{{ $venue->name }}</h3>
+                                    <h3 class="line-clamp-2 text-lg font-extrabold tracking-[-0.01em] text-[#151821]">{{ $venue->name }}</h3>
                                 <p class="mt-2 text-xs font-bold text-[#6f7890]">{{ collect([$venue->district, $venue->city])->filter()->implode(', ') }} · jusqu’à {{ $venue->max_capacity }} invités</p>
                                     <div class="mt-4 flex items-center justify-between border-t border-[#edf2fb] pt-4">
                                         <p class="text-sm font-extrabold text-[#151821]">{{ number_format($venue->starting_price, 0, ',', ' ') }} {{ $venue->currency }}</p>

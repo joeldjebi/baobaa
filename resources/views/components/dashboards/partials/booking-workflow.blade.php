@@ -38,7 +38,7 @@
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div class="min-w-0">
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Facture proforma</p>
-                <h3 class="mt-1 break-words text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">{{ $invoice?->reference ?? 'Proforma en préparation' }}</h3>
+                <h3 class="mt-1 break-words text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">{{ $invoice?->reference ?? 'Proforma en préparation' }}</h3>
                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">Base contractuelle avant paiement de l’acompte.</p>
             </div>
             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $invoice ? ($invoiceStatusLabels[$invoice->status->value] ?? 'À suivre') : 'À générer' }}</span>
@@ -118,7 +118,7 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Négociation</p>
-                <h3 class="mt-1 text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">Échanges client · partenaire</h3>
+                <h3 class="mt-1 text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Échanges client · partenaire</h3>
             </div>
             <span class="rounded-full bg-[#f2f6ff] px-3 py-1 text-xs font-extrabold text-[#52617b]">{{ $booking->messages->count() }} message(s)</span>
         </div>

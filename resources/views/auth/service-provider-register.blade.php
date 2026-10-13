@@ -19,7 +19,7 @@
 
                     <div class="max-w-2xl py-14">
                         <p class="text-sm font-extrabold uppercase tracking-[0.24em] text-[#8dc1ff]">Prestataire événementiel</p>
-                        <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.05em] sm:text-6xl">Proposez vos services aux bons organisateurs.</h1>
+                        <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-6xl">Proposez vos services aux bons organisateurs.</h1>
                         <p class="mt-5 max-w-xl text-base font-semibold leading-8 text-white/72">Son, lumière, podium, photo, vidéo, mobilier ou services terrain : l’équipe BAOBAA vérifie les profils pour garder une marketplace fiable et premium.</p>
                     </div>
 
@@ -42,7 +42,7 @@
 
                     <div class="mb-7">
                         <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">{{ $isAuthenticatedMode ? 'Compte connecté' : 'Nouveau prestataire' }}</p>
-                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">Demande d’accès prestataire</h2>
+                        <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.01em] text-[#07152f]">Demande d’accès prestataire</h2>
                         <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Renseignez vos informations professionnelles. Les familles de services disponibles sont configurées par BAOBAA.</p>
                     </div>
 

@@ -11,12 +11,13 @@
         <section class="relative overflow-hidden px-5 py-8 sm:px-8">
             <div class="absolute inset-0 bg-[linear-gradient(180deg,#f8fbff_0%,#eef3ff_62%,#f7f4ff_100%)]"></div>
             <div class="relative mx-auto max-w-7xl">
+                <div class="baobaa-scroll-progress" data-scroll-progress aria-hidden="true"></div>
                 <a href="{{ route('service-provider-profiles.index') }}" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#2f6bff] transition hover:translate-x-[-2px]">
                     <span>←</span>
                     <span>Tous les prestataires</span>
                 </a>
 
-                <div class="mt-5 overflow-hidden rounded-[28px] border border-white bg-white shadow-2xl shadow-[#173e7a]/10">
+                <div class="baobaa-hero-card mt-5 overflow-hidden rounded-[28px] border border-white bg-white shadow-2xl shadow-[#173e7a]/10">
                     <div class="partner-cover h-40 bg-[linear-gradient(135deg,#1d4ed8,#2f6bff_45%,#9bb8ff)]" data-partner-cover="{{ $serviceProviderProfile->logo_url ?? '' }}" data-default-gradient="linear-gradient(135deg, #1d4ed8, #2f6bff 45%, #9bb8ff)" style="background-image: linear-gradient(135deg, #1d4ed8, #2f6bff 45%, #9bb8ff);"></div>
                     <div class="p-6 sm:p-8">
                         <div class="-mt-20 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -30,17 +31,17 @@
                                 </span>
                                 <div class="pb-1">
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <h1 class="text-3xl font-extrabold tracking-[-0.055em] text-[#151821] sm:text-5xl">{{ $publicName }}</h1>
+                                        <h1 class="text-3xl font-extrabold tracking-[-0.015em] text-[#151821] sm:text-5xl">{{ $publicName }}</h1>
                                         <span class="rounded-full {{ $isVerified ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fff7ed] text-[#c2410c]' }} px-3 py-1 text-xs font-extrabold">{{ $isVerified ? 'Équipe vérifiée' : 'Vérification en cours' }}</span>
                                     </div>
                                     <p class="mt-2 text-sm font-bold text-[#6f7890]">{{ $serviceProviderProfile->district ? $serviceProviderProfile->district.', ' : '' }}{{ $serviceProviderProfile->city }}, {{ $serviceProviderProfile->country_code }} · {{ $serviceProviderProfile->published_services_count }} service{{ $serviceProviderProfile->published_services_count > 1 ? 's' : '' }} disponible{{ $serviceProviderProfile->published_services_count > 1 ? 's' : '' }}</p>
-                                    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#52617b]">{{ $serviceProviderProfile->description ?: 'Une équipe événementielle disponible pour accompagner votre projet.' }}</p>
+                                    <p class="mt-3 max-w-2xl text-[15px] font-normal leading-7 text-[#52617b]">{{ $serviceProviderProfile->description ?: 'Une équipe événementielle disponible pour accompagner votre projet.' }}</p>
                                 </div>
                             </div>
                             <a href="{{ route('event-services.index', ['prestataire' => $serviceProviderProfile->public_uuid]) }}" class="inline-flex items-center justify-center rounded-full bg-[#2f6bff] px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/25 transition hover:-translate-y-0.5 hover:bg-[#2258df]">Réserver ces services</a>
                         </div>
 
-                        <div class="mt-8 grid gap-3 md:grid-cols-3">
+                        <div class="mt-8 grid gap-3 md:grid-cols-3" data-reveal-stagger="90">
                             <div class="rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                                 <p class="text-2xl font-extrabold text-[#151821]">{{ $serviceProviderProfile->published_services_count }}</p>
                                 <p class="mt-1 text-xs font-bold text-[#6f7890]">services disponibles</p>
@@ -57,11 +58,11 @@
                     </div>
                 </div>
 
-                <div id="services" class="mt-8 scroll-mt-24">
+                <div id="services" class="mt-8 scroll-mt-24" data-reveal>
                     <div class="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                         <div>
                             <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Prestations disponibles</p>
-                            <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.045em] text-[#151821]">Services disponibles</h2>
+                            <h2 class="mt-2 text-3xl font-extrabold tracking-[-0.015em] text-[#151821]">Services disponibles</h2>
                         </div>
                         <a href="{{ route('event-services.index', ['prestataire' => $serviceProviderProfile->public_uuid]) }}" class="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-[#2f6bff] shadow-sm ring-1 ring-[#c9d8ef] transition hover:-translate-y-0.5 hover:ring-[#2f6bff]">Composer une demande</a>
                     </div>
@@ -90,7 +91,7 @@
                         </form>
                     @endif
 
-                    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger="70">
                         @forelse ($services as $service)
                             <article class="overflow-hidden rounded-[22px] border border-[#dce6f7] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#173e7a]/12">
                                 <div class="relative">
@@ -101,7 +102,7 @@
                                     @endif
                                 </div>
                                 <div class="p-5">
-                                <h3 class="mt-4 line-clamp-2 text-xl font-extrabold tracking-[-0.03em] text-[#151821]">{{ $service->name }}</h3>
+                                <h3 class="mt-4 line-clamp-2 text-xl font-extrabold tracking-[-0.015em] text-[#151821]">{{ $service->name }}</h3>
                                 <p class="mt-3 line-clamp-3 text-sm font-semibold leading-6 text-[#52617b]">{{ $service->short_description ?: $service->description }}</p>
                                 <div class="mt-5 rounded-2xl bg-[#f7faff] p-4 ring-1 ring-[#e2eaf8]">
                                     <div class="flex items-center justify-between gap-3 text-sm font-extrabold">

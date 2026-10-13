@@ -72,7 +72,7 @@
                     @php
                         $headlineWords = explode(' ', 'Le lieu parfait pour votre');
                     @endphp
-                    <h1 class="mt-6 font-display text-[44px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[64px] lg:text-[76px]">
+                    <h1 class="mt-6 font-display text-[44px] font-extrabold leading-[0.98] tracking-[-0.01em] sm:text-[64px] lg:text-[76px]">
                         <span class="sr-only">Le lieu parfait pour votre événement</span>
                         <span aria-hidden="true">
                             @foreach ($headlineWords as $wordIndex => $word)
@@ -215,7 +215,7 @@
         <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
             <div class="max-w-2xl" data-reveal>
                 <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Pourquoi BAOBAA</p>
-                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-5xl">Organiser, sans <span class="text-[#2f6bff]">mauvaise surprise.</span></h2>
+                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.01em] sm:text-5xl">Organiser, sans <span class="text-[#2f6bff]">mauvaise surprise.</span></h2>
             </div>
 
             <div class="mt-10 grid gap-4 lg:grid-cols-12">
@@ -313,7 +313,7 @@
             <div class="mx-auto max-w-7xl">
                 <div class="max-w-2xl" data-reveal>
                     <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#8db4ff]"><span class="size-1.5 rounded-full bg-[#8db4ff]"></span>Comment ça marche</p>
-                    <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-5xl">Réserver, c’est quatre gestes.</h2>
+                    <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.01em] sm:text-5xl">Réserver, c’est quatre gestes.</h2>
                 </div>
 
                 <div class="mt-14 grid gap-10 lg:grid-cols-[1fr_auto_380px]">
@@ -326,7 +326,7 @@
                         ] as $stepIndex => [$stepTitle, $stepText])
                             <div @class(['baobaa-story-step flex min-h-[42vh] flex-col justify-center py-6 lg:min-h-[70vh]', 'is-active' => $stepIndex === 0]) data-story-step>
                                 <p class="text-sm font-extrabold text-[#8db4ff]">Étape 0{{ $stepIndex + 1 }}</p>
-                                <h3 class="mt-2 font-display text-5xl font-extrabold tracking-[-0.045em] sm:text-6xl">{{ $stepTitle }}</h3>
+                                <h3 class="mt-2 font-display text-5xl font-extrabold tracking-[-0.01em] sm:text-6xl">{{ $stepTitle }}</h3>
                                 <p class="mt-4 max-w-md text-base font-semibold leading-7 text-white/65">{{ $stepText }}</p>
                             </div>
                         @endforeach
@@ -422,7 +422,7 @@
             <div class="mb-8 flex flex-wrap items-end justify-between gap-5" data-reveal>
                 <div>
                     <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Tendances</p>
-                    <h2 class="mt-3 font-display text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl">Les espaces les plus demandés.</h2>
+                    <h2 class="mt-3 font-display text-4xl font-extrabold tracking-[-0.01em] sm:text-5xl">Les espaces les plus demandés.</h2>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" data-carousel-prev class="grid size-11 place-items-center rounded-full bg-white text-[#07152f] ring-1 ring-[#dce6f7] transition hover:bg-[#07152f] hover:text-white" aria-label="Espaces précédents">
@@ -458,7 +458,7 @@
         <section class="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
             <div class="max-w-2xl" data-reveal>
                 <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>Pour tout le monde</p>
-                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-5xl">Organisez, louez ou proposez vos services.</h2>
+                <h2 class="mt-3 font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.01em] sm:text-5xl">Organisez, louez ou proposez vos services.</h2>
             </div>
 
             <div class="baobaa-audience-group mt-10 flex flex-col gap-3 lg:h-[420px] lg:flex-row" data-reveal>
@@ -496,7 +496,7 @@
                     [count($paymentLabels), 'moyens', 'De paiement acceptés'],
                 ] as [$figureValue, $figureUnit, $figureLabel])
                     <div class="border-[#dce6f7] px-5 py-10 sm:px-8 [&:not(:last-child)]:border-b sm:[&:nth-child(odd)]:border-r lg:border-b-0 lg:[&:not(:last-child)]:border-r">
-                        <p class="font-display text-6xl font-extrabold tracking-[-0.05em] text-[#07152f]"><span data-count-to="{{ $figureValue }}">{{ $figureValue }}</span><span class="ml-1 text-2xl text-[#2f6bff]">{{ $figureUnit }}</span></p>
+                        <p class="font-display text-6xl font-extrabold tracking-[-0.01em] text-[#07152f]"><span data-count-to="{{ $figureValue }}">{{ $figureValue }}</span><span class="ml-1 text-2xl text-[#2f6bff]">{{ $figureUnit }}</span></p>
                         <p class="mt-2 text-sm font-semibold text-[#52617b]">{{ $figureLabel }}</p>
                     </div>
                 @endforeach
@@ -507,7 +507,7 @@
         <section class="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[.8fr_1.2fr]">
             <div data-reveal="left">
                 <p class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]"><span class="size-1.5 rounded-full bg-[#2f6bff]"></span>FAQ</p>
-                <h2 class="mt-3 font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.045em]">Questions fréquentes.</h2>
+                <h2 class="mt-3 font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.01em]">Questions fréquentes.</h2>
                 <div class="mt-8 rounded-[2rem] bg-[#07152f] p-7 text-white">
                     <p class="font-display text-xl font-extrabold">Une autre question&nbsp;?</p>
                     <p class="mt-1 text-sm font-semibold text-white/65">Notre équipe vous répond.</p>
@@ -527,7 +527,7 @@
                 @foreach ($faqs as $faqIndex => [$question, $answer])
                     <details class="baobaa-faq group" @if ($faqIndex === 0) open @endif>
                         <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6">
-                            <span class="font-display text-xl font-extrabold tracking-[-0.02em]">{{ $question }}</span>
+                            <span class="font-display text-xl font-extrabold tracking-[-0.01em]">{{ $question }}</span>
                             <span class="baobaa-faq-icon grid size-10 shrink-0 place-items-center rounded-full bg-[#eef2fb] text-xl font-bold text-[#07152f] group-open:rotate-45 group-open:bg-[#2f6bff] group-open:text-white" aria-hidden="true">+</span>
                         </summary>
                         <p class="baobaa-faq-answer max-w-2xl pb-6 text-base font-semibold leading-7 text-[#52617b]">{{ $answer }}</p>
@@ -541,7 +541,7 @@
             <div class="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-[linear-gradient(135deg,#2f6bff,#5b4dff)] px-7 py-14 text-white sm:px-14 sm:py-20" data-reveal="scale">
                 <div class="baobaa-aurora pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-white/15 blur-2xl" data-aurora="30" aria-hidden="true"></div>
                 <div class="relative max-w-2xl">
-                    <h2 class="font-display text-4xl font-extrabold leading-[1] tracking-[-0.045em] sm:text-6xl">Votre prochain événement commence ici.</h2>
+                    <h2 class="font-display text-4xl font-extrabold leading-[1] tracking-[-0.01em] sm:text-6xl">Votre prochain événement commence ici.</h2>
                     <p class="mt-4 text-base font-semibold text-white/80">Trouvez le lieu idéal en quelques minutes, ou publiez votre espace gratuitement.</p>
                     <div class="mt-8 flex flex-wrap gap-3">
                         <a href="{{ route('venues.index') }}" class="rounded-full bg-white px-6 py-3.5 text-sm font-extrabold text-[#07152f] transition hover:-translate-y-0.5">Trouver un espace</a>

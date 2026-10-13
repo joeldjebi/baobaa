@@ -60,7 +60,7 @@
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">Prestataire</p>
-                    <h2 class="mt-1 text-xl font-extrabold tracking-[-0.03em] text-[#07152f]">{{ $provider->business_name }}</h2>
+                    <h2 class="mt-1 text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">{{ $provider->business_name }}</h2>
                     <a href="{{ route('service-provider-profiles.show', $provider) }}" class="text-xs font-extrabold text-[#2f6bff]">Voir le profil</a>
                 </div>
                 <div class="text-right">

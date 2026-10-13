@@ -12,7 +12,7 @@
     <div class="grid gap-6 xl:grid-cols-[420px_1fr]">
         <section class="rounded-[28px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
             <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Nouvelle campagne</p>
-            <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">Mettre un espace en avant</h2>
+            <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">Mettre un espace en avant</h2>
             <p class="mt-2 text-sm font-semibold leading-6 text-[#64708a]">Le SAP valide chaque campagne avant diffusion pour garder une expérience client premium.</p>
 
             <form method="POST" action="{{ route('owner.sponsorships.store') }}" class="mt-5 space-y-4">

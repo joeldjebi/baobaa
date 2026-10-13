@@ -17,7 +17,7 @@
                 <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_380px] lg:p-10">
                     <div>
                         <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#bcd2ff] ring-1 ring-white/15">Package événementiel</p>
-                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.045em] sm:text-5xl">Composez votre événement avec les bons prestataires.</h1>
+                        <h1 class="mt-5 max-w-3xl text-4xl font-extrabold leading-tight tracking-[-0.01em] sm:text-5xl">Composez votre événement avec les bons prestataires.</h1>
                         <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#c7d4ec]">Choisissez les dates, les options du lieu, les services événementiels et la billetterie pour lancer une demande claire et complète.</p>
                     </div>
                     <div class="rounded-[26px] bg-white/10 p-5 ring-1 ring-white/15">
@@ -55,7 +55,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 1</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Informations de l’événement</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Informations de l’événement</h2>
                             </div>
                             <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $venue->name }}</span>
                         </div>
@@ -112,7 +112,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Ajouter des services additionnels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Ajouter des services additionnels</h2>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]">{{ count($reservationAddOns) }} option(s)</p>
                         </div>
@@ -144,7 +144,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Choisir les prestataires événementiels</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Choisir les prestataires événementiels</h2>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]"><span data-services-selected-count>0</span> / {{ $maxEventServices }} services sélectionnés</p>
                         </div>
@@ -199,7 +199,7 @@
                 <aside class="lg:sticky lg:top-24 lg:self-start">
                     <div class="rounded-[28px] bg-white p-5 shadow-2xl shadow-[#173e7a]/12 ring-1 ring-[#dce6f7]">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 4</p>
-                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.035em]">Résumé</h2>
+                        <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Résumé</h2>
 
                         <div class="mt-5 rounded-[20px] bg-[#f7faff] p-4 ring-1 ring-[#dce6f7]">
                             <div class="flex justify-between gap-3 text-sm font-extrabold">

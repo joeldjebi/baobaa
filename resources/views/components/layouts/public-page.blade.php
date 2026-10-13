@@ -15,7 +15,7 @@
             @if ($eyebrow)
                 <p class="inline-flex rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff] shadow-sm ring-1 ring-[#dce6f7]">{{ $eyebrow }}</p>
             @endif
-            <h1 class="mt-4 text-3xl font-extrabold leading-tight tracking-[-0.045em] text-[#121722] sm:text-5xl">{{ $heading }}</h1>
+            <h1 class="mt-4 text-3xl font-extrabold leading-tight tracking-[-0.01em] text-[#121722] sm:text-5xl">{{ $heading }}</h1>
             @if ($intro)
                 <p class="mt-4 max-w-2xl text-base font-semibold leading-7 text-[#667088]">{{ $intro }}</p>
             @endif

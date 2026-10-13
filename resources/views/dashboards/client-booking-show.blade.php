@@ -31,7 +31,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div class="min-w-0">
                         <a href="{{ route('client.reservations') }}" class="text-xs font-extrabold uppercase tracking-[0.14em] text-[#2f6bff]">Mes réservations</a>
-                        <h2 class="mt-2 break-words text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ $booking->reference }}</h2>
+                        <h2 class="mt-2 break-words text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ $booking->reference }}</h2>
                         <p class="mt-1 break-words text-sm font-semibold text-[#6f7890]">{{ $booking->venue?->name }} · {{ $booking->event_date?->format('d/m/Y') }}</p>
                     </div>
                     <span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $bookingStatusLabels[$booking->status->value] ?? 'À suivre' }}</span>
@@ -60,7 +60,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div class="min-w-0">
                         <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Composition</p>
-                        <h3 class="mt-1 break-words text-xl font-extrabold tracking-[-0.035em] text-[#07152f]">Ajuster mon package</h3>
+                        <h3 class="mt-1 break-words text-xl font-extrabold tracking-[-0.015em] text-[#07152f]">Ajuster mon package</h3>
                         <p class="mt-1 text-sm font-semibold leading-6 text-[#6f7890]">Modifiez les modules et les services avant validation définitive de la proforma.</p>
                     </div>
                     <span class="rounded-full {{ $canEditPackage ? 'bg-[#eef4ff] text-[#2f6bff]' : 'bg-[#fff4e5] text-[#9a6700]' }} px-3 py-1 text-xs font-extrabold">

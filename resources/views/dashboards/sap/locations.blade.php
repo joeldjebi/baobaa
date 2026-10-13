@@ -17,7 +17,7 @@
         ] as $stat)
             <div class="rounded-[24px] bg-white p-5 shadow-xl shadow-[#173e7a]/8 ring-1 ring-[#dce6f7]">
                 <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#7d8aa7]">{{ $stat['label'] }}</p>
-                <p class="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07152f]">{{ number_format($stat['value'], 0, ',', ' ') }}</p>
+                <p class="mt-2 text-3xl font-extrabold tracking-[-0.01em] text-[#07152f]">{{ number_format($stat['value'], 0, ',', ' ') }}</p>
             </div>
         @endforeach
     </section>
@@ -26,7 +26,7 @@
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Référentiel de réservation</p>
-                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">Ajouter une localisation</h2>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">Ajouter une localisation</h2>
                 <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#6f7890]">Une ville dépend d’un pays actif. Une commune dépend d’une ville active. Les localisations désactivées disparaissent automatiquement des formulaires publics.</p>
             </div>
             <span class="rounded-full bg-[#eef4ff] px-4 py-2 text-xs font-extrabold text-[#2f6bff] ring-1 ring-[#dce6f7]">Gestion SAP</span>
@@ -110,7 +110,7 @@
     <section class="mt-6 rounded-[30px] bg-white p-5 shadow-2xl shadow-[#173e7a]/10 ring-1 ring-[#dce6f7] sm:p-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-extrabold tracking-[-0.04em] text-[#07152f]">Localisations enregistrées</h2>
+                <h2 class="text-2xl font-extrabold tracking-[-0.01em] text-[#07152f]">Localisations enregistrées</h2>
                 <p class="mt-1 text-sm font-semibold text-[#6f7890]">Filtrez, contrôlez et désactivez les valeurs qui ne doivent plus être disponibles.</p>
             </div>
             <form method="GET" class="grid w-full gap-3 lg:w-auto lg:grid-cols-[260px_170px_170px_auto]">

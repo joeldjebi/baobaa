@@ -7,12 +7,12 @@
     <main class="min-h-screen bg-[#eef3ff] text-[#151821]">
         <x-navigation.public-header active="venues" />
 
-        <section class="border-b border-white/80 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] px-5 py-6 sm:px-8 lg:py-8">
-            <div class="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4">
+        <section class="baobaa-page-hero border-b border-white/80 px-5 py-6 sm:px-8 lg:py-8">
+            <div class="baobaa-hero-intro mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4">
                 <div>
                     <nav class="text-xs font-semibold text-[#6f7890]" aria-label="Fil d’Ariane"><a href="{{ url('/') }}" class="hover:text-[#2f6bff]">Accueil</a> / Espaces</nav>
-                    <h1 class="mt-2 text-3xl font-extrabold tracking-[-0.045em] text-[#121722] sm:text-4xl">Espaces événementiels à réserver</h1>
-                    <p class="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[#667088]">Comparez les lieux, vérifiez les disponibilités à vos dates et envoyez votre demande en ligne.</p>
+                    <h1 class="mt-2 text-3xl font-extrabold tracking-[-0.015em] text-[#121722] sm:text-4xl">Espaces événementiels à réserver</h1>
+                    <p class="mt-2 max-w-2xl text-[15px] font-normal leading-7 text-[#5b6680]">Comparez les lieux, vérifiez les disponibilités à vos dates et envoyez votre demande en ligne.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 text-xs font-extrabold text-[#4d5872]">
                     <span class="rounded-full bg-white px-3 py-1.5 ring-1 ring-[#dce6f7]">{{ number_format($publishedVenuesCount, 0, ',', ' ') }} espaces</span>
@@ -23,7 +23,7 @@
         </section>
 
         <section class="mx-auto grid max-w-7xl gap-6 px-5 py-7 sm:px-8 lg:grid-cols-[320px_1fr]">
-            <aside class="lg:sticky lg:top-24 lg:self-start">
+            <aside class="lg:sticky lg:top-24 lg:self-start" data-reveal="left">
                 <button type="button" data-filters-toggle aria-expanded="false" aria-controls="venues-filter-form" class="mb-3 flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-[#151821] shadow-sm ring-1 ring-[#dce6f7] lg:hidden">
                     <span class="inline-flex items-center gap-2">
                         <svg class="size-4 text-[#2f6bff]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
@@ -35,7 +35,7 @@
                     <div class="flex items-center justify-between gap-3 border-b border-[#edf2fb] pb-3">
                         <div>
                             <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-[#2f6bff]">Filtres</p>
-                            <h2 class="mt-1 text-lg font-extrabold tracking-[-0.035em]">Affiner la recherche</h2>
+                            <h2 class="mt-1 text-lg font-extrabold tracking-[-0.015em]">Affiner la recherche</h2>
                         </div>
                         @if ($activeFilters)
                             <a href="{{ route('venues.index') }}" class="rounded-full bg-[#eef4ff] px-3 py-1.5 text-xs font-extrabold text-[#2f6bff]">Effacer</a>
@@ -249,6 +249,7 @@
                     }
 
                     resultsShell.innerHTML = await response.text();
+                    window.BaobaaMotion?.refresh(resultsShell);
 
                     if (shouldPushState) {
                         window.history.pushState({}, '', url);
