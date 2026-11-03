@@ -70,6 +70,7 @@ class ClientEventProjectController extends Controller
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:2000'],
+            'proposed_amount' => ['nullable', 'integer', 'min:1'],
         ]);
 
         $eventProject->messages()->create([
@@ -78,8 +79,15 @@ class ClientEventProjectController extends Controller
             'sender_id' => $request->user()->id,
             'recipient_id' => $serviceProviderProfile->user_id,
             'message' => $validated['message'],
+            'proposed_amount' => $validated['proposed_amount'] ?? null,
             'currency' => $eventProject->currency,
         ]);
+
+        if (isset($validated['proposed_amount'])) {
+            $this->eventProjectService->applyProviderLaneProposal($eventProject, $serviceProviderProfile->id, (int) $validated['proposed_amount']);
+
+            return $this->backToLane($eventProject, $serviceProviderProfile, 'Votre proposition de prix est envoyée au prestataire. Il doit la confirmer.');
+        }
 
         return $this->backToLane($eventProject, $serviceProviderProfile, 'Message envoyé au prestataire.');
     }

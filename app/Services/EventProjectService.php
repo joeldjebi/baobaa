@@ -99,6 +99,47 @@ class EventProjectService
     }
 
     /**
+     * Spread a total price proposed by the client or the professional over the lane items not paid yet.
+     * Both parties have to confirm the quote again afterwards.
+     */
+    public function applyProviderLaneProposal(EventProject $project, int $serviceProviderProfileId, int $proposedAmount): void
+    {
+        DB::transaction(function () use ($project, $serviceProviderProfileId, $proposedAmount): void {
+            $items = $this->providerLaneItems($project, $serviceProviderProfileId)
+                ->whereNull('paid_at')
+                ->values();
+
+            if ($items->isEmpty()) {
+                return;
+            }
+
+            $currentTotal = max(1, (int) $items->sum('quoted_amount'));
+            $remaining = $proposedAmount;
+
+            $items->each(function (EventProjectItem $item, int $index) use ($items, $currentTotal, &$remaining, $proposedAmount): void {
+                $newAmount = $index === $items->count() - 1
+                    ? $remaining
+                    : (int) round($proposedAmount * (int) $item->quoted_amount / $currentTotal);
+                $depositRatio = (int) $item->deposit_amount > 0 && (int) $item->quoted_amount > 0
+                    ? (int) $item->deposit_amount / (int) $item->quoted_amount
+                    : 0;
+
+                $remaining -= $newAmount;
+
+                $item->forceFill([
+                    'quoted_amount' => max(0, $newAmount),
+                    'deposit_amount' => (int) round(max(0, $newAmount) * $depositRatio),
+                    'client_confirmed_at' => null,
+                    'provider_confirmed_at' => null,
+                    'status' => EventProjectItemStatus::Negotiating,
+                ])->save();
+            });
+
+            $this->refreshTotals($project);
+        });
+    }
+
+    /**
      * Amount still due to secure the provider lane.
      */
     public function providerLaneDepositDue(EventProject $project, int $serviceProviderProfileId): int

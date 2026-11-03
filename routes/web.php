@@ -28,6 +28,7 @@ use App\Http\Controllers\PublicOwnerProfileController;
 use App\Http\Controllers\PublicProductController;
 use App\Http\Controllers\PublicServiceProviderProfileController;
 use App\Http\Controllers\PublicVenueController;
+use App\Http\Controllers\ReservationDraftController;
 use App\Http\Controllers\SapDashboardController;
 use App\Http\Controllers\SapMarketplaceController;
 use App\Http\Controllers\SapPortalRequestController;
@@ -88,6 +89,9 @@ Route::get('/services-evenementiels', [EventComposerController::class, 'create']
 Route::get('/composer-mon-evenement', [EventComposerController::class, 'create'])->name('event-composer.create');
 Route::get('/articles', [PublicProductController::class, 'index'])->name('products.index');
 Route::get('/articles/{product}', [PublicProductController::class, 'show'])->name('products.show');
+Route::post('/espaces/{venue}/reservation/brouillon', [ReservationDraftController::class, 'store'])
+    ->middleware('throttle:30,1')
+    ->name('venues.reservation.draft');
 Route::post('/espaces/{venue}/reservation', [BookingController::class, 'store'])
     ->middleware(['auth', 'role:client'])
     ->name('bookings.store');

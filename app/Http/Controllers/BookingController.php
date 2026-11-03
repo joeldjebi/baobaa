@@ -160,6 +160,8 @@ class BookingController extends Controller
             ),
         );
 
+        $request->session()->forget(ReservationDraftController::SessionKey.'.'.$venue->id);
+
         return redirect()
             ->route('client.reservations.show', $booking)
             ->with('booking_status', 'Votre demande est enregistrée. Consultez la proforma, échangez avec le partenaire puis payez l’acompte de réservation.');

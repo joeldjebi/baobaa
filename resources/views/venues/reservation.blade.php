@@ -245,8 +245,9 @@
                         </label>
 
                         @guest
-                            <a href="{{ route('portal.login', ['portal' => 'client', 'redirect' => route('venues.reservation', $venue->slug)]) }}" class="mt-5 flex w-full justify-center rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Me connecter pour lancer la demande</a>
-                            <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Connexion client obligatoire avant la proforma et le paiement de l’acompte.</p>
+                            <button type="submit" formaction="{{ route('venues.reservation.draft', $venue) }}" formnovalidate name="next" value="login" class="mt-5 flex w-full justify-center rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Me connecter pour lancer la demande</button>
+                            <button type="submit" formaction="{{ route('venues.reservation.draft', $venue) }}" formnovalidate name="next" value="register" class="mt-2 flex w-full justify-center rounded-2xl border border-[#c9d8ef] bg-white px-5 py-3 text-sm font-extrabold text-[#2f6bff] transition hover:border-[#2f6bff]">Créer mon compte client</button>
+                            <p class="mt-3 text-center text-xs font-semibold leading-5 text-[#6f7890]">Vos choix sont conservés : vous retrouverez votre demande après la connexion.</p>
                         @else
                             <x-forms.terms-acceptance class="mt-5" />
                             <button type="submit" class="mt-4 w-full rounded-2xl bg-[#2f6bff] px-5 py-3 text-sm font-extrabold text-white shadow-xl shadow-[#2f6bff]/20 transition hover:-translate-y-0.5">Envoyer ma demande</button>

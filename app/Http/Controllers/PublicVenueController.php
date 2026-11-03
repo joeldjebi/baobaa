@@ -236,7 +236,7 @@ class PublicVenueController extends Controller
         ]);
     }
 
-    public function reservation(string $slug): View
+    public function reservation(Request $request, string $slug): View
     {
         $venue = Venue::query()
             ->with([
@@ -264,6 +264,12 @@ class PublicVenueController extends Controller
                 'services' => $services,
             ])
             ->values();
+
+        $draft = $request->session()->get(ReservationDraftController::SessionKey.'.'.$venue->id);
+
+        if (is_array($draft) && ! $request->session()->hasOldInput()) {
+            $request->session()->now('_old_input', $draft);
+        }
 
         return view('venues.reservation', [
             'venue' => $venue,

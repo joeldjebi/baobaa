@@ -88,26 +88,25 @@ class DashboardController extends Controller
     {
         $client = $request->user();
 
-        // List EventProject (reservation dossier) rather than raw Booking rows.
+        // Venue reservations of the client; whole event dossiers (venue + professionals) live in "Mes événements".
         return view('dashboards.client-reservations', [
             ...$this->clientMetricsFor($client),
             'client' => $client,
-            'projects' => EventProject::query()
-                ->with(['items.booking.venue', 'items'])
-                ->withCount('items')
+            'bookings' => Booking::query()
+                ->with(['venue.ownerProfile'])
                 ->where('client_id', $client->id)
                 ->when($request->filled('status'), fn (Builder $query) => $query->where('status', $request->string('status')))
                 ->when($request->filled('q'), function (Builder $query) use ($request): void {
                     $search = '%'.$request->string('q')->toString().'%';
                     $query->where(function (Builder $query) use ($search): void {
                         $query->where('reference', 'like', $search)
-                            ->orWhereHas('items.booking.venue', fn (Builder $query) => $query->where('name', 'like', $search));
+                            ->orWhereHas('venue', fn (Builder $query) => $query->where('name', 'like', $search));
                     });
                 })
                 ->when($request->filled('date_from'), fn (Builder $query) => $query->whereDate('event_date', '>=', $request->date('date_from')))
                 ->when($request->filled('date_to'), fn (Builder $query) => $query->whereDate('event_date', '<=', $request->date('date_to')))
                 ->latest('event_date')
-                ->paginate(10, ['*'], 'projects_page')
+                ->paginate(10)
                 ->withQueryString(),
         ]);
     }

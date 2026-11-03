@@ -49,6 +49,6 @@ class ClientRegisteredUserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('client.dashboard');
+        return redirect()->intended(route('client.dashboard'));
     }
 }

@@ -27,28 +27,20 @@
         </form>
 
         <div class="mt-5 grid gap-3 lg:hidden">
-            @forelse ($projects as $project)
-                @php
-                    $venueItem = $project->items->firstWhere('item_type', 'venue_booking');
-                    $booking = $venueItem?->booking;
-                @endphp
+            @forelse ($bookings as $booking)
                 <article class="rounded-2xl border border-[#edf2fb] bg-[#fbfcff] p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="truncate font-extrabold text-[#151821]">{{ $booking?->venue?->name ?? '—' }}</p>
-                            <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $project->reference }}</p>
+                            <p class="truncate font-extrabold text-[#151821]">{{ $booking->venue?->name ?? '—' }}</p>
+                            <p class="mt-1 text-xs font-bold text-[#6f7890]">{{ $booking->reference }}</p>
                         </div>
-                        <span class="shrink-0 rounded-full bg-[#eef4ff] px-3 py-1 text-[11px] font-extrabold text-[#2f6bff]">{{ $project->status?->value ? ucfirst(str_replace('_', ' ', $project->status->value)) : 'À suivre' }}</span>
+                        <span class="shrink-0 rounded-full bg-[#eef4ff] px-3 py-1 text-[11px] font-extrabold text-[#2f6bff]">{{ $bookingStatusLabels[$booking->status->value] ?? $booking->status->value }}</span>
                     </div>
                     <div class="mt-4 grid gap-2 text-sm font-semibold text-[#52617b]">
-                        <p>{{ $project->event_date?->format('d/m/Y') ?? 'Date à définir' }}</p>
-                        <p>{{ number_format($project->items_count, 0, ',', ' ') }} élément(s) · total estimé {{ number_format($project->estimated_total_amount, 0, ',', ' ') }} {{ $project->currency }}</p>
+                        <p>{{ $booking->event_date?->format('d/m/Y') ?? 'Date à définir' }} · {{ number_format((int) $booking->guests_count, 0, ',', ' ') }} invités</p>
+                        <p>Acompte : {{ number_format((int) $booking->reservation_amount, 0, ',', ' ') }} {{ $booking->currency }} · total {{ number_format((int) $booking->total_amount, 0, ',', ' ') }} {{ $booking->currency }}</p>
                     </div>
-                    @if($booking)
-                        <a href="{{ route('client.reservations.show', $booking) }}" class="mt-4 inline-flex rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir le dossier</a>
-                    @else
-                        <a href="{{ route('client.projects') }}" class="mt-4 inline-flex rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir</a>
-                    @endif
+                    <a href="{{ route('client.reservations.show', $booking) }}" class="mt-4 inline-flex rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir la réservation</a>
                 </article>
             @empty
                 <p class="rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-5 text-center text-sm font-semibold text-[#6f7890]">Aucune réservation trouvée.</p>
@@ -61,20 +53,16 @@
                     <tr><th class="px-4 py-3">Référence</th><th class="px-4 py-3">Espace</th><th class="px-4 py-3">Partenaire</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Invités</th><th class="px-4 py-3">Acompte</th><th class="px-4 py-3">Statut</th><th class="px-4 py-3 text-right">Action</th></tr>
                 </thead>
                 <tbody class="divide-y divide-[#edf2fb]">
-                    @forelse ($projects as $project)
-                        @php
-                            $venueItem = $project->items->firstWhere('item_type', 'venue_booking');
-                            $booking = $venueItem?->booking;
-                        @endphp
+                    @forelse ($bookings as $booking)
                         <tr class="transition hover:bg-[#fbfcff]">
-                            <td class="px-4 py-4 font-extrabold text-[#151821]">{{ $project->reference }}</td>
-                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $booking?->venue?->name ?? '—' }}</td>
-                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $booking?->venue?->ownerProfile?->business_name ?? '—' }}</td>
-                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $project->event_date?->format('d/m/Y') ?? '—' }}</td>
-                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ number_format($project->items_count, 0, ',', ' ') }}</td>
-                            <td class="px-4 py-4 font-extrabold text-[#07152f]">{{ number_format($project->estimated_total_amount, 0, ',', ' ') }} {{ $project->currency }}</td>
-                            <td class="px-4 py-4"><span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $project->status?->value ? ucfirst(str_replace('_', ' ', $project->status->value)) : 'À suivre' }}</span></td>
-                            <td class="px-4 py-4 text-right">@if($booking)<a href="{{ route('client.reservations.show', $booking) }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir</a>@else<a href="{{ route('client.projects') }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir</a>@endif</td>
+                            <td class="px-4 py-4 font-extrabold text-[#151821]">{{ $booking->reference }}</td>
+                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $booking->venue?->name ?? '—' }}</td>
+                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $booking->venue?->ownerProfile?->business_name ?? '—' }}</td>
+                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ $booking->event_date?->format('d/m/Y') ?? '—' }}</td>
+                            <td class="px-4 py-4 font-semibold text-[#52617b]">{{ number_format((int) $booking->guests_count, 0, ',', ' ') }}</td>
+                            <td class="px-4 py-4 font-extrabold text-[#07152f]">{{ number_format((int) $booking->reservation_amount, 0, ',', ' ') }} {{ $booking->currency }}</td>
+                            <td class="px-4 py-4"><span class="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-extrabold text-[#2f6bff]">{{ $bookingStatusLabels[$booking->status->value] ?? $booking->status->value }}</span></td>
+                            <td class="px-4 py-4 text-right"><a href="{{ route('client.reservations.show', $booking) }}" class="rounded-full bg-[#07152f] px-3 py-1.5 text-xs font-extrabold text-white">Ouvrir</a></td>
                         </tr>
                     @empty
                         <tr><td colspan="8" class="px-4 py-10 text-center font-semibold text-[#6f7890]">Aucune réservation trouvée.</td></tr>
@@ -83,6 +71,6 @@
             </table>
         </div>
 
-        <div class="mt-5">{{ $projects->links() }}</div>
+        <div class="mt-5">{{ $bookings->links() }}</div>
     </section>
 </x-dashboards.client-shell>

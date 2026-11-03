@@ -128,7 +128,7 @@
             <textarea name="message" rows="3" placeholder="Ajoutez une précision, une demande ou une réponse professionnelle..." class="w-full rounded-2xl border border-[#dce6f7] bg-white px-4 py-3 text-sm font-semibold text-[#151821] outline-none focus:border-[#2f6bff]">{{ old('message') }}</textarea>
             <div class="grid gap-3 md:grid-cols-[minmax(0,220px)_auto] md:items-center">
                 <label class="min-w-0 rounded-2xl border border-[#dce6f7] bg-white px-4 py-2.5">
-                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#7d8aa7]">Prix proposé</span>
+                    <span class="block text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#7d8aa7]">Prix du lieu proposé <span class="normal-case tracking-normal">(hors options)</span></span>
                     <input type="number" min="1" name="proposed_amount" value="{{ old('proposed_amount') }}" placeholder="Optionnel" class="mt-1 w-full bg-transparent text-sm font-extrabold text-[#07152f] outline-none placeholder:text-[#9ca7bb]">
                 </label>
                 <button class="rounded-2xl bg-[#2f6bff] px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-[#2f6bff]/20">Envoyer</button>

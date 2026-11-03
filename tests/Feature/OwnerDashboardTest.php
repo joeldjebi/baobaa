@@ -17,6 +17,7 @@ use App\Models\SponsorshipPlan;
 use App\Models\User;
 use App\Models\Venue;
 use App\Models\VenueAvailability;
+use App\Services\EventProjectService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -165,6 +166,7 @@ test('client dashboard shows reservations and payments', function () {
         'amount' => 95000,
         'paid_at' => now(),
     ]);
+    app(EventProjectService::class)->ensureVenueBookingItem($booking);
 
     $this->actingAs($client)
         ->get(route('client.dashboard'))

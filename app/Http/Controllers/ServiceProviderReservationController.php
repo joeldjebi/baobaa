@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\EventProjectItemStatus;
 use App\Models\EventProject;
-use App\Models\EventProjectItem;
 use App\Models\ServiceProviderProfile;
 use App\Services\EventProjectService;
 use Illuminate\Database\Eloquent\Builder;
@@ -91,7 +89,7 @@ class ServiceProviderReservationController extends Controller
         ]);
 
         if (isset($validated['proposed_amount'])) {
-            $this->applyProposedAmount($eventProject, $profile, (int) $validated['proposed_amount']);
+            app(EventProjectService::class)->applyProviderLaneProposal($eventProject, $profile->id, (int) $validated['proposed_amount']);
         }
 
         return back()->with('pse_status', 'Message ajouté à la négociation.');
@@ -155,35 +153,6 @@ class ServiceProviderReservationController extends Controller
     private function authorizeProject(ServiceProviderProfile $profile, EventProject $eventProject): void
     {
         abort_unless($this->providerItemsQuery($eventProject, $profile)->exists(), 404);
-    }
-
-    private function applyProposedAmount(EventProject $eventProject, ServiceProviderProfile $profile, int $proposedAmount): void
-    {
-        $items = $this->providerItemsQuery($eventProject, $profile)->get();
-        $currentTotal = max(1, (int) $items->sum('quoted_amount'));
-        $remaining = $proposedAmount;
-
-        $items->values()->each(function (EventProjectItem $item, int $index) use ($items, $currentTotal, &$remaining, $proposedAmount): void {
-            $ratio = (int) $item->quoted_amount / $currentTotal;
-            $newAmount = $index === $items->count() - 1
-                ? $remaining
-                : (int) round($proposedAmount * $ratio);
-            $depositRatio = (int) $item->deposit_amount > 0 && (int) $item->quoted_amount > 0
-                ? (int) $item->deposit_amount / (int) $item->quoted_amount
-                : 0;
-
-            $remaining -= $newAmount;
-
-            $item->forceFill([
-                'quoted_amount' => max(0, $newAmount),
-                'deposit_amount' => (int) round(max(0, $newAmount) * $depositRatio),
-                'client_confirmed_at' => null,
-                'provider_confirmed_at' => null,
-                'status' => EventProjectItemStatus::Negotiating,
-            ])->save();
-        });
-
-        app(EventProjectService::class)->refreshTotals($eventProject);
     }
 
     /**

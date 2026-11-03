@@ -130,6 +130,7 @@
                 <form method="POST" action="{{ route('client.projects.messages.store', [$project, $provider]) }}" class="mt-3 flex flex-col gap-2 sm:flex-row">
                     @csrf
                     <textarea name="message" rows="2" required maxlength="2000" placeholder="Votre message au prestataire..." class="min-w-0 flex-1 resize-none rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff]"></textarea>
+                    <input type="number" min="1" name="proposed_amount" placeholder="Prix proposé (facultatif)" aria-label="Prix total proposé au prestataire, en {{ $project->currency }}" class="rounded-2xl border border-[#dce6f7] bg-[#f7faff] px-4 py-3 text-sm font-bold outline-none focus:border-[#2f6bff] sm:w-48">
                     <button class="rounded-2xl bg-[#07152f] px-5 py-3 text-sm font-extrabold text-white">Envoyer</button>
                 </form>
             </div>
