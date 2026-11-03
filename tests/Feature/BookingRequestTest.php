@@ -1104,18 +1104,18 @@ test('client can see generated event projects', function () {
         ->assertSeeText('900 000 XOF');
 });
 
-test('client can book a venue over two days with any start and end minute', function () {
+test('client can book a venue for part of a day or until the next day', function (string $startTime, int $endDayOffset, string $endTime) {
     $client = User::factory()->create(['role' => UserRole::Client]);
     $venue = Venue::factory()->create([
         'status' => VenueStatus::Published,
         'published_at' => now(),
         'max_capacity' => 200,
         'payment_methods' => ['wave'],
-        'opens_at' => null,
-        'closes_at' => null,
+        'opens_at' => '08:00',
+        'closes_at' => '23:59',
     ]);
-    $startDay = now()->addDay()->toDateString();
-    $endDay = now()->addDays(2)->toDateString();
+    $startDay = now()->addDays(3)->toDateString();
+    $endDay = now()->addDays(3 + $endDayOffset)->toDateString();
 
     $this->get(route('venues.reservation', $venue->slug))
         ->assertOk()
@@ -1124,8 +1124,8 @@ test('client can book a venue over two days with any start and end minute', func
     $this->actingAs($client)
         ->post(route('bookings.store', $venue), [
             'accept_terms' => '1',
-            'event_start' => $startDay.'T14:49',
-            'event_end' => $endDay.'T14:50',
+            'event_start' => $startDay.'T'.$startTime,
+            'event_end' => $endDay.'T'.$endTime,
             'guests_count' => 80,
             'payment_method' => 'wave',
         ])
@@ -1133,8 +1133,15 @@ test('client can book a venue over two days with any start and end minute', func
         ->assertRedirect();
 
     $booking = Booking::query()->where('client_id', $client->id)->firstOrFail();
+    $hold = AvailabilityHold::query()->where('holdable_type', Venue::class)->where('holdable_id', $venue->id)->firstOrFail();
 
     expect($booking->event_date->toDateString())->toBe($startDay)
-        ->and(substr((string) $booking->starts_at, 0, 5))->toBe('14:49')
-        ->and(substr((string) $booking->ends_at, 0, 5))->toBe('14:50');
-});
+        ->and(substr((string) $booking->starts_at, 0, 5))->toBe($startTime)
+        ->and(substr((string) $booking->ends_at, 0, 5))->toBe($endTime)
+        ->and($hold->ends_at->toDateString())->toBe($endDay);
+})->with([
+    'same day from 8:00 to 14:00' => ['08:00', 0, '14:00'],
+    'until 14:00 the next day' => ['08:00', 1, '14:00'],
+    'until 15:00 the next day' => ['08:00', 1, '15:00'],
+    'any minute, until the next day' => ['14:49', 1, '14:50'],
+]);
