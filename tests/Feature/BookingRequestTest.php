@@ -1103,3 +1103,38 @@ test('client can see generated event projects', function () {
         ->assertSeeText('Salle premium Cocody')
         ->assertSeeText('900 000 XOF');
 });
+
+test('client can book a venue over two days with any start and end minute', function () {
+    $client = User::factory()->create(['role' => UserRole::Client]);
+    $venue = Venue::factory()->create([
+        'status' => VenueStatus::Published,
+        'published_at' => now(),
+        'max_capacity' => 200,
+        'payment_methods' => ['wave'],
+        'opens_at' => null,
+        'closes_at' => null,
+    ]);
+    $startDay = now()->addDay()->toDateString();
+    $endDay = now()->addDays(2)->toDateString();
+
+    $this->get(route('venues.reservation', $venue->slug))
+        ->assertOk()
+        ->assertDontSee('step="900"', false);
+
+    $this->actingAs($client)
+        ->post(route('bookings.store', $venue), [
+            'accept_terms' => '1',
+            'event_start' => $startDay.'T14:49',
+            'event_end' => $endDay.'T14:50',
+            'guests_count' => 80,
+            'payment_method' => 'wave',
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $booking = Booking::query()->where('client_id', $client->id)->firstOrFail();
+
+    expect($booking->event_date->toDateString())->toBe($startDay)
+        ->and(substr((string) $booking->starts_at, 0, 5))->toBe('14:49')
+        ->and(substr((string) $booking->ends_at, 0, 5))->toBe('14:50');
+});
