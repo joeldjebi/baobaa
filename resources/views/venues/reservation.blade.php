@@ -132,7 +132,7 @@
                         @else
                             <div class="mt-5 rounded-2xl border border-dashed border-[#cbd8f4] bg-[#fbfcff] p-8 text-center">
                                 <p class="text-lg font-extrabold text-[#07152f]">Ce lieu ne propose pas d’option supplémentaire.</p>
-                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Passez à l’étape suivante pour ajouter les prestations de nos pros.</p>
+                                <p class="mt-2 text-sm font-semibold text-[#6f7890]">Passez à l’étape suivante pour ajouter les prestations de nos professionnels.</p>
                             </div>
                         @endif
                     </div>
@@ -141,7 +141,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 3</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les prestations de nos pros</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les prestations de nos professionnels</h2>
                                 <p class="mt-1 text-sm font-medium text-[#6f7890]">Son, lumière, décor, photo… Ajoutez les pros qui feront la différence.</p>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]"><span data-services-selected-count>0</span> / {{ $maxEventServices }} prestations choisies</p>

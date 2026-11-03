@@ -135,7 +135,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <div>
                                 <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#2f6bff]">Étape 2</p>
-                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les prestations de nos pros</h2>
+                                <h2 class="mt-1 text-2xl font-extrabold tracking-[-0.015em]">Les prestations de nos professionnels</h2>
                             </div>
                             <p class="text-xs font-extrabold text-[#7d879d]">{{ number_format($providers->sum(fn ($provider) => $provider->services->count()), 0, ',', ' ') }} prestations disponibles</p>
                         </div>

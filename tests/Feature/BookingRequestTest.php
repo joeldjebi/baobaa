@@ -122,7 +122,7 @@ test('venue package page lets client select published event services outside ven
     $this->actingAs($client)
         ->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Les prestations de nos pros')
+        ->assertSeeText('Les prestations de nos professionnels')
         ->assertSeeText('Studio Son Signature')
         ->assertSeeText('Pack audio conférence')
         ->assertDontSeeText('PSE');
@@ -251,7 +251,7 @@ test('public venue flow lets clients choose a service provider before its servic
 
     $this->get(route('venues.reservation', $venue->slug))
         ->assertOk()
-        ->assertSeeText('Les prestations de nos pros')
+        ->assertSeeText('Les prestations de nos professionnels')
         ->assertSeeText('Studio Lumière Signature')
         ->assertSeeText('Ses prestations');
 });
