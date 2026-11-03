@@ -179,7 +179,7 @@ test('client, venue owner and professional complete a full booking and negotiati
         ->and($laneItem->deposit_amount)->toBe(75000)
         ->and($laneItem->status)->toBe(EventProjectItemStatus::Negotiating);
 
-    $this->actingAs($proUser)->get(route('service-provider.reservations.show', $project))->assertOk()->assertSeeText('Possible à 250 000 ?');
+    $this->actingAs($proUser)->get(route('service-provider.reservations.show', $project))->assertOk()->assertSeeText('Possible à 250 000 ?')->assertSeeText('150');
     $this->actingAs($proUser)->post(route('service-provider.reservations.messages.store', $project), ['message' => 'Je vous propose 270 000 avec les lumières.', 'proposed_amount' => 270000])->assertRedirect();
     $this->actingAs($proUser)->post(route('service-provider.reservations.proforma.confirm', $project))->assertRedirect();
     $this->actingAs($client)->post(route('client.projects.confirm', [$project, $pro]))->assertRedirect();

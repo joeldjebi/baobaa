@@ -34,6 +34,12 @@ class EventProjectService
         }
 
         $item->forceFill($this->itemAttributesFromBooking($booking))->save();
+
+        // Professionals read the guest count from the project, so it follows the venue booking.
+        if ($booking->guests_count && ($project->metadata['guests_count'] ?? null) !== (int) $booking->guests_count) {
+            $project->forceFill(['metadata' => [...($project->metadata ?: []), 'guests_count' => (int) $booking->guests_count]])->save();
+        }
+
         $this->refreshTotals($project);
 
         return $item->refresh();
